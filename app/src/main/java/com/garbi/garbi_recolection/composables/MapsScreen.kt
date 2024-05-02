@@ -16,6 +16,19 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.maps.android.compose.Marker
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import com.garbi.garbi_recolection.R
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.BitmapFactory
+import com.google.android.gms.maps.model.MapStyleOptions
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -47,11 +60,23 @@ fun MapsScreen(navController: NavController? = null) {
                 cameraPositionState = cameraPositionState
             ) {
 
+                val context = LocalContext.current
                 markers.value.forEach { marker ->
+                    //val customIcon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.mipmap.contenedor_residuos)
+                    // Cargar la imagen desde los recursos mipmap
+                    val originalBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.contenedor_residuos)
+
+                    // Redimensionar la imagen a un tamaño más pequeño
+                    val resizedBitmap = resizeBitmap(originalBitmap, 70, 70) // Ajusta las dimensiones según sea necesario
+
+                    // Crear un BitmapDescriptor a partir del bitmap redimensionado
+                    val customIcon: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+
                     Marker(
                         state = MarkerState(position = marker.position),
                         title = marker.title,
-                        snippet = marker.snippet
+                        snippet = marker.snippet,
+                        icon = customIcon
                     )
                 }
             }
@@ -59,6 +84,21 @@ fun MapsScreen(navController: NavController? = null) {
     }
 
 
+}
+// Función para redimensionar un bitmap a las dimensiones especificadas
+fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
+    val width = originalBitmap.width
+    val height = originalBitmap.height
+    val scaleWidth = newWidth.toFloat() / width
+    val scaleHeight = newHeight.toFloat() / height
+
+    // Crear una matriz para aplicar la escala
+    val matrix = Matrix().apply {
+        postScale(scaleWidth, scaleHeight)
+    }
+
+    // Crear un bitmap redimensionado utilizando la matriz
+    return Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
 }
 
 data class MarkerInfo(
