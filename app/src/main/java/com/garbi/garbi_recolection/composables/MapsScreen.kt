@@ -1,5 +1,6 @@
 package com.garbi.garbi_recolection.composables
 
+import AppScaffold
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,8 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import com.google.android.gms.maps.model.MapStyleOptions
 
 
@@ -55,21 +58,16 @@ fun MapsScreen(navController: NavController? = null) {
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
+
             GoogleMap(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxHeight(),
                 cameraPositionState = cameraPositionState
             ) {
 
                 val context = LocalContext.current
                 markers.value.forEach { marker ->
-                    //val customIcon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.mipmap.contenedor_residuos)
-                    // Cargar la imagen desde los recursos mipmap
                     val originalBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.contenedor_residuos)
-
-                    // Redimensionar la imagen a un tamaño más pequeño
                     val resizedBitmap = resizeBitmap(originalBitmap, 70, 70) // Ajusta las dimensiones según sea necesario
-
-                    // Crear un BitmapDescriptor a partir del bitmap redimensionado
                     val customIcon: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmap)
 
                     Marker(
