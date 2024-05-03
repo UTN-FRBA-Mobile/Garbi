@@ -31,6 +31,7 @@ import android.graphics.Paint
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import com.garbi.garbi_recolection.models.Container
 import com.google.android.gms.maps.model.MapStyleOptions
 
 
@@ -42,6 +43,17 @@ fun MapsScreen(navController: NavController? = null) {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
     }
 
+    val containers = remember {
+        mutableStateOf(listOf(
+            Container(-58.39988160000001,-34.5950995,85),
+            Container(-58.39968,-34.5951504,10),
+            Container(-58.3993218,-34.5952227,25),
+            Container(-58.39853549999999,-34.595422,60),
+            Container(-58.39786999999999,-34.5955054,95),
+            Container(-58.3974045,-34.5955637,50)
+            ))
+    }
+/*
     val markers = remember {
         mutableStateOf(listOf(
             MarkerInfo(LatLng(-34.5950995, -58.39988160000001), "Contenedor 1", "Acá hay una descripción"),
@@ -52,7 +64,7 @@ fun MapsScreen(navController: NavController? = null) {
             MarkerInfo(LatLng(-34.5955637, -58.3974045), "Contenedor 6", "Acá hay una descripción")
         ))
     }
-
+*/
     AppScaffold(navController = navController) {
         Box(
             contentAlignment = Alignment.Center,
@@ -65,16 +77,22 @@ fun MapsScreen(navController: NavController? = null) {
             ) {
 
                 val context = LocalContext.current
-                markers.value.forEach { marker ->
-                    val originalBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.contenedor_residuos)
-                    val resizedBitmap = resizeBitmap(originalBitmap, 70, 70) // Ajusta las dimensiones según sea necesario
-                    val customIcon: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+                containers.value.forEach { container ->
+                    val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
+                    val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70) // Ajusta las dimensiones según sea necesario
+                    val iconGreenContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
 
-                    Marker(
-                        state = MarkerState(position = marker.position),
-                        title = marker.title,
-                        snippet = marker.snippet,
-                        icon = customIcon
+
+                    val originalBitmapRed = BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
+                    val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70) // Ajusta las dimensiones según sea necesario
+                    val iconRedContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
+
+                    val containerIcon: BitmapDescriptor = if (container.capacity>60) (iconRedContainer) else (iconGreenContainer)
+                        Marker(
+                        state = MarkerState(position = LatLng(container.lat,container.lng)),
+                        title = "Contenedor",
+                        snippet = "Capacidad: ${container.capacity}",
+                        icon = containerIcon
                     )
                 }
             }
