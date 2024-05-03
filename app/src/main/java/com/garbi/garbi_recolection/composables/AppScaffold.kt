@@ -53,8 +53,9 @@ fun AppScaffold(
                             }
                         }) {
                             val iconColor = if (currentDestination == "home") activeColor else inactiveColor
+                            val icon = if (currentDestination == "home") R.drawable.map_filled else R.drawable.map
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.map), contentDescription = "Mapa", tint = iconColor)
+                                Icon(painterResource(icon), contentDescription = "Mapa", tint = iconColor)
                                 Text("Mapa", color = iconColor)
                             }
                         }
@@ -65,9 +66,9 @@ fun AppScaffold(
                             }
                         }) {
                             val iconColor = if (currentDestination == "reports") activeColor else inactiveColor
-
+                            val icon = if (currentDestination == "reports") R.drawable.receipt_filled else R.drawable.receipt
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.receipt), contentDescription = "Reportes", tint = iconColor)
+                                Icon(painterResource(icon), contentDescription = "Reportes", tint = iconColor)
                                 Text("Reportes", color = iconColor)
                             }
                         }
@@ -78,9 +79,9 @@ fun AppScaffold(
                             }
                         }) {
                             val iconColor = if (currentDestination == "profile") activeColor else inactiveColor
-
+                            val icon = if (currentDestination == "profile") R.drawable.person_filled else R.drawable.person
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.person), contentDescription = "Perfil", tint = iconColor)
+                                Icon(painterResource(icon), contentDescription = "Perfil", tint = iconColor)
                                 Text("Perfil", color = iconColor)
                             }
                         }
