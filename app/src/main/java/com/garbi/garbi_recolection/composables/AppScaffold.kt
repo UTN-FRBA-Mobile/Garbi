@@ -30,11 +30,18 @@ fun AppScaffold(
             }
         } else null
 
+    val backgroundColor = Color.White
+    val activeColor = Green900
+    val inactiveColor = Color.LightGray
+
+
+    val currentDestination = navController?.currentDestination?.route
+
     Garbi_recolectionTheme {
         Scaffold(
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = Green900
+                    backgroundColor = backgroundColor
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -45,9 +52,10 @@ fun AppScaffold(
                                 navController.navigate("home")
                             }
                         }) {
+                            val iconColor = if (currentDestination == "home") activeColor else inactiveColor
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.map), contentDescription = "Mapa", tint = Color.White)
-                                Text("Mapa", color = Color.White)
+                                Icon(painterResource(R.drawable.map), contentDescription = "Mapa", tint = iconColor)
+                                Text("Mapa", color = iconColor)
                             }
                         }
 
@@ -56,9 +64,11 @@ fun AppScaffold(
                                 navController.navigate("reports")
                             }
                         }) {
+                            val iconColor = if (currentDestination == "reports") activeColor else inactiveColor
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.receipt), contentDescription = "Reportes", tint = Color.White)
-                                Text("Reportes", color = Color.White)
+                                Icon(painterResource(R.drawable.receipt), contentDescription = "Reportes", tint = iconColor)
+                                Text("Reportes", color = iconColor)
                             }
                         }
 
@@ -67,9 +77,11 @@ fun AppScaffold(
                                 navController.navigate("profile")
                             }
                         }) {
+                            val iconColor = if (currentDestination == "profile") activeColor else inactiveColor
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(painterResource(R.drawable.person), contentDescription = "Perfil", tint = Color.White)
-                                Text("Perfil", color = Color.White)
+                                Icon(painterResource(R.drawable.person), contentDescription = "Perfil", tint = iconColor)
+                                Text("Perfil", color = iconColor)
                             }
                         }
                     }
