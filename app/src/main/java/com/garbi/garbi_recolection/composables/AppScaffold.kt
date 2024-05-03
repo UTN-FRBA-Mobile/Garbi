@@ -53,7 +53,7 @@ fun AppScaffold(
 
                         IconButton(onClick = {
                             if (navController != null) {
-                                navController.navigate("Reportes")
+                                navController.navigate("reports")
                             }
                         }) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -64,7 +64,7 @@ fun AppScaffold(
 
                         IconButton(onClick = {
                             if (navController != null) {
-                                navController.navigate("Perfil")
+                                navController.navigate("profile")
                             }
                         }) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
