@@ -53,20 +53,8 @@ fun MapsScreen(navController: NavController? = null) {
             Container(-58.3974045,-34.5955637,50)
             ))
     }
-/*
-    val markers = remember {
-        mutableStateOf(listOf(
-            MarkerInfo(LatLng(-34.5950995, -58.39988160000001), "Contenedor 1", "Acá hay una descripción"),
-            MarkerInfo(LatLng(-34.5951504, -58.39968), "Contenedor 2", "Acá hay una descripción"),
-            MarkerInfo(LatLng(-34.5952227, -58.3993218), "Contenedor 3", "Acá hay una descripción"),
-            MarkerInfo(LatLng(-34.595422, -58.39853549999999), "Contenedor 4", "Acá hay una descripción"),
-            MarkerInfo(LatLng(-34.5955054, -58.39786999999999), "Contenedor 5", "Acá hay una descripción"),
-            MarkerInfo(LatLng(-34.5955637, -58.3974045), "Contenedor 6", "Acá hay una descripción")
-        ))
-    }
-*/
 
-    AppScaffold(navController = navController, topBarVisible = true) {
+    AppScaffold(navController = navController, topBarVisible = false) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
@@ -80,19 +68,19 @@ fun MapsScreen(navController: NavController? = null) {
                 val context = LocalContext.current
                 containers.value.forEach { container ->
                     val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
-                    val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70) // Ajusta las dimensiones según sea necesario
+                    val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
                     val iconGreenContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
 
 
                     val originalBitmapRed = BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
-                    val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70) // Ajusta las dimensiones según sea necesario
+                    val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
                     val iconRedContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
 
                     val containerIcon: BitmapDescriptor = if (container.capacity>60) (iconRedContainer) else (iconGreenContainer)
                         Marker(
                         state = MarkerState(position = LatLng(container.lat,container.lng)),
                         title = "Contenedor",
-                        snippet = "Capacidad: ${container.capacity}",
+                        snippet = "Capacidad: ${container.capacity}%",
                         icon = containerIcon
                     )
                 }
@@ -102,19 +90,14 @@ fun MapsScreen(navController: NavController? = null) {
 
 
 }
-// Función para redimensionar un bitmap a las dimensiones especificadas
 fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
     val width = originalBitmap.width
     val height = originalBitmap.height
     val scaleWidth = newWidth.toFloat() / width
     val scaleHeight = newHeight.toFloat() / height
-
-    // Crear una matriz para aplicar la escala
     val matrix = Matrix().apply {
         postScale(scaleWidth, scaleHeight)
     }
-
-    // Crear un bitmap redimensionado utilizando la matriz
     return Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
 }
 
