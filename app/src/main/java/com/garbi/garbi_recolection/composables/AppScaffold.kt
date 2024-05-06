@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
@@ -17,6 +18,7 @@ import com.garbi.garbi_recolection.ui.theme.Green900
 fun AppScaffold(
     title: String? = null,
     navController: NavController? = null,
+    topBarVisible : Boolean,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val navigationIcon: (@Composable () -> Unit)? =
@@ -30,7 +32,8 @@ fun AppScaffold(
             }
         } else null
 
-    val backgroundColor = Color.White
+    val navigationBarBackgroundColor = Color.White
+    val topBarBackgroundColor = Green900
     val activeColor = Green900
     val inactiveColor = Color.LightGray
 
@@ -39,9 +42,20 @@ fun AppScaffold(
 
     Garbi_recolectionTheme {
         Scaffold(
+            topBar = {
+                if (topBarVisible) {
+                    TopAppBar(
+                        backgroundColor = topBarBackgroundColor,
+                        contentColor = Color.White,
+                        title = {
+                            Text(text = title ?: stringResource(id = R.string.app_name))
+                        }
+                    )
+                }
+            },
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = backgroundColor
+                    backgroundColor = navigationBarBackgroundColor
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
