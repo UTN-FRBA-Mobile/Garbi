@@ -1,6 +1,7 @@
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,7 +28,7 @@ fun AppScaffold(
                 IconButton(onClick = {
                     navController.popBackStack()
                 }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
         } else null
@@ -42,8 +43,10 @@ fun AppScaffold(
 
     Garbi_recolectionTheme {
         Scaffold(
-            topBar = {
+            topBar =  {
                 if (topBarVisible) {
+                    val navigationBarBackgroundColor  = Color.White
+                    val topBarBackgroundColor = Green900
                     TopAppBar(
                         backgroundColor = topBarBackgroundColor,
                         contentColor = Color.White,
@@ -77,6 +80,7 @@ fun AppScaffold(
                         IconButton(onClick = {
                             if (navController != null) {
                                 navController.navigate("reports")
+
                             }
                         }) {
                             val iconColor = if (currentDestination == "reports") activeColor else inactiveColor
@@ -111,6 +115,8 @@ fun AppScaffold(
                     content(it)
                 }
             }
+
+
         )
-    }
-}
+    }}
+
