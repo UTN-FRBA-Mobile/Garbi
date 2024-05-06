@@ -14,7 +14,7 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController? = null) {
-    AppScaffold(navController = navController) {
+    AppScaffold(navController = navController, topBarVisible = true) {
         Text("Esta es la pantalla del perfil",fontFamily = FontFamily.SansSerif)
     }
 
