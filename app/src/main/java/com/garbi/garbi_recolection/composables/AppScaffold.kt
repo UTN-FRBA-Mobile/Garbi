@@ -33,7 +33,8 @@ fun AppScaffold(
             }
         } else null
 
-    val backgroundColor = Color.White
+    val navigationBarBackgroundColor = Color.White
+    val topBarBackgroundColor = Green900
     val activeColor = Green900
     val inactiveColor = Color.LightGray
 
@@ -57,7 +58,7 @@ fun AppScaffold(
             },
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = backgroundColor
+                    backgroundColor = navigationBarBackgroundColor
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),

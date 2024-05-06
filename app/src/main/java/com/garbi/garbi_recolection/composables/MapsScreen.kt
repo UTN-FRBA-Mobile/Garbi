@@ -65,6 +65,7 @@ fun MapsScreen(navController: NavController? = null) {
         ))
     }
 */
+
     AppScaffold(navController = navController, topBarVisible = true) {
         Box(
             contentAlignment = Alignment.Center,
