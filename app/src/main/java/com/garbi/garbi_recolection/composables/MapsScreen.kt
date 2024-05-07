@@ -84,6 +84,17 @@ fun MapsScreen(navController: NavController? = null) {
                         icon = containerIcon
                     )
                 }
+
+                val cabjBitMap = BitmapFactory.decodeResource(context.resources, R.mipmap.cabj)
+                val resizedBitmapCabj = resizeBitmap(cabjBitMap, 150, 150)
+                val cabjContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapCabj)
+
+                Marker(
+                    state = MarkerState(position = LatLng(-34.63564126802834,-58.36469881790011)),
+                    title = "El que nunca descendió",
+                    snippet = "El que más copas ganó",
+                    icon = cabjContainer
+                )
             }
         }
     }
