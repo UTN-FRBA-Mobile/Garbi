@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Garbi</string>
+    <string name="profile_screen">Perfil</string>
+    <string name="reports_screen">Reportes</string>
+    <string name="logout_text">Cerrar sesión</string>
+</resources>
