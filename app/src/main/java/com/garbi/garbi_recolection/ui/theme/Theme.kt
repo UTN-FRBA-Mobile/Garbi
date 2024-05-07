@@ -65,7 +65,7 @@ fun Garbi_recolectionTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        //typography = FontFamily.SansSerif,
         content = content
     )
 }
