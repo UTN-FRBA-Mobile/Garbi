@@ -52,7 +52,11 @@ fun ProfileScreen(navController: NavController? = null) {
             }
             
             TextButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    if (navController != null) {
+                        navController.navigate("login")
+                    }
+                },
                 modifier = Modifier.padding(16.dp)
             ) {
                 Icon(
