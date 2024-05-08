@@ -75,24 +75,19 @@ fun MapsScreen(navController: NavController? = null) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // Crea el launcher para solicitar permisos
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        // Maneja la respuesta de permisos
         val permissionsGranted = permissions.values.all { it }
         hasLocationPermission = permissionsGranted
     }
 
     Log.v("hasLocationPermission", "$hasLocationPermission")
-    // Solicita permisos si es necesario
     LaunchedEffect(hasLocationPermission) {
         if (!hasLocationPermission) {
-            Log.v("hasLocationPermission", "launcheando")
             locationPermissionLauncher.launch(locationPermissions)
         }
     }
-    Log.v("hasLocationPermission", "$hasLocationPermission")
 
     AppScaffold(navController = navController, topBarVisible = false) {
         Box(
@@ -107,16 +102,19 @@ fun MapsScreen(navController: NavController? = null) {
             ) {
 
                 containers.value.forEach { container ->
-                    val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
-                    val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
-                    val iconGreenContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
 
+                    var containerIcon: BitmapDescriptor
+                    if (container.capacity>60) {
+                        val originalBitmapRed = BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
+                        val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
+                         containerIcon = BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
+                    }
+                    else {
+                        val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
+                        val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
+                         containerIcon = BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
+                    }
 
-                    val originalBitmapRed = BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
-                    val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
-                    val iconRedContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
-
-                    val containerIcon: BitmapDescriptor = if (container.capacity>60) (iconRedContainer) else (iconGreenContainer)
                         Marker(
                         state = MarkerState(position = LatLng(container.lat,container.lng)),
                         title = "Contenedor",
@@ -151,10 +149,4 @@ fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap 
     }
     return Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
 }
-
-data class MarkerInfo(
-    val position: LatLng,
-    val title: String,
-    val snippet: String
-)
 
