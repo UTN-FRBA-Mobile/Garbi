@@ -31,8 +31,16 @@ import android.graphics.Paint
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.core.content.ContextCompat
 import com.garbi.garbi_recolection.models.Container
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.MapProperties
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -54,6 +62,38 @@ fun MapsScreen(navController: NavController? = null) {
             ))
     }
 
+    val context = LocalContext.current
+
+    val locationPermissions = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+    var hasLocationPermission = remember {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // Crea el launcher para solicitar permisos
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Maneja la respuesta de permisos
+        val permissionsGranted = permissions.values.all { it }
+        hasLocationPermission = permissionsGranted
+    }
+
+    Log.v("hasLocationPermission", "$hasLocationPermission")
+    // Solicita permisos si es necesario
+    LaunchedEffect(hasLocationPermission) {
+        if (!hasLocationPermission) {
+            Log.v("hasLocationPermission", "launcheando")
+            locationPermissionLauncher.launch(locationPermissions)
+        }
+    }
+    Log.v("hasLocationPermission", "$hasLocationPermission")
+
     AppScaffold(navController = navController, topBarVisible = false) {
         Box(
             contentAlignment = Alignment.Center,
@@ -62,10 +102,10 @@ fun MapsScreen(navController: NavController? = null) {
 
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(),
+                properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
                 cameraPositionState = cameraPositionState
             ) {
 
-                val context = LocalContext.current
                 containers.value.forEach { container ->
                     val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
                     val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
