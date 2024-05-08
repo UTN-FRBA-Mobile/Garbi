@@ -82,7 +82,6 @@ fun MapsScreen(navController: NavController? = null) {
         hasLocationPermission = permissionsGranted
     }
 
-    Log.v("hasLocationPermission", "$hasLocationPermission")
     LaunchedEffect(hasLocationPermission) {
         if (!hasLocationPermission) {
             locationPermissionLauncher.launch(locationPermissions)
