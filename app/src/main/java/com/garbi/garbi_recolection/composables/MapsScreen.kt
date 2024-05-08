@@ -13,38 +13,30 @@ import androidx.compose.ui.Modifier
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.maps.android.compose.Marker
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
 import com.garbi.garbi_recolection.R
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.graphics.Paint
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.core.content.ContextCompat
 import com.garbi.garbi_recolection.models.Container
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
+import com.google.maps.android.compose.MarkerInfoWindow
+import com.google.maps.android.compose.MapsComposeExperimentalApi
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapsScreen(navController: NavController? = null) {
     val cameraPositionState = rememberCameraPositionState {
@@ -52,14 +44,16 @@ fun MapsScreen(navController: NavController? = null) {
     }
 
     val containers = remember {
-        mutableStateOf(listOf(
-            Container(-58.39988160000001,-34.5950995,85),
-            Container(-58.39968,-34.5951504,10),
-            Container(-58.3993218,-34.5952227,25),
-            Container(-58.39853549999999,-34.595422,60),
-            Container(-58.39786999999999,-34.5955054,95),
-            Container(-58.3974045,-34.5955637,50)
-            ))
+        mutableStateOf(
+            listOf(
+                Container(-58.39988160000001, -34.5950995, 85),
+                Container(-58.39968, -34.5951504, 10),
+                Container(-58.3993218, -34.5952227, 25),
+                Container(-58.39853549999999, -34.595422, 60),
+                Container(-58.39786999999999, -34.5955054, 95),
+                Container(-58.3974045, -34.5955637, 50)
+            )
+        )
     }
 
     val context = LocalContext.current
@@ -80,6 +74,7 @@ fun MapsScreen(navController: NavController? = null) {
     ) { permissions ->
         val permissionsGranted = permissions.values.all { it }
         hasLocationPermission = permissionsGranted
+        navController?.navigate("home")
     }
 
     LaunchedEffect(hasLocationPermission) {
@@ -98,42 +93,35 @@ fun MapsScreen(navController: NavController? = null) {
                 modifier = Modifier.fillMaxHeight(),
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
                 cameraPositionState = cameraPositionState
+
             ) {
 
                 containers.value.forEach { container ->
 
-                    val containerIcon: BitmapDescriptor = if (container.capacity>60) {
-                        val originalBitmapRed = BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
+                    val containerIcon: BitmapDescriptor = if (container.capacity > 60) {
+                        val originalBitmapRed =
+                            BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
                         val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
                         BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
                     } else {
-                        val originalBitmapGreen = BitmapFactory.decodeResource(context.resources, R.mipmap.container_green)
+                        val originalBitmapGreen = BitmapFactory.decodeResource(
+                            context.resources,
+                            R.mipmap.container_green
+                        )
                         val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
                         BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
                     }
-
-                        Marker(
-                        state = MarkerState(position = LatLng(container.lat,container.lng)),
+                    MarkerInfoWindow(
+                        state = MarkerState(position = LatLng(container.lat, container.lng)),
                         title = "Contenedor",
                         snippet = "Capacidad: ${container.capacity}%",
                         icon = containerIcon
                     )
                 }
 
-                val cabjBitMap = BitmapFactory.decodeResource(context.resources, R.mipmap.cabj)
-                val resizedBitmapCabj = resizeBitmap(cabjBitMap, 150, 150)
-                val cabjContainer: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(resizedBitmapCabj)
-
-                Marker(
-                    state = MarkerState(position = LatLng(-34.63564126802834,-58.36469881790011)),
-                    title = "El que nunca descendió",
-                    snippet = "El que más copas ganó",
-                    icon = cabjContainer
-                )
             }
         }
     }
-
 
 }
 fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
@@ -146,4 +134,3 @@ fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap 
     }
     return Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
 }
-
