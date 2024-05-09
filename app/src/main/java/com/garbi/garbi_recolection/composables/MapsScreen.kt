@@ -31,9 +31,31 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MapsComposeExperimentalApi
+import com.google.maps.android.compose.MarkerInfoWindowContent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Rect
+import com.garbi.garbi_recolection.ui.theme.Green900
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -111,12 +133,88 @@ fun MapsScreen(navController: NavController? = null) {
                         val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
                         BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
                     }
-                    MarkerInfoWindow(
+/* Marker de antes. La diferencia con el de abajo es que no tiene un boton.
+                    MarkerInfoWindowContent(
                         state = MarkerState(position = LatLng(container.lat, container.lng)),
-                        title = "Contenedor",
+                        title = "Realizar reporte",
                         snippet = "Capacidad: ${container.capacity}%",
-                        icon = containerIcon
+                        icon = containerIcon,
+                        onInfoWindowClick = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                navController?.navigate("reports")
+                            }
+                        }
                     )
+ */
+
+
+                    //Marker customizado que tiene boton y forma con piquito. Es muy grande, habria que ajustar el tamaño
+                    MarkerInfoWindowContent(
+                        state = MarkerState(position = LatLng(container.lat, container.lng)),
+                        title = "Realizar reporte",
+                        snippet = "Capacidad: ${container.capacity}%",
+                        icon = containerIcon,
+                        onInfoWindowClick = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                navController?.navigate("reports")
+                            }
+                        }
+                    ){
+                        val bubbleShape: Shape = GenericShape { size, _ ->
+                            val path = Path().apply {
+                                moveTo(size.width * 0.5f, size.height)
+                                lineTo(size.width * 0.4f, size.height * 0.75f)
+                                lineTo(size.width * 0.1f, size.height * 0.75f)
+                                arcTo(
+                                    rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
+                                    startAngleDegrees = 90f,
+                                    sweepAngleDegrees = 180f,
+                                    forceMoveTo = false
+                                )
+                                lineTo(size.width * 0.6f, size.height)
+                                close()
+                            }
+                            addPath(path)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(100.dp)
+                                .background(
+                                    color = Color.White,
+                                    shape = bubbleShape
+                                )
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Realizar reporte",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "Capacidad: ${container.capacity}%",
+                                    color = Color.Gray
+                                )
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(containerColor = Green900),
+                                    onClick = {
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            navController?.navigate("reports")
+                                        }
+                                    }
+                                ) {
+                                    Text("Realizar un reporte")
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
