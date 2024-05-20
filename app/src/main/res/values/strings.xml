@@ -2,5 +2,14 @@
     <string name="app_name">Garbi</string>
     <string name="profile_screen">Perfil</string>
     <string name="reports_screen">Reportes</string>
-    <string name="logout_text">Cerrar sesión</string>
+
+<!--Profile screen-->
+    <string name="profile_name">Damian Betular</string>
+    <string name="profile_email">damian_betular@cliba.com</string>
+    <string name="change_password_button">Cambiar contraseña</string>
+    <string name="biometrics_switch">Acceso biométrico</string>
+    <string name="logout_button">Cerrar sesión</string>
+    <string name="logout_dialog_text">¿Está seguro que desea cerrar sesión?</string>
+    <string name="logout_dialog_confirm">Confirmar</string>
+    <string name="logout_dialog_dismiss">Cancelar</string>
 </resources>

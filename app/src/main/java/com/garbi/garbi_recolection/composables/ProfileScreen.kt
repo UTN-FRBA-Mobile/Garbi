@@ -4,15 +4,21 @@ package com.garbi.garbi_recolection.composables
 import AppScaffold
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -27,9 +33,10 @@ import com.garbi.garbi_recolection.R
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController? = null) {
+    val openAlertDialog = remember { mutableStateOf(false) }
+
     AppScaffold(
         navController = navController,
         topBarVisible = true,
@@ -41,22 +48,61 @@ fun ProfileScreen(navController: NavController? = null) {
             {
                 ProfileHeader(
                     image = painterResource(R.drawable.betular),
-                    name = "Damian Betular")
+                    name = stringResource(R.string.profile_name)
+                )
 
                 Text(
-                    text = "damian_betular@cliba.com",
+                    text = stringResource(R.string.profile_email),
                     fontSize = 20.sp,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.padding(16.dp, 0.dp)
                 )
+
+                TextButton(
+                    onClick = { openAlertDialog.value = true }, //TO BE UPDATED
+                    modifier = Modifier.padding(16.dp, 32.dp, 16.dp, 4.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.lock_reset),
+                        contentDescription = "change password button",
+                        tint = Color.Black,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.change_password_button),
+                        fontSize = 20.sp,
+                        fontFamily = FontFamily.SansSerif
+                    )
+                }
+
+                Row (
+                    modifier = Modifier
+                        .padding(24.dp, 4.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.fingerprint),
+                            contentDescription = "fingerprint icon",
+                            tint = Color.Black,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.biometrics_switch),
+                            fontSize = 20.sp,
+                            fontFamily = FontFamily.SansSerif
+                        )
+                    }
+                    Switch()
+                }
             }
             
             TextButton(
-                onClick = {
-                    if (navController != null) {
-                        navController.navigate("login")
-                    }
-                },
+                onClick = { openAlertDialog.value = true },
                 modifier = Modifier.padding(16.dp)
             ) {
                 Icon(
@@ -66,9 +112,20 @@ fun ProfileScreen(navController: NavController? = null) {
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = stringResource(id = R.string.logout_text),
+                    text = stringResource(id = R.string.logout_button),
                     fontSize = 24.sp,
                     fontFamily = FontFamily.SansSerif
+                )
+            }
+
+            if (openAlertDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { openAlertDialog.value = false },
+                    onConfirmation = {
+                        navController?.navigate("login")
+                        openAlertDialog.value = false
+                    },
+                    dialogText = stringResource(R.string.logout_dialog_text)
                 )
             }
         }
@@ -91,4 +148,46 @@ fun ProfileHeader(image: Painter, name: String) {
             )
         }
     }
+}
+
+@Composable
+fun Switch() {
+    var checked = remember { mutableStateOf(true) }
+
+    Switch(
+        checked = checked.value,
+        onCheckedChange = {
+            checked.value = it
+        }
+    )
+}
+
+@Composable
+fun AlertDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogText: String
+) {
+    AlertDialog(
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirmation() }
+            ) {
+                Text(stringResource(R.string.logout_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { onDismissRequest() }
+            ) {
+                Text(stringResource(R.string.logout_dialog_dismiss))
+            }
+        }
+    )
 }
