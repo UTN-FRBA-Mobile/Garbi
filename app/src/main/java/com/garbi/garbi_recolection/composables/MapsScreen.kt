@@ -122,13 +122,13 @@ fun MapsScreen(navController: NavController? = null) {
 
                     val containerIcon: BitmapDescriptor = if (container.capacity > 60) {
                         val originalBitmapRed =
-                            BitmapFactory.decodeResource(context.resources, R.mipmap.container_red)
+                            BitmapFactory.decodeResource(context.resources, R.mipmap.red_circle)
                         val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
                         BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
                     } else {
                         val originalBitmapGreen = BitmapFactory.decodeResource(
                             context.resources,
-                            R.mipmap.container_green
+                            R.mipmap.green_circle
                         )
                         val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
                         BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
