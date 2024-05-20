@@ -117,21 +117,31 @@ fun MapsScreen(navController: NavController? = null) {
                 cameraPositionState = cameraPositionState
 
             ) {
+                val zoom = cameraPositionState.position.zoom
+                val iconSize = (10 + ((zoom - 10) * 7)).coerceIn(10f, 80f).toInt()
+
 
                 containers.value.forEach { container ->
 
-                    val containerIcon: BitmapDescriptor = if (container.capacity > 60) {
-                        val originalBitmapRed =
-                            BitmapFactory.decodeResource(context.resources, R.mipmap.red_circle)
-                        val resizedBitmapRed = resizeBitmap(originalBitmapRed, 70, 70)
-                        BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
-                    } else {
-                        val originalBitmapGreen = BitmapFactory.decodeResource(
-                            context.resources,
-                            R.mipmap.green_circle
-                        )
-                        val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, 70, 70)
-                        BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
+                    val containerIcon: BitmapDescriptor = when {
+                        container.capacity > 60 -> {
+                            val originalBitmapRed =
+                                BitmapFactory.decodeResource(context.resources, R.mipmap.red_circle)
+                            val resizedBitmapRed = resizeBitmap(originalBitmapRed, iconSize, iconSize)
+                            BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
+                        }
+                        container.capacity in 40..60 -> {
+                            val originalBitmapOrange =
+                                BitmapFactory.decodeResource(context.resources, R.mipmap.orange_circle)
+                            val resizedBitmapOrange = resizeBitmap(originalBitmapOrange, iconSize, iconSize)
+                            BitmapDescriptorFactory.fromBitmap(resizedBitmapOrange)
+                        }
+                        else -> {
+                            val originalBitmapGreen =
+                                BitmapFactory.decodeResource(context.resources, R.mipmap.green_circle)
+                            val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, iconSize, iconSize)
+                            BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
+                        }
                     }
 /* Marker de antes. La diferencia con el de abajo es que no tiene un boton.
                     MarkerInfoWindowContent(
@@ -147,12 +157,8 @@ fun MapsScreen(navController: NavController? = null) {
                     )
  */
 
-
-                    //Marker customizado que tiene boton y forma con piquito. Es muy grande, habria que ajustar el tamaño
                     MarkerInfoWindowContent(
                         state = MarkerState(position = LatLng(container.lat, container.lng)),
-                        title = "Realizar reporte",
-                        snippet = "Capacidad: ${container.capacity}%",
                         icon = containerIcon,
                         onInfoWindowClick = {
                             CoroutineScope(Dispatchers.Main).launch {
