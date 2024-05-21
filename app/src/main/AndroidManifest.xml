@@ -12,6 +12,7 @@
         android:roundIcon="@mipmap/garbi_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Garbi_recolection"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
