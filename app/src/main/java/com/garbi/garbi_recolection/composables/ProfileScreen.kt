@@ -4,6 +4,8 @@ package com.garbi.garbi_recolection.composables
 import AppScaffold
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,11 +13,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.TextButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,12 +34,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
+import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.LightGreen
+import com.garbi.garbi_recolection.ui.theme.LightGreenBackground
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(navController: NavController? = null) {
     val openAlertDialog = remember { mutableStateOf(false) }
+    var switchState = remember { mutableStateOf(false) }
 
     AppScaffold(
         navController = navController,
@@ -59,7 +67,7 @@ fun ProfileScreen(navController: NavController? = null) {
                 )
 
                 TextButton(
-                    onClick = { openAlertDialog.value = true }, //TO BE UPDATED
+                    onClick = { navController?.navigate("change_password") },
                     modifier = Modifier.padding(16.dp, 32.dp, 16.dp, 4.dp)
                 ) {
                     Icon(
@@ -78,7 +86,12 @@ fun ProfileScreen(navController: NavController? = null) {
                 Row (
                     modifier = Modifier
                         .padding(24.dp, 4.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .clickable (
+                            onClick = { switchState.value = !switchState.value },
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -97,7 +110,7 @@ fun ProfileScreen(navController: NavController? = null) {
                             fontFamily = FontFamily.SansSerif
                         )
                     }
-                    Switch()
+                    Switch(switchState)
                 }
             }
             
@@ -151,14 +164,19 @@ fun ProfileHeader(image: Painter, name: String) {
 }
 
 @Composable
-fun Switch() {
-    var checked = remember { mutableStateOf(true) }
-
+fun Switch(checked: MutableState<Boolean>) {
     Switch(
         checked = checked.value,
         onCheckedChange = {
             checked.value = it
-        }
+        },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Green900,
+            checkedTrackColor = LightGreenBackground,
+            uncheckedThumbColor = LightGreen,
+            uncheckedTrackColor = LightGreenBackground,
+            uncheckedBorderColor = LightGreen
+        )
     )
 }
 
