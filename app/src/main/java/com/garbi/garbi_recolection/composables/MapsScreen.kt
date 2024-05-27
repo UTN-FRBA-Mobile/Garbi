@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.core.content.ContextCompat
 import com.google.maps.android.compose.MapProperties
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,8 +37,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -113,94 +114,23 @@ fun MapsScreen(navController: NavController? = null) {
 
                 if(containersState.value.isNotEmpty()) {
                     containersState.value.forEach { container ->
-                        val containerIcon: BitmapDescriptor = when {
-                            container.capacity > 60 -> {
-                                val originalBitmapRed =
-                                    BitmapFactory.decodeResource(context.resources, R.mipmap.red_circle)
-                                val resizedBitmapRed = resizeBitmap(originalBitmapRed, iconSize, iconSize)
-                                BitmapDescriptorFactory.fromBitmap(resizedBitmapRed)
-                            }
-                            container.capacity in 40..60 -> {
-                                val originalBitmapOrange =
-                                    BitmapFactory.decodeResource(context.resources, R.mipmap.orange_circle)
-                                val resizedBitmapOrange = resizeBitmap(originalBitmapOrange, iconSize, iconSize)
-                                BitmapDescriptorFactory.fromBitmap(resizedBitmapOrange)
-                            }
-                            else -> {
-                                val originalBitmapGreen =
-                                    BitmapFactory.decodeResource(context.resources, R.mipmap.green_circle)
-                                val resizedBitmapGreen = resizeBitmap(originalBitmapGreen, iconSize, iconSize)
-                                BitmapDescriptorFactory.fromBitmap(resizedBitmapGreen)
-                            }
-                        }
+                            val containerIconState = remember { mutableStateOf<BitmapDescriptor?>(null) }
 
-                        MarkerInfoWindowContent(
-                            state = MarkerState(position = LatLng(container.coordinates.lat, container.coordinates.lng)),
-                            icon = containerIcon,
-                            title = "Realizar reporte",
-                            snippet = "Capacidad: ${container.capacity}%",
-                            onInfoWindowClick = {
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    navController?.navigate("reports")
-                                }
-                            }
-                        ){
-                            val bubbleShape: Shape = GenericShape { size, _ ->
-                                val path = Path().apply {
-                                    moveTo(size.width * 0.5f, size.height)
-                                    lineTo(size.width * 0.4f, size.height * 0.75f)
-                                    lineTo(size.width * 0.1f, size.height * 0.75f)
-                                    arcTo(
-                                        rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
-                                        startAngleDegrees = 90f,
-                                        sweepAngleDegrees = 180f,
-                                        forceMoveTo = false
-                                    )
-                                    lineTo(size.width * 0.6f, size.height)
-                                    close()
-                                }
-                                addPath(path)
+                            LaunchedEffect(container, iconSize) {
+                                containerIconState.value = getContainerIcon(container, context, iconSize)
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .width(220.dp)
-                                    .height(120.dp)
-                                    .background(
-                                        color = Color.White,
-                                        shape = bubbleShape
-                                    )
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Realizar reporte",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black
-                                    )
-                                    Text(
-                                        text = "${container.address.street} ${container.address.number} ",
-                                        color = Color.Gray
-                                    )
-                                    Text(
-                                        text = "Capacidad: ${container.capacity}%",
-                                        color = Color.Gray
-                                    )
-                                    Button(
-                                        colors = ButtonDefaults.buttonColors(containerColor = Green900),
-                                        onClick = {
-                                            CoroutineScope(Dispatchers.Main).launch {
-                                                navController?.navigate("reports")
-                                            }
+                            containerIconState.value?.let { containerIcon ->
+                                MarkerInfoWindowContent(
+                                    state = MarkerState(position = LatLng(container.coordinates.lat, container.coordinates.lng)),
+                                    icon = containerIcon,
+                                    onInfoWindowClick = {
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            navController?.navigate("reports")
                                         }
-                                    ) {
-                                        Text("Realizar un reporte")
                                     }
+                                ) {
+                                    MarkerInfoContent(container, navController)
                                 }
                             }
                         }
@@ -210,14 +140,91 @@ fun MapsScreen(navController: NavController? = null) {
         }
     }
 
-}
-fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
-    val width = originalBitmap.width
-    val height = originalBitmap.height
-    val scaleWidth = newWidth.toFloat() / width
-    val scaleHeight = newHeight.toFloat() / height
-    val matrix = Matrix().apply {
-        postScale(scaleWidth, scaleHeight)
+
+
+@Composable
+fun MarkerInfoContent(container: Container, navController: NavController?) {
+    val bubbleShape: Shape = GenericShape { size, _ ->
+    val path = Path().apply {
+        moveTo(size.width * 0.5f, size.height)
+        lineTo(size.width * 0.4f, size.height * 0.75f)
+        lineTo(size.width * 0.1f, size.height * 0.75f)
+        arcTo(
+            rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
+            startAngleDegrees = 90f,
+            sweepAngleDegrees = 180f,
+            forceMoveTo = false
+        )
+        lineTo(size.width * 0.6f, size.height)
+        close()
     }
-    return Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
+    addPath(path)
+}
+
+
+    Box(
+        modifier = Modifier
+            .width(200.dp)
+            .height(100.dp)
+            .background(
+                color = Color.White,
+                shape = bubbleShape
+            )
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Capacidad: ${container.capacity}%",
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+            Text(
+                text = "${container.address.street} ${container.address.number} ",
+                color = Color.Gray
+            )
+
+            OutlinedButton(
+                modifier = Modifier.padding(0.dp,3.dp,0.dp,0.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Green900),
+                onClick = {
+                    navController?.navigate("reports")
+                }
+            ) {
+                Text(
+                    text = "Crear reporte",
+                    fontWeight = FontWeight.Bold,
+                    color = Green900
+                )
+            }
+        }
+    }
+}
+suspend fun getContainerIcon(container: Container, context: Context, iconSize: Int): BitmapDescriptor {
+    return withContext(Dispatchers.IO) {
+        val resource = when {
+            container.capacity > 60 -> R.mipmap.red_circle
+            container.capacity in 40..60 -> R.mipmap.orange_circle
+            else -> R.mipmap.green_circle
+        }
+        val originalBitmap = BitmapFactory.decodeResource(context.resources, resource)
+        val resizedBitmap = resizeBitmap(originalBitmap, iconSize, iconSize)
+        BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+    }
+}
+suspend fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
+    return withContext(Dispatchers.IO) {
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+        val scaleWidth = newWidth.toFloat() / width
+        val scaleHeight = newHeight.toFloat() / height
+        val matrix = Matrix().apply {
+            postScale(scaleWidth, scaleHeight)
+        }
+        Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
+    }
 }
