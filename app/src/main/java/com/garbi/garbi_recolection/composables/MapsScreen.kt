@@ -28,20 +28,29 @@ import com.google.maps.android.compose.MapProperties
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +63,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.geometry.Rect
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.Green900
+import com.google.maps.android.compose.Polyline
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.setValue
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -63,7 +75,8 @@ fun MapsScreen(navController: NavController? = null) {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
     }
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
-    val context = LocalContext.current
+    val context = LocalContext.current;
+    var routeAvailable by rememberSaveable { mutableStateOf(false) }
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -97,6 +110,29 @@ fun MapsScreen(navController: NavController? = null) {
         }
     }
 
+    val showDialog = remember { mutableStateOf(false) }
+
+    if (showDialog.value) {
+        Log.v("alerta", "showAlertDialog");
+        showAlertDialog(
+            onAlertAccepted = {
+                showDialog.value = false;
+                routeAvailable = true;
+                Log.v("alerta", "Se acepto la alerta routeAvailable ${routeAvailable}")
+            }
+            )
+    }
+
+
+    LaunchedEffect(Unit) {
+        delay(30_000) //Esto en realidad no tiene que estar con un delay. Se va a setear la variable en true cuando haya un recorrido disponible
+        Log.v("alerta", "Analizando routeAvailable ${routeAvailable}");
+        if (!routeAvailable){
+            showDialog.value = true;
+            Log.v("alerta", "show dialog en true, pasaron 10");
+        }
+    }
+
     AppScaffold(navController = navController, topBarVisible = false) {
         Box(
             contentAlignment = Alignment.Center,
@@ -110,7 +146,22 @@ fun MapsScreen(navController: NavController? = null) {
 
             ) {
                 val zoom = cameraPositionState.position.zoom
-                val iconSize = (10 + ((zoom - 10) * 7)).coerceIn(10f, 80f).toInt()
+                val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
+
+
+                if (routeAvailable){
+                    Log.v("alerta","mostrando polilinea");
+                    Polyline(
+                        points = listOf(
+                            LatLng(-34.5992,-58.3747),
+                            LatLng(-34.5806,-58.4066),
+                            LatLng(-34.5899,-58.4284),
+                            LatLng(-34.6286,-58.4355)
+                        ),
+                        color = Color.Red
+                    )
+                    Log.v("alerta"," polilinea mostrada");
+                }
 
                 if(containersState.value.isNotEmpty()) {
                     containersState.value.forEach { container ->
@@ -134,7 +185,9 @@ fun MapsScreen(navController: NavController? = null) {
                                 }
                             }
                         }
-                    }
+                }
+
+
                 }
             }
         }
@@ -227,4 +280,31 @@ suspend fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int):
         }
         Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
     }
+}
+
+@Composable
+fun showAlertDialog(onAlertAccepted: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text(text = "Nueva ruta disponible") },
+        containerColor = Color.White,
+        confirmButton = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TextButton(
+                    onClick = {
+                        onAlertAccepted()
+                    }
+                ) {
+                    Text("Aceptar", color = Green900)
+                }
+            }
+        },
+        icon = {
+            Icon(Icons.Default.Warning, contentDescription = "Info Icon", tint = Green900)
+        }
+    )
 }
