@@ -1,9 +1,11 @@
 package com.garbi.garbi_recolection
 
+import MapsViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,8 +26,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun App() {
     val navController = rememberNavController()
+    val mapsViewModel = remember { MapsViewModel() }
     NavHost(navController = navController, startDestination = "login") {
-        composable("home") { MapsScreen(navController)
+        composable("home") {
+            MapsScreen(navController,mapsViewModel)
         }
         composable("reports") { ReportsScreen(navController)
         }

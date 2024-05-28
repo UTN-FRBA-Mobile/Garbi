@@ -2,6 +2,7 @@ package com.garbi.garbi_recolection.composables
 
 import AppScaffold
 import Container
+import MapsViewModel
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,6 @@ import com.google.maps.android.compose.MapProperties
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -50,7 +50,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
@@ -70,13 +69,13 @@ import androidx.compose.runtime.setValue
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MapsScreen(navController: NavController? = null) {
+fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
     }
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
     val context = LocalContext.current;
-    var routeAvailable by rememberSaveable { mutableStateOf(false) }
+    var routeAvailable by viewModel.routeAvailable;
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -113,23 +112,18 @@ fun MapsScreen(navController: NavController? = null) {
     val showDialog = remember { mutableStateOf(false) }
 
     if (showDialog.value) {
-        Log.v("alerta", "showAlertDialog");
         showAlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
                 routeAvailable = true;
-                Log.v("alerta", "Se acepto la alerta routeAvailable ${routeAvailable}")
             }
-            )
+        )
     }
-
 
     LaunchedEffect(Unit) {
         delay(30_000) //Esto en realidad no tiene que estar con un delay. Se va a setear la variable en true cuando haya un recorrido disponible
-        Log.v("alerta", "Analizando routeAvailable ${routeAvailable}");
         if (!routeAvailable){
             showDialog.value = true;
-            Log.v("alerta", "show dialog en true, pasaron 10");
         }
     }
 
@@ -148,9 +142,7 @@ fun MapsScreen(navController: NavController? = null) {
                 val zoom = cameraPositionState.position.zoom
                 val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
 
-
                 if (routeAvailable){
-                    Log.v("alerta","mostrando polilinea");
                     Polyline(
                         points = listOf(
                             LatLng(-34.5992,-58.3747),
@@ -160,7 +152,6 @@ fun MapsScreen(navController: NavController? = null) {
                         ),
                         color = Color.Red
                     )
-                    Log.v("alerta"," polilinea mostrada");
                 }
 
                 if(containersState.value.isNotEmpty()) {
