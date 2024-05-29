@@ -11,7 +11,10 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val Green900 = Color(0xff12422C)
-val Green800 = Color(0x2E7D32)
-val Green700 = Color(0x388E3C)
+val Green800 = Color(0xff2E7D32)
+val Green700 = Color(0xff388E3C)
+val LightGreenBackground = Color(0xffd0d4cc)
+val LightGreen = Color(0xff889c94)
+
 
 val Transparent = Color(0xffffff00)
