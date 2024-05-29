@@ -197,14 +197,15 @@ fun AlertDialog(
             TextButton(
                 onClick = { onConfirmation() }
             ) {
-                Text(stringResource(R.string.logout_dialog_confirm))
+                Text(color = Green900, text= stringResource(R.string.logout_dialog_confirm))
             }
         },
+        containerColor = Color.White,
         dismissButton = {
             TextButton(
                 onClick = { onDismissRequest() }
             ) {
-                Text(stringResource(R.string.logout_dialog_dismiss))
+                Text(color = Green900, text= stringResource(R.string.logout_dialog_dismiss))
             }
         }
     )
