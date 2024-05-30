@@ -6,6 +6,6 @@ import retrofit2.http.Headers
 
 interface ContainerService {
     @GET("/api/container")
-    @Headers("accept: application/json", "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0cmluZ0BhZG1pbi5jb20iLCJpYXQiOjE3MTY4MjQ4MjIsImV4cCI6MTcxNjkxMTIyMn0.6nN3XR1srUC92ThQtBIkPd0sln8bXTuZ_55lMS_W39Y")
+    @Headers("accept: application/json", "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0cmluZ0BhZG1pbi5jb20iLCJpYXQiOjE3MTcwMjc2MDYsImV4cCI6MTcxNzExNDAwNn0.J8oICcLxWe6ggvyyLTWNi4xOOE4zQ3eQ3SQklHUMmb0")
     suspend fun getContainers(): ContainerResponse
 }

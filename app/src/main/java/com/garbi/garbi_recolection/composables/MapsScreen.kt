@@ -34,19 +34,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -112,7 +106,7 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
     val showDialog = remember { mutableStateOf(false) }
 
     if (showDialog.value) {
-        showAlertDialog(
+        AlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
                 routeAvailable = true;
@@ -274,28 +268,20 @@ suspend fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int):
 }
 
 @Composable
-fun showAlertDialog(onAlertAccepted: () -> Unit) {
-    AlertDialog(
+fun AlertDialog(onAlertAccepted: () -> Unit) {
+
+    androidx.compose.material3.AlertDialog(
+        text = {
+            Text(text = "Nueva ruta disponible")
+        },
         onDismissRequest = {},
-        title = { Text(text = "Nueva ruta disponible") },
-        containerColor = Color.White,
         confirmButton = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            androidx.compose.material.TextButton(
+                onClick = { onAlertAccepted() }
             ) {
-                TextButton(
-                    onClick = {
-                        onAlertAccepted()
-                    }
-                ) {
-                    Text("Aceptar", color = Green900)
-                }
+                Text(color = Green900, text = "Comenzar")
             }
         },
-        icon = {
-            Icon(Icons.Default.Warning, contentDescription = "Info Icon", tint = Green900)
-        }
+        containerColor = Color.White
     )
 }
