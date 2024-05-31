@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.garbi.garbi_recolection.composables.ChangePasswordScreen
+import com.garbi.garbi_recolection.composables.CreateReportScreen
 import com.garbi.garbi_recolection.composables.LoginForm
 import com.garbi.garbi_recolection.composables.MapsScreen
 import com.garbi.garbi_recolection.composables.ProfileScreen
@@ -33,6 +34,8 @@ private fun App() {
             MapsScreen(navController,mapsViewModel)
         }
         composable("reports") { ReportsScreen(navController)
+        }
+        composable("create_report") { CreateReportScreen(navController)
         }
         composable("profile") { ProfileScreen(navController)
         }

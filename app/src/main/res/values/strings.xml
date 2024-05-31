@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Garbi</string>
     <string name="reports_screen">Reportes</string>
+    <string name="create_report_screen">Nuevo reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
 
