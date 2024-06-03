@@ -139,7 +139,7 @@ fun LoginForm(navController: NavController? = null) {
                                 containerColor = Green900
                             )
                         ) {
-                            Text("Inciar sesión")
+                            Text("Iniciar sesión")
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                     }
