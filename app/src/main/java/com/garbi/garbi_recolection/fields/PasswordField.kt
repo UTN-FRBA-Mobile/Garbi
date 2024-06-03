@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,6 +33,8 @@ fun PasswordField(
 ) {
 
     var isPasswordVisible by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
 
     val trailingIcon = @Composable {
         IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
@@ -53,7 +56,9 @@ fun PasswordField(
             keyboardType = KeyboardType.Password
         ),
         keyboardActions = KeyboardActions(
-            onDone = { submit() }
+            onDone = {
+                focusManager.clearFocus()
+            }
         ),
         placeholder = { Text(placeholder) },
         label = { Text(label) },
