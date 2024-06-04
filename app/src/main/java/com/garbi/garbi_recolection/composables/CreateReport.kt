@@ -18,9 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -44,10 +42,13 @@ import coil.compose.rememberAsyncImagePainter
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.*
 import android.Manifest
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -55,10 +56,11 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.window.PopupProperties
 import com.garbi.garbi_recolection.ui.theme.Green900
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CreateReportScreen(navController: NavController? = null) {
@@ -149,49 +151,47 @@ fun CreateReportScreen(navController: NavController? = null) {
                     .padding(0.dp, 8.dp)
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.padding(0.dp, 8.dp)
             ) {
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
+                TextField(
+                    value = selectedText,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text(text = stringResource(R.string.type_dropdown)) },
+//                    supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors = fieldColors,
                     modifier = Modifier
                         .fillMaxWidth()
-                ) {
-                    TextField(
-                        value = selectedText,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text(text = stringResource(R.string.type_dropdown)) },
-//                        supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        colors = fieldColors,
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
+                )
 
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items.forEach { item ->
-                            DropdownMenuItem(
-                                text = { Text(item) },
-                                onClick = {
-                                    selectedText = item
-                                    expanded = false
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    properties = PopupProperties(
+                        focusable = true,
+                        dismissOnClickOutside = true,
+                        dismissOnBackPress = true
+                    ),
+                    modifier = Modifier.exposedDropdownSize()
+                ) {
+                    items.forEach { item ->
+                        DropdownMenuItem(
+                            onClick = {
+                                selectedText = item
+                                expanded = false
+                            }
+                        ) {
+                            Text(item)
                         }
                     }
-
                 }
             }
+
 
             TextField(
                 value = descriptionText,
