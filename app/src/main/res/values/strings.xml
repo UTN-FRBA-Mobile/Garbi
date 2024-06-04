@@ -5,6 +5,9 @@
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
 
+<!--Create report screen-->
+    <string name="take_photo_text">Toma una foto del problema</string>
+
 <!--Profile screen-->
     <string name="profile_name">Damian Betular</string>
     <string name="profile_email">damian_betular@cliba.com</string>
