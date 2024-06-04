@@ -16,6 +16,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.TextButton
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,8 +38,10 @@ import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.Green900
 import com.garbi.garbi_recolection.ui.theme.LightGreen
 import com.garbi.garbi_recolection.ui.theme.LightGreenBackground
+import com.garbi.garbi_recolection.common_components.*
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(navController: NavController? = null) {
@@ -87,7 +90,7 @@ fun ProfileScreen(navController: NavController? = null) {
                     modifier = Modifier
                         .padding(24.dp, 4.dp)
                         .fillMaxWidth()
-                        .clickable (
+                        .clickable(
                             onClick = { switchState.value = !switchState.value },
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
@@ -138,7 +141,8 @@ fun ProfileScreen(navController: NavController? = null) {
                         navController?.navigate("login")
                         openAlertDialog.value = false
                     },
-                    dialogText = stringResource(R.string.logout_dialog_text)
+                    dialogText = stringResource(R.string.logout_dialog_text),
+                    confirmText = stringResource(R.string.logout_dialog_confirm)
                 )
             }
         }
@@ -177,36 +181,5 @@ fun Switch(checked: MutableState<Boolean>) {
             uncheckedTrackColor = LightGreenBackground,
             uncheckedBorderColor = LightGreen
         )
-    )
-}
-
-@Composable
-fun AlertDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogText: String
-) {
-    AlertDialog(
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirmation() }
-            ) {
-                Text(color = Green900, text= stringResource(R.string.logout_dialog_confirm))
-            }
-        },
-        containerColor = Color.White,
-        dismissButton = {
-            TextButton(
-                onClick = { onDismissRequest() }
-            ) {
-                Text(color = Green900, text= stringResource(R.string.logout_dialog_dismiss))
-            }
-        }
     )
 }

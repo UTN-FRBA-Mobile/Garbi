@@ -15,17 +15,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -40,44 +36,59 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.garbi.garbi_recolection.R
-//import com.garbi.garbi_recolection.BuildConfig
-import coil.compose.rememberImagePainter
+import com.garbi.garbi_recolection.common_components.*
 import android.Manifest
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.res.stringArrayResource
+import com.garbi.garbi_recolection.ui.theme.Green900
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CreateReportScreen(navController: NavController? = null) {
+
+    val fieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = Green900.copy(alpha = 0.2f),
+        unfocusedContainerColor = Green900.copy(alpha = 0.2f),
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black,
+        focusedLabelColor = Color.DarkGray,
+        unfocusedLabelColor = Color.DarkGray,
+        cursorColor = Green900,
+        focusedIndicatorColor = Green900,
+        disabledContainerColor = Color.LightGray,
+        disabledLabelColor = Color.DarkGray
+    )
+
+    ////// Title field
     var titleText by rememberSaveable { mutableStateOf("") }
 
+    ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
     var selectedText by remember { mutableStateOf("") }
-    val items = listOf("Contenedor en mal estado", "Contenedor sucio", "Basura en la calle", "Contenedor faltante", "Otro")
+    val items =  stringArrayResource(R.array.report_items).toList()
 
+    ////// Description field
     var descriptionText by rememberSaveable { mutableStateOf("") }
     var containerIdText by rememberSaveable { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
 
-
+    ////// Take picture button
     val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -111,6 +122,11 @@ fun CreateReportScreen(navController: NavController? = null) {
         }
     }
 
+    ////// Create report button
+    val isCreateReportEnabled = titleText.isNotEmpty() && selectedText.isNotEmpty()
+    val openAlertDialog = remember { mutableStateOf(false) }
+
+
     AppScaffold(
         navController = navController,
         topBarVisible = true,
@@ -120,61 +136,68 @@ fun CreateReportScreen(navController: NavController? = null) {
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(24.dp, 16.dp)
-        )
-        {
+        ) {
             TextField(
                 value = titleText,
                 onValueChange = { titleText = it },
-                label = { Text("Título") },
+                label = { Text(text = stringResource(R.string.title_field)) },
+                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
                 singleLine = true,
+                colors = fieldColors,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 8.dp)
             )
 
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = {
-                    expanded = !expanded
-                },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 8.dp)
             ) {
-                TextField(
-                    value = selectedText,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text("Tipo de problema") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier
+                        .fillMaxWidth()
                 ) {
-                    items.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item) },
-                            onClick = {
-                                selectedText = item
-                                expanded = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    TextField(
+                        value = selectedText,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(text = stringResource(R.string.type_dropdown)) },
+//                        supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = fieldColors,
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(item) },
+                                onClick = {
+                                    selectedText = item
+                                    expanded = false
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
+
                 }
             }
 
             TextField(
                 value = descriptionText,
                 onValueChange = { descriptionText = it },
-                label = { Text("Descripción del problema") },
+                label = { Text(text = stringResource(R.string.description_field)) },
+                colors = fieldColors,
                 singleLine = false,
                 minLines = 2,
                 maxLines = 4,
@@ -183,44 +206,21 @@ fun CreateReportScreen(navController: NavController? = null) {
                     .padding(0.dp, 8.dp)
             )
 
-            TextField( //ve esto? ya se pondría solo el id creo.
-                value = containerIdText,
-                onValueChange = {
-                    containerIdText = it
-                    isError = it.isNotEmpty() && !it.matches(Regex("^[0-9]*$"))
-                },
-                label = { Text("Id del contendor (6 dígitos)") },
-                singleLine = true,
-                isError = isError,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
-            )
-            if (isError) {
-                Text(
-                    text = "Solo números pueden ser ingresados",
-                    //FINISH THIS ERROR PART. la doc oficial decia cosas creo. poner tmb q se abra teclado numérico de una
-                    color = Color.Red,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-
             if (!isPhotoTaken) {
                 OutlinedButton(
                     onClick = {
                         when {
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED -> {
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                    == PackageManager.PERMISSION_GRANTED -> {
                                 cameraLauncher.launch(tempFileUri)
                             }
-
                             else -> {
                                 permissionLauncher.launch(Manifest.permission.CAMERA)
                             }
                         }
                     },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(0.dp, 8.dp)
@@ -240,7 +240,10 @@ fun CreateReportScreen(navController: NavController? = null) {
 
             selectedImageUri?.let { uri ->
                 Box(
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(0.dp, 8.dp)
+                        .align(Alignment.CenterHorizontally)
                 ) {
                     Image(
                         painter = rememberAsyncImagePainter(model = uri),
@@ -249,16 +252,16 @@ fun CreateReportScreen(navController: NavController? = null) {
                         contentScale = ContentScale.Crop
                     )
                     if (isPhotoTaken) {
-                        OutlinedButton(
+                        OutlinedIconButton(
                             onClick = {
                                 selectedImageUri = null
                                 isPhotoTaken = false
                             },
-                            shape = CircleShape,
-                            colors = ButtonDefaults.outlinedButtonColors(
+                            colors = IconButtonDefaults.outlinedIconButtonColors(
                                 containerColor = Color(0xFF000000).copy(alpha = 0.5f),
                                 contentColor = Color.White
                             ),
+                            border = BorderStroke(0.1.dp, Color.White),
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(4.dp)
@@ -273,6 +276,61 @@ fun CreateReportScreen(navController: NavController? = null) {
                 }
             }
 
+            TextField(
+                value = containerIdText,
+                enabled = false,
+                onValueChange = {
+                    containerIdText = it
+                },
+                label = { Text(text = stringResource(R.string.container_id_field)) },
+                colors = fieldColors,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(0.dp, 8.dp)
+            )
+
+            TextField(
+                value = containerIdText,
+                enabled = false,
+                onValueChange = {containerIdText = it },
+                label = { Text(text = stringResource(id = R.string.address_field)) },
+                colors = fieldColors,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(0.dp, 8.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = { openAlertDialog.value = true },
+                enabled = isCreateReportEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Green900,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.LightGray,
+                    disabledContentColor = Color.DarkGray,
+                ),
+                modifier = Modifier
+                    .padding(16.dp, 32.dp, 16.dp, 4.dp)
+                    .fillMaxWidth()
+            ) {
+                Text( text = stringResource(id = R.string.create_report_button) )
+            }
+
+            if (openAlertDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { openAlertDialog.value = false },
+                    onConfirmation = {
+                        navController?.navigate("reports")
+                        openAlertDialog.value = false
+                    },
+                    dialogText = stringResource(R.string.create_report_dialog_text),
+                    confirmText = stringResource(R.string.create_report_dialog_confirm)
+                )
+            }
         }
     }
 }
