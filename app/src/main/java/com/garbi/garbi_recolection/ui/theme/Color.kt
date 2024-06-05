@@ -15,6 +15,7 @@ val Green800 = Color(0xff2E7D32)
 val Green700 = Color(0xff388E3C)
 val LightGreenBackground = Color(0xffd0d4cc)
 val LightGreen = Color(0xff889c94)
+val Orange600 = Color(0xffFF8F00)
 
 
 val Transparent = Color(0xffffff00)
