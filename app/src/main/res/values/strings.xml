@@ -15,4 +15,5 @@
     <string name="logout_dialog_dismiss">Cancelar</string>
     <string name="edit_button">Editar</string>
     <string name="delete_button">Eliminar</string>
+
 </resources>

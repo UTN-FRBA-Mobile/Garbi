@@ -24,19 +24,26 @@ import androidx.compose.ui.unit.dp
 import com.garbi.garbi_recolection.core.ReportData
 import com.garbi.garbi_recolection.core.ReportsAPI
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.garbi.garbi_recolection.core.ReportState
 import com.garbi.garbi_recolection.ui.theme.Green700
 import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.LightGreenStateBackground
 import com.garbi.garbi_recolection.ui.theme.Orange600
+import com.garbi.garbi_recolection.ui.theme.lightOrangeStateBackground
+import com.garbi.garbi_recolection.ui.theme.lightRedStateBackground
 
 @Composable
 private fun EditReportItem(
@@ -97,7 +104,6 @@ fun ReportsScreen(navController: NavController? = null) {
 fun ReportsRow(name: String, reportState: String, date: String, address: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(15.dp)
     ) {
 
         Column(
@@ -109,30 +115,35 @@ fun ReportsRow(name: String, reportState: String, date: String, address: String)
 
         {
             Text(
+                modifier = Modifier.padding(2.dp),
                 text = name,
                 style = TextStyle(
                     fontWeight = FontWeight.Bold
                 )
             )
+
+
+            Text(text = date,
+                    modifier = Modifier.padding(2.dp)
+            )
+
+            Text(text = address,
+                    modifier = Modifier.padding(2.dp)
+            )
             Box(
                 modifier = Modifier
-                    .background(if(reportState==ReportState.ACTIVO.toString()) Color.Red else if(reportState==ReportState.EN_PROGRESO.toString()) Orange600 else Green700)
-                    .padding(5.dp)
-                    .border(
-                        shape = CircleShape,
-                        width = 0.dp,
-                        color = Color.LightGray,
-                    )){
-                        Text(text = if(reportState==ReportState.ACTIVO.toString()) "Activo" else if(reportState==ReportState.EN_PROGRESO.toString()) "En progreso" else "Resuelto",
-                            color = Color.Black
-                        )
-                    }
-
-
-
-            Text(text = date)
-
-            Text(text = address)
+                    .clip(RoundedCornerShape(50))
+                    .background(if(reportState==ReportState.ACTIVO.toString()) lightRedStateBackground else if(reportState==ReportState.EN_PROGRESO.toString()) lightOrangeStateBackground else LightGreenStateBackground)
+                              ){
+                Text(text = if(reportState==ReportState.ACTIVO.toString()) "Activo" else if(reportState==ReportState.EN_PROGRESO.toString()) "En progreso" else "Resuelto",
+                    Modifier
+                        .padding(3.dp),
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
 
 
 
@@ -144,6 +155,7 @@ fun ReportsRow(name: String, reportState: String, date: String, address: String)
                 onClick = {  })
             DeleteReportItem(
                 onClick = {  })
+
         }
 
 
@@ -160,15 +172,15 @@ fun Reports(reports: List<ReportData>) {
                 Box(
                     modifier = Modifier
                         .background(Color.White)
-                        .padding(5.dp)
-                        .border(
-                            shape = CircleShape,
-                            width = 0.dp,
-                            color = Color.LightGray
-                        ),
-                        ) {
-                            ReportsRow(reportDataI.description, reportDataI.reportState, reportDataI.date, reportDataI.address)
 
+                    ) {
+                            ReportsRow(reportDataI.description, reportDataI.reportState, reportDataI.date, reportDataI.address)
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
                     }
 
                         }

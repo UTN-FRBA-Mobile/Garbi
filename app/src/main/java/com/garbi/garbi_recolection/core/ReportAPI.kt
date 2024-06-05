@@ -39,7 +39,7 @@ class ReportsAPI {
                     ),
 
                     ReportData(
-                        description = "Contenedor roto en Avenida Federico Lacroze 3152",
+                        description = "Contenedor roto",
                         reportState = ReportState.EN_PROGRESO.toString(),
                         date = Date().toString(),
                         address = "Avenida Corrientes 3030"
@@ -57,24 +57,7 @@ class ReportsAPI {
                     ),
 
                     ReportData(
-                        description = "Contenedor roto en Avenida Federico Lacroze 3152",
-                        reportState = ReportState.EN_PROGRESO.toString(),
-                        date = Date().toString(),
-                        address = "Avenida Corrientes 3030"
-                    ), ReportData(
-                        description = "Se rompio la tapa del contenedor",
-                        reportState = ReportState.RESUELTO.toString(),
-                        date = Date().toString(),
-                        address = "Avenida Mosconi 2030"
-                    ),   ReportData(
-                        description = "Basura encontrada en la calle",
-                        reportState = ReportState.ACTIVO.toString(),
-                        date = Date().toString(),
-                        address = "Federico Lacroze 3125"
-                    ),
-
-                    ReportData(
-                        description = "Contenedor roto en Avenida Federico Lacroze 3152",
+                        description = "Contenedor roto",
                         reportState = ReportState.EN_PROGRESO.toString(),
                         date = Date().toString(),
                         address = "Avenida Corrientes 3030"
@@ -92,7 +75,7 @@ class ReportsAPI {
                     ),
 
                     ReportData(
-                        description = "Contenedor roto en Avenida Federico Lacroze 3152",
+                        description = "Contenedor roto",
                         reportState = ReportState.EN_PROGRESO.toString(),
                         date = Date().toString(),
                         address = "Avenida Corrientes 3030"
@@ -102,7 +85,24 @@ class ReportsAPI {
                         date = Date().toString(),
                         address = "Avenida Mosconi 2030"
                     ),
+                    ReportData(
+                        description = "Basura encontrada en la calle",
+                        reportState = ReportState.ACTIVO.toString(),
+                        date = Date().toString(),
+                        address = "Federico Lacroze 3125"
+                    ),
 
+                    ReportData(
+                        description = "Contenedor roto",
+                        reportState = ReportState.EN_PROGRESO.toString(),
+                        date = Date().toString(),
+                        address = "Avenida Corrientes 3030"
+                    ), ReportData(
+                        description = "Se rompio la tapa del contenedor",
+                        reportState = ReportState.RESUELTO.toString(),
+                        date = Date().toString(),
+                        address = "Avenida Mosconi 2030"
+                    ),
 
 
 
