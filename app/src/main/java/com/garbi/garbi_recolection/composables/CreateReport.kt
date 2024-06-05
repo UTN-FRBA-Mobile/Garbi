@@ -94,13 +94,16 @@ fun CreateReportScreen(navController: NavController? = null) {
     val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // File and Uri for the camera photo
-    val tempFile = remember {
-        File.createTempFile("camera_image", ".jpg", context.externalCacheDir).apply {
+    // Function to create a new temporary file
+    fun createTempFile(): File {
+        return File.createTempFile("camera_image", ".jpg", context.externalCacheDir).apply {
             deleteOnExit()
         }
     }
-    val tempFileUri: Uri = FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
+
+    // File and Uri for the camera photo
+    var tempFile by remember { mutableStateOf(createTempFile()) }
+    var tempFileUri: Uri = FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
     var isPhotoTaken by remember { mutableStateOf(false) }
 
     // Camera launcher
@@ -143,7 +146,7 @@ fun CreateReportScreen(navController: NavController? = null) {
                 value = titleText,
                 onValueChange = { titleText = it },
                 label = { Text(text = stringResource(R.string.title_field)) },
-                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
+//                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
                 singleLine = true,
                 colors = fieldColors,
                 modifier = Modifier
@@ -212,6 +215,8 @@ fun CreateReportScreen(navController: NavController? = null) {
                         when {
                             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                                     == PackageManager.PERMISSION_GRANTED -> {
+                                tempFile = createTempFile()
+                                tempFileUri = FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
                                 cameraLauncher.launch(tempFileUri)
                             }
                             else -> {
@@ -241,7 +246,7 @@ fun CreateReportScreen(navController: NavController? = null) {
             selectedImageUri?.let { uri ->
                 Box(
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(200.dp, 280.dp)
                         .padding(0.dp, 8.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
