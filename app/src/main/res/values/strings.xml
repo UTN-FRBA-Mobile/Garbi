@@ -23,6 +23,9 @@
     <string name="create_report_button">Crear reporte</string>
     <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
     <string name="create_report_dialog_confirm">Crear</string>
+    <string name="complete_fields_toast">Completa los campos obligatorios</string>
+    <string name="report_created_toast">Reporte creado con éxito</string>
+    <string name="report_creation_error_toast">Hubo un problema con la creación del reporte</string>
 
 <!--Profile screen-->
     <string name="profile_name">Damian Betular</string>

@@ -17,4 +17,9 @@ val LightGreenBackground = Color(0xffd0d4cc)
 val LightGreen = Color(0xff889c94)
 
 
+val DisabledButton = Color(0xff000000).copy(alpha = 0.12f)
+val DisabledButtonText = Color(0xff000000).copy(alpha = 0.38f)
+val DisabledField = Color(0xff000000).copy(alpha = 0.06f)
+val DisabledFieldContent = Color(0xff000000).copy(alpha = 0.38f)
+
 val Transparent = Color(0xffffff00)

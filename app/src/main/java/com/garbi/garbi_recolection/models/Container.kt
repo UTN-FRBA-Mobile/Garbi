@@ -2,7 +2,11 @@ data class Address(
     val street: String,
     val number: String,
     val neighborhood: String
-)
+) {
+    fun convertToString(): String {
+        return street + " " + number
+    }
+}
 
 data class Coordinates(
     val lat: Double,

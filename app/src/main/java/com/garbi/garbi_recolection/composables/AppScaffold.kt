@@ -60,7 +60,8 @@ fun AppScaffold(
             },
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = navigationBarBackgroundColor
+                    backgroundColor = navigationBarBackgroundColor,
+                    elevation = AppBarDefaults.BottomAppBarElevation,
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -85,8 +86,10 @@ fun AppScaffold(
 
                             }
                         }) {
-                            val iconColor = if (currentDestination == "reports") activeColor else inactiveColor
-                            val icon = if (currentDestination == "reports") R.drawable.receipt_filled else R.drawable.receipt
+                            val iconColor = if (currentDestination == "reports" || currentDestination == "create_report")
+                                activeColor else inactiveColor
+                            val icon = if (currentDestination == "reports" || currentDestination == "create_report")
+                                R.drawable.receipt_filled else R.drawable.receipt
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Reportes", tint = iconColor)
                                 Text("Reportes", color = iconColor)
