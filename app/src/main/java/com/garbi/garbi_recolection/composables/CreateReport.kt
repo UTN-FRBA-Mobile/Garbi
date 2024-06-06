@@ -11,7 +11,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -49,9 +48,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -62,12 +61,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
 import com.garbi.garbi_recolection.models.Status
-import com.garbi.garbi_recolection.services.LoginRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.DisabledButton
 import com.garbi.garbi_recolection.ui.theme.DisabledButtonText
@@ -84,6 +81,8 @@ import java.util.Date
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
+    val scrollState = rememberScrollState()
+
     var status = Status(
         status = "nuevo",
         updatedAt = Date()
@@ -160,8 +159,9 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     ) {
         Column (
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxSize()
                 .padding(24.dp, 16.dp)
+                .verticalScroll(scrollState)
         ) {
             TextField(
                 value = reportData.title,
@@ -327,11 +327,9 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     .padding(0.dp, 8.dp)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-
             Box(
                 modifier = Modifier
-                    .padding(16.dp, 32.dp, 16.dp, 4.dp)
+                    .padding(16.dp, 16.dp, 16.dp, 4.dp)
                     .fillMaxWidth()
             ) {
                 Button(

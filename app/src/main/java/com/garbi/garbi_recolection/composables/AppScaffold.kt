@@ -86,9 +86,9 @@ fun AppScaffold(
 
                             }
                         }) {
-                            val iconColor = if (currentDestination == "reports" || currentDestination == "create_report")
+                            val iconColor = if (currentDestination == "reports" || currentDestination!!.startsWith("create_report"))
                                 activeColor else inactiveColor
-                            val icon = if (currentDestination == "reports" || currentDestination == "create_report")
+                            val icon = if (currentDestination == "reports" || currentDestination.startsWith("create_report"))
                                 R.drawable.receipt_filled else R.drawable.receipt
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Reportes", tint = iconColor)
