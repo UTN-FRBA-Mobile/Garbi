@@ -185,7 +185,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
             TextField(
                 value = reportData.title,
                 onValueChange = { data -> reportData = reportData.copy(title = data) },
-                label = { Text(text = stringResource(R.string.title_field)) },
+                label = { Text( text = stringResource(R.string.title_field) + "*" ) },
 //                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
                 singleLine = true,
                 colors = fieldColors,
@@ -204,7 +204,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     value = selectedItem,
                     onValueChange = { },
                     readOnly = true,
-                    label = { Text(text = stringResource(R.string.type_dropdown)) },
+                    label = { Text( text = stringResource(R.string.type_dropdown) + "*" ) },
 //                    supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     colors = fieldColors,

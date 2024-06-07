@@ -2,13 +2,14 @@
     <string name="app_name">Garbi</string>
     <string name="reports_screen">Reportes</string>
     <string name="create_report_screen">Nuevo reporte</string>
+    <string name="report_details_screen">Reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
 
-<!--Create report screen-->
+<!--Create Report screen & Report Details screen-->
     <string name="supporting_text_required">Campo requerido</string>
-    <string name="title_field">Título*</string>
-    <string name="type_dropdown">Tipo de problema*</string>
+    <string name="title_field">Título</string>
+    <string name="type_dropdown">Tipo de problema</string>
     <string-array name="report_items">
         <item>Contenedor en mal estado</item>
         <item>Contenedor sucio</item>
@@ -18,6 +19,7 @@
     </string-array>
     <string name="description_field">Descripción del problema</string>
     <string name="take_photo_text">Toma una foto del problema</string>
+    <string name="photo_field">Foto del problema</string>
     <string name="container_id_field">ID del contendor</string>
     <string name="address_field">Dirección aproximada</string>
     <string name="create_report_button">Crear reporte</string>

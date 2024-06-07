@@ -17,6 +17,7 @@ import com.garbi.garbi_recolection.composables.CreateReportScreen
 import com.garbi.garbi_recolection.composables.LoginForm
 import com.garbi.garbi_recolection.composables.MapsScreen
 import com.garbi.garbi_recolection.composables.ProfileScreen
+import com.garbi.garbi_recolection.composables.ReportDetailsScreen
 import com.garbi.garbi_recolection.composables.ReportsScreen
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +59,16 @@ private fun App() {
                 neighborhood = neighborhood.toString()
             )
             CreateReportScreen(navController, containerId, address)
+        }
+
+        composable(
+            "report_details/{containerId}",
+            arguments = listOf(
+                navArgument("containerId") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val containerId = backStackEntry.arguments?.getString("containerId")
+            ReportDetailsScreen(navController, containerId)
         }
 
         composable("profile") { ProfileScreen(navController)

@@ -13,6 +13,7 @@ data class Coordinates(
     val lng: Double
 )
 data class Container(
+    val _id: String,
     val areaId: String,
     val sensorId: String,
     val address: Address,
