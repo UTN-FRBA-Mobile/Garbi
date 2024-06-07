@@ -74,8 +74,8 @@ import com.garbi.garbi_recolection.ui.theme.Green900
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import java.io.File
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -83,12 +83,23 @@ import java.util.Date
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
     val scrollState = rememberScrollState()
 
-    var status = Status(
-        status = "nuevo",
-        updatedAt = Date()
+    val status = Status(
+        status = "NUEVO",
+        updatedAt = "2024-06-07T16:57:14.123Z"
     )
+    val statusArray = listOf(status)
 
-    var reportData by remember { mutableStateOf(Report(containerId = containerId.toString(), address = address, status = status)) }
+    var reportData by remember { mutableStateOf(Report(
+        containerId = containerId.toString(),
+        address = address,
+        phone = "1122334450",
+        email = "string0@admin.com",
+        status = statusArray,
+        title = "",
+        userId = null,
+        description = null,
+        imagePath = null
+    )) }
 
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = Green900.copy(alpha = 0.05f),
@@ -107,7 +118,15 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
     val items =  stringArrayResource(R.array.report_items).toList()
-
+    // Mapping display items to fixed backend values
+    val itemToEnumValue = mapOf(
+        items[0] to "CONTENEDOR_ROTO",
+        items[1] to "CONTENEDOR_SUCIO",
+        items[2] to "BASURA_EN_LA_CALLE",
+        items[3] to "CONTENEDOR_FALTANTE",
+        items[4] to "OTROS"
+    )
+    var selectedItem by remember { mutableStateOf("") }
 
     ////// Take picture button
     val context = LocalContext.current
@@ -182,7 +201,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                 modifier = Modifier.padding(0.dp, 8.dp)
             ) {
                 TextField(
-                    value = reportData.type,
+                    value = selectedItem,
                     onValueChange = { },
                     readOnly = true,
                     label = { Text(text = stringResource(R.string.type_dropdown)) },
@@ -206,7 +225,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     items.forEach { item ->
                         DropdownMenuItem(
                             onClick = {
-                                reportData.type = item
+                                selectedItem = item
+                                reportData.type = itemToEnumValue[item] ?: item
                                 expanded = false
                             }
                         ) {
@@ -353,7 +373,13 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                             .background(Color.Transparent)
                             .clickable(
                                 onClick = {
-                                    Toast.makeText(context, R.string.complete_fields_toast, Toast.LENGTH_SHORT).show()
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            R.string.complete_fields_toast,
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
                                 },
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }
@@ -386,27 +412,25 @@ suspend fun createReport(reportData: Report, context: Context): Boolean {
     val reportService = RetrofitClient.reportService
     return withContext(Dispatchers.IO) {
         try {
-            val response = reportService.createReport(Report(
-                userId ="123123",
-                containerId = reportData.containerId,
-                title = reportData.title,
-                description = reportData.description,
-                imagePath = reportData.imagePath,
-                address = reportData.address,
-                status = reportData.status,
-                type = reportData.type
-            ))
+//            println("reportData: " + reportData)
+            val response = reportService.createReport(reportData)
             withContext(Dispatchers.Main) {
-                if (response.success) {
-                    RetrofitClient.setToken(response.token)
+                if (response.isSuccessful) {
+                    val responseData = response.body()
                     Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
                 } else {
+//                    println("code: ${response.code()}")
+//                    println("errorbody: ${response.errorBody()?.string()}")
+//                    println("body: ${response.body()}")
                     Toast.makeText(context, R.string.report_creation_error_toast, Toast.LENGTH_LONG)
                         .show()
                 }
-                response.success
+                response.isSuccessful
             }
-        } catch (e: Exception) {
+        } catch (e: HttpException) {
+//            val errorBody = e.response()?.errorBody()?.string()
+//            println("Error Body: $errorBody")
+//            e.printStackTrace()
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
                 false
