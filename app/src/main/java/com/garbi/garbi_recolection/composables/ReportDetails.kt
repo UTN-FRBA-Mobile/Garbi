@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.BlueRevision
-import com.garbi.garbi_recolection.ui.theme.DisabledButtonText
 import com.garbi.garbi_recolection.ui.theme.GreenResolved
 import com.garbi.garbi_recolection.ui.theme.OrangeNew
 import com.garbi.garbi_recolection.ui.theme.RedRejected
@@ -32,7 +31,7 @@ import com.garbi.garbi_recolection.ui.theme.RedRejected
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, containerId: String?) {
 
-    AppScaffold(
+    AppScaffold( // TODO agregar la back arrow
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.report_details_screen) + " " + containerId
@@ -44,26 +43,23 @@ fun ReportDetailsScreen (navController: NavController? = null, containerId: Stri
         ) {
             Row (
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(0.dp, 8.dp, 0.dp, 0.dp)
+                    .padding(0.dp, 8.dp, 0.dp, 16.dp)
             ) {
                 Text(
-                    text = "tacho roto",
+                    text = "tacho roto pq se mete gente y abre la tapa todo el tiempo",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(0.dp, 0.dp, 16.dp, 0.dp)
                 )
-                ReportStatusChip("Resuelto")
+                ReportStatusChip("En revisión")
             }
 
-            Text(
-                text = "02/05/2024",
-                fontSize = 16.sp,
-                color = DisabledButtonText,
-                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
-            )
-
+            TextField(title = stringResource(R.string.creation_date_field), content = "02/05/2024")
             TextField(title = stringResource(R.string.type_dropdown), content = "contenedor en mal estado")
             TextField(
                 title = stringResource(R.string.description_field),

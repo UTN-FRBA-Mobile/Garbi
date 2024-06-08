@@ -9,6 +9,7 @@
 <!--Create Report screen & Report Details screen-->
     <string name="supporting_text_required">Campo requerido</string>
     <string name="title_field">Título</string>
+    <string name="creation_date_field">Fecha de creación del reporte</string>
     <string name="type_dropdown">Tipo de problema</string>
     <string-array name="report_items">
         <item>Contenedor en mal estado</item>

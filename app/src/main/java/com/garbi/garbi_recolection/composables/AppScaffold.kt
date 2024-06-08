@@ -24,7 +24,7 @@ fun AppScaffold(
     topBarVisible : Boolean,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val navigationIcon: (@Composable () -> Unit)? =
+    val navigationIcon: (@Composable () -> Unit)? = //creo q está mal pq si navego a la lista de Reportes para mi no tiene q aparecer la flecha
         if (navController?.previousBackStackEntry != null) {
             {
                 IconButton(onClick = {
