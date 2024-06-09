@@ -15,6 +15,10 @@ val Green800 = Color(0xff2E7D32)
 val Green700 = Color(0xff388E3C)
 val LightGreenBackground = Color(0xffd0d4cc)
 val LightGreen = Color(0xff889c94)
+val Orange600 = Color(0xffFF8F00)
+val LightGreenStateBackground = Color(0xffACD793)
+val lightOrangeStateBackground = Color(0xffFFC96F)
+val lightRedStateBackground = Color(0xffFFA27F)
 
 //Disabled
 val DisabledButton = Color(0xff000000).copy(alpha = 0.12f)
