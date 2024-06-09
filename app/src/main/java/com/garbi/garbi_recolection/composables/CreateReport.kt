@@ -49,6 +49,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -177,9 +178,11 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         Column (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp, 16.dp)
+                .padding(24.dp, 0.dp)
                 .verticalScroll(scrollState)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             TextField(
                 value = reportData.title,
                 onValueChange = { data -> reportData = reportData.copy(title = data) },
@@ -404,6 +407,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     confirmText = stringResource(R.string.create_report_dialog_confirm)
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -416,7 +421,7 @@ suspend fun createReport(reportData: Report, context: Context): Boolean {
             val response = reportService.createReport(reportData)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
-                    val responseData = response.body()
+//                    val responseData = response.body()
                     Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
                 } else {
                     println("code: ${response.code()}")

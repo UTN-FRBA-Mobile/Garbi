@@ -21,7 +21,7 @@
     <string name="description_field">Descripción del problema</string>
     <string name="take_photo_text">Toma una foto del problema</string>
     <string name="photo_field">Foto del problema</string>
-    <string name="container_id_field">ID del contendor</string>
+    <string name="container_id_field">ID del contenedor</string>
     <string name="address_field">Dirección aproximada</string>
     <string name="create_report_button">Crear reporte</string>
     <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>

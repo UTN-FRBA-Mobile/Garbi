@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -45,6 +47,8 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, reportId: String) {
+    val scrollState = rememberScrollState()
+
     //For the edit and delete buttons in the TopBar
     var isModifiable by remember { mutableStateOf(false) }
 
@@ -54,9 +58,9 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         try {
             val response = withContext(Dispatchers.IO) { service.getReport(reportId) }
             reportDetails = response
-            println("reportDetails: " + reportDetails)
+            println("reportDetails: $reportDetails")
 
-            var listOfStatus = reportDetails!!.status
+            val listOfStatus = reportDetails!!.status
             if (listOfStatus!![listOfStatus.size -1].status in listOf("NUEVO", "EN REVISIÓN")) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
@@ -78,7 +82,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
     AppScaffold( // TODO agregar la back arrow.
         navController = navController,
         topBarVisible = true,
-        title = stringResource(R.string.report_details_screen), // + " " + reportId
+        title = stringResource(R.string.report_details_screen),
         actions = isModifiable,
         onEditClick = { /*TODO*/ },
         onDeleteClick = { /*TODO*/ }
@@ -86,8 +90,11 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         Column (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp, 16.dp)
+                .padding(24.dp, 0.dp)
+                .verticalScroll(scrollState)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             reportDetails?.let { details ->
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -159,6 +166,8 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 //                // Handle loading or error state
 //                Text(text = "Loading...")
 //            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
