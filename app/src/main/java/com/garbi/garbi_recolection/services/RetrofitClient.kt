@@ -39,6 +39,10 @@ object RetrofitClient {
         retrofit.create(LoginService::class.java)
     }
 
+    val reportService: ReportService by lazy {
+        retrofit.create(ReportService::class.java)
+    }
+
     fun setToken(token: String){
         this.token = token;
     }

@@ -1,5 +1,6 @@
 package com.garbi.garbi_recolection.composables
 
+import Address
 import AppScaffold
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
@@ -10,7 +11,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +40,19 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.*
+import com.garbi.garbi_recolection.models.Report
 import android.Manifest
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -55,40 +63,69 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
+import com.garbi.garbi_recolection.services.RetrofitClient
+import com.garbi.garbi_recolection.ui.theme.DisabledButton
+import com.garbi.garbi_recolection.ui.theme.DisabledButtonText
+import com.garbi.garbi_recolection.ui.theme.DisabledField
+import com.garbi.garbi_recolection.ui.theme.DisabledFieldContent
 import com.garbi.garbi_recolection.ui.theme.Green900
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CreateReportScreen(navController: NavController? = null) {
+fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
+    val scrollState = rememberScrollState()
+
+    var reportData by remember { mutableStateOf(Report(
+        _id = null,
+        userId = "6643c987a06700c2923e5a14", //TODO
+        containerId = containerId.toString(),
+        managerId = null,
+        title = "",
+        observation = null,
+        description = "", //TODO MAYBE SHOULD BE NULLABLE
+        address = address,
+        imagePath = null,
+        phone = "2", //null,
+        email = "string6@admin.com",
+        status = null,
+        type = "",
+        createdAt = null
+    )) }
 
     val fieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = Green900.copy(alpha = 0.2f),
-        unfocusedContainerColor = Green900.copy(alpha = 0.2f),
+        focusedContainerColor = Green900.copy(alpha = 0.05f),
+        unfocusedContainerColor = Green900.copy(alpha = 0.05f),
         focusedTextColor = Color.Black,
         unfocusedTextColor = Color.Black,
         focusedLabelColor = Color.DarkGray,
         unfocusedLabelColor = Color.DarkGray,
         cursorColor = Green900,
         focusedIndicatorColor = Green900,
-        disabledContainerColor = Color.LightGray,
-        disabledLabelColor = Color.DarkGray
+        disabledContainerColor = DisabledField,
+        disabledLabelColor = DisabledFieldContent
     )
 
-    ////// Title field
-    var titleText by rememberSaveable { mutableStateOf("") }
 
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf("") }
     val items =  stringArrayResource(R.array.report_items).toList()
-
-    ////// Description field
-    var descriptionText by rememberSaveable { mutableStateOf("") }
-    var containerIdText by rememberSaveable { mutableStateOf("") }
+    val itemToEnumValue = mapOf(
+        items[0] to "CONTENEDOR_ROTO",
+        items[1] to "CONTENEDOR_SUCIO",
+        items[2] to "BASURA_EN_LA_CALLE",
+        items[3] to "CONTENEDOR_FALTANTE",
+        items[4] to "OTROS"
+    )
+    var selectedItem by remember { mutableStateOf("") }
 
     ////// Take picture button
     val context = LocalContext.current
@@ -112,6 +149,7 @@ fun CreateReportScreen(navController: NavController? = null) {
     ) { success: Boolean ->
         if (success) {
             selectedImageUri = tempFileUri
+            reportData.imagePath = tempFile.absolutePath
             isPhotoTaken = true
         }
     }
@@ -123,13 +161,13 @@ fun CreateReportScreen(navController: NavController? = null) {
         if (granted) {
             cameraLauncher.launch(tempFileUri)
         } else {
-            // Handle permission denied case
+            // TODO Handle permission denied case
         }
     }
 
-    ////// Create report button
-    val isCreateReportEnabled = titleText.isNotEmpty() && selectedText.isNotEmpty()
+    ////// Create Report button
     val openAlertDialog = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
 
     AppScaffold(
@@ -139,13 +177,16 @@ fun CreateReportScreen(navController: NavController? = null) {
     ) {
         Column (
             modifier = Modifier
-                .fillMaxHeight()
-                .padding(24.dp, 16.dp)
+                .fillMaxSize()
+                .padding(24.dp, 0.dp)
+                .verticalScroll(scrollState)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             TextField(
-                value = titleText,
-                onValueChange = { titleText = it },
-                label = { Text(text = stringResource(R.string.title_field)) },
+                value = reportData.title,
+                onValueChange = { data -> reportData = reportData.copy(title = data) },
+                label = { Text( text = stringResource(R.string.title_field) + "*" ) },
 //                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
                 singleLine = true,
                 colors = fieldColors,
@@ -161,10 +202,10 @@ fun CreateReportScreen(navController: NavController? = null) {
                 modifier = Modifier.padding(0.dp, 8.dp)
             ) {
                 TextField(
-                    value = selectedText,
+                    value = selectedItem,
                     onValueChange = { },
                     readOnly = true,
-                    label = { Text(text = stringResource(R.string.type_dropdown)) },
+                    label = { Text( text = stringResource(R.string.type_dropdown) + "*" ) },
 //                    supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     colors = fieldColors,
@@ -185,7 +226,8 @@ fun CreateReportScreen(navController: NavController? = null) {
                     items.forEach { item ->
                         DropdownMenuItem(
                             onClick = {
-                                selectedText = item
+                                selectedItem = item
+                                reportData.type = itemToEnumValue[item] ?: item
                                 expanded = false
                             }
                         ) {
@@ -197,8 +239,8 @@ fun CreateReportScreen(navController: NavController? = null) {
 
 
             TextField(
-                value = descriptionText,
-                onValueChange = { descriptionText = it },
+                value = reportData.description ?: "",
+                onValueChange = { data -> reportData = reportData.copy(description = data) },
                 label = { Text(text = stringResource(R.string.description_field)) },
                 colors = fieldColors,
                 singleLine = false,
@@ -261,6 +303,7 @@ fun CreateReportScreen(navController: NavController? = null) {
                             onClick = {
                                 selectedImageUri = null
                                 isPhotoTaken = false
+                                reportData.imagePath = null
                             },
                             colors = IconButtonDefaults.outlinedIconButtonColors(
                                 containerColor = Color(0xFF000000).copy(alpha = 0.5f),
@@ -282,11 +325,9 @@ fun CreateReportScreen(navController: NavController? = null) {
             }
 
             TextField(
-                value = containerIdText,
+                value = containerId.toString(),
                 enabled = false,
-                onValueChange = {
-                    containerIdText = it
-                },
+                onValueChange = {},
                 label = { Text(text = stringResource(R.string.container_id_field)) },
                 colors = fieldColors,
                 singleLine = true,
@@ -296,9 +337,9 @@ fun CreateReportScreen(navController: NavController? = null) {
             )
 
             TextField(
-                value = containerIdText,
+                value = address.convertToString(),
                 enabled = false,
-                onValueChange = {containerIdText = it },
+                onValueChange = {},
                 label = { Text(text = stringResource(id = R.string.address_field)) },
                 colors = fieldColors,
                 singleLine = true,
@@ -309,32 +350,93 @@ fun CreateReportScreen(navController: NavController? = null) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Button(
-                onClick = { openAlertDialog.value = true },
-                enabled = isCreateReportEnabled,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Green900,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.LightGray,
-                    disabledContentColor = Color.DarkGray,
-                ),
+            Box(
                 modifier = Modifier
-                    .padding(16.dp, 32.dp, 16.dp, 4.dp)
+                    .padding(16.dp, 16.dp, 16.dp, 4.dp)
                     .fillMaxWidth()
             ) {
-                Text( text = stringResource(id = R.string.create_report_button) )
+                Button(
+                    onClick = { openAlertDialog.value = true },
+                    enabled = reportData.requiredFieldsCompleted(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Green900,
+                        contentColor = Color.White,
+                        disabledContainerColor = DisabledButton,
+                        disabledContentColor = DisabledButtonText
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(id = R.string.create_report_button))
+                }
+
+                if (!reportData.requiredFieldsCompleted()) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Transparent)
+                            .clickable(
+                                onClick = {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            R.string.complete_fields_toast,
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
+                    )
+                }
             }
 
             if (openAlertDialog.value) {
                 AlertDialog(
                     onDismissRequest = { openAlertDialog.value = false },
                     onConfirmation = {
-                        navController?.navigate("reports")
-                        openAlertDialog.value = false
+                        coroutineScope.launch {
+                            val success = createReport(reportData, context)
+                            if (success) {
+                                navController?.navigate("reports")
+                                openAlertDialog.value = false
+                            }
+                        }
                     },
                     dialogText = stringResource(R.string.create_report_dialog_text),
                     confirmText = stringResource(R.string.create_report_dialog_confirm)
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+suspend fun createReport(reportData: Report, context: Context): Boolean {
+    val reportService = RetrofitClient.reportService
+    return withContext(Dispatchers.IO) {
+        try {
+//            println("reportData: " + reportData)
+            val response = reportService.createReport(reportData)
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+//                    val responseData = response.body()
+                    Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
+                } else {
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, R.string.report_creation_error_toast, Toast.LENGTH_LONG).show()
+                }
+                response.isSuccessful
+            }
+        } catch (e: HttpException) {
+//            val errorBody = e.response()?.errorBody()?.string()
+//            println("Error Body: $errorBody")
+//            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                false
             }
         }
     }
