@@ -9,18 +9,20 @@ data class Status(
 )
 
 data class Report(
-    val userId: String?,
+    val _id: String?,
+    val userId: String,
     val containerId: String,
-//    val managerId: String?,
+    val managerId: String?,
     val title: String,
-//    val observation: String?,
+    val observation: String?,
     val description: String?,
     val address: Address?,
     var imagePath: String?,
     val phone: String?,
-    val email: String?,
+    val email: String,
     val status: List<Status>?,
-    var type: String = "",
+    var type: String,
+    var createdAt: String?
 ) {
     fun requiredFieldsCompleted(): Boolean {
         return title.isNotEmpty() && type.isNotEmpty()

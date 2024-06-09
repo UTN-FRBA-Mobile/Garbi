@@ -62,13 +62,13 @@ private fun App() {
         }
 
         composable(
-            "report_details/{containerId}",
+            "report_details/{reportId}",
             arguments = listOf(
-                navArgument("containerId") { type = NavType.StringType },
+                navArgument("reportId") { type = NavType.StringType },
             )
         ) { backStackEntry ->
-            val containerId = backStackEntry.arguments?.getString("containerId")
-            ReportDetailsScreen(navController, containerId)
+            val reportId = backStackEntry.arguments?.getString("reportId")!!
+            ReportDetailsScreen(navController, reportId)
         }
 
         composable("profile") { ProfileScreen(navController)

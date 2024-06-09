@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Headers
 import retrofit2.http.Body
+import retrofit2.http.Path
 
 
 data class CreateReportResponse(
@@ -21,6 +22,10 @@ interface ReportService {
     @GET("/api/report")
     @Headers("accept: application/json")
     suspend fun getReports(): ReportResponse
+
+    @GET("/api/report/{id}")
+    @Headers("accept: application/json")
+    suspend fun getReport(@Path("id") id: String): Report
 
     @POST("/api/report")
     @Headers("accept: application/json", "content-type: application/json")

@@ -21,7 +21,10 @@ import com.garbi.garbi_recolection.ui.theme.Green900
 fun AppScaffold(
     title: String? = null,
     navController: NavController? = null,
-    topBarVisible : Boolean,
+    topBarVisible: Boolean,
+    actions: Boolean? = false,
+    onEditClick: (() -> Unit)? = null,
+    onDeleteClick: (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val navigationIcon: (@Composable () -> Unit)? = //creo q está mal pq si navego a la lista de Reportes para mi no tiene q aparecer la flecha
@@ -47,15 +50,40 @@ fun AppScaffold(
         Scaffold(
             topBar =  {
                 if (topBarVisible) {
-                    val navigationBarBackgroundColor  = Color.White
-                    val topBarBackgroundColor = Green900
-                    TopAppBar(
-                        backgroundColor = topBarBackgroundColor,
-                        contentColor = Color.White,
-                        title = {
-                            Text(text = title ?: stringResource(id = R.string.app_name))
-                        }
-                    )
+                    if (actions == true) {
+                        TopAppBar(
+                            backgroundColor = Green900,
+                            contentColor = Color.White,
+                            title = {
+                                Text(text = title ?: stringResource(id = R.string.app_name))
+                            },
+                            actions = {
+                                Row( modifier = Modifier.padding(end = 8.dp) )
+                                {
+                                    IconButton(onClick = { onEditClick?.invoke() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit",
+                                        )
+                                    }
+                                    IconButton(onClick = { onDeleteClick?.invoke() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    } else {
+                        TopAppBar(
+                            backgroundColor = Green900,
+                            contentColor = Color.White,
+                            title = {
+                                Text(text = title ?: stringResource(id = R.string.app_name))
+                            }
+                        )
+                    }
                 }
             },
             bottomBar = {
@@ -134,4 +162,3 @@ fun AppScaffold(
 
         )
     }}
-

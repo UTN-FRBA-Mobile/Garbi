@@ -48,6 +48,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -64,7 +65,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
-import com.garbi.garbi_recolection.models.Status
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.DisabledButton
 import com.garbi.garbi_recolection.ui.theme.DisabledButtonText
@@ -83,22 +83,21 @@ import java.io.File
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
     val scrollState = rememberScrollState()
 
-    val status = Status(
-        status = "NUEVO",
-        updatedAt = "2024-06-07T16:57:14.123Z"
-    )
-    val statusArray = listOf(status)
-
     var reportData by remember { mutableStateOf(Report(
+        _id = null,
+        userId = "6643c987a06700c2923e5a14", //TODO
         containerId = containerId.toString(),
-        address = address,
-        phone = "1122334450",
-        email = "string0@admin.com",
-        status = statusArray,
+        managerId = null,
         title = "",
-        userId = null,
-        description = null,
-        imagePath = null
+        observation = null,
+        description = "", //TODO MAYBE SHOULD BE NULLABLE
+        address = address,
+        imagePath = null,
+        phone = "2", //null,
+        email = "string6@admin.com",
+        status = null,
+        type = "",
+        createdAt = null
     )) }
 
     val fieldColors = TextFieldDefaults.colors(
@@ -118,7 +117,6 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
     val items =  stringArrayResource(R.array.report_items).toList()
-    // Mapping display items to fixed backend values
     val itemToEnumValue = mapOf(
         items[0] to "CONTENEDOR_ROTO",
         items[1] to "CONTENEDOR_SUCIO",
@@ -347,6 +345,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     .padding(0.dp, 8.dp)
             )
 
+            Spacer(modifier = Modifier.weight(1f))
+
             Box(
                 modifier = Modifier
                     .padding(16.dp, 16.dp, 16.dp, 4.dp)
@@ -419,11 +419,9 @@ suspend fun createReport(reportData: Report, context: Context): Boolean {
                     val responseData = response.body()
                     Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
                 } else {
-//                    println("code: ${response.code()}")
-//                    println("errorbody: ${response.errorBody()?.string()}")
-//                    println("body: ${response.body()}")
-                    Toast.makeText(context, R.string.report_creation_error_toast, Toast.LENGTH_LONG)
-                        .show()
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, R.string.report_creation_error_toast, Toast.LENGTH_LONG).show()
                 }
                 response.isSuccessful
             }
