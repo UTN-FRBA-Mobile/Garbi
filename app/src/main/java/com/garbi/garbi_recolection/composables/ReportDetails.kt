@@ -79,10 +79,11 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
     )
 
 
-    AppScaffold( // TODO agregar la back arrow.
+    AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.report_details_screen),
+        backButton = true,
         actions = isModifiable,
         onEditClick = { /*TODO*/ },
         onDeleteClick = { /*TODO*/ }

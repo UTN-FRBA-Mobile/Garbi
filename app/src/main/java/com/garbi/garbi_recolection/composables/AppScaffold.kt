@@ -22,22 +22,12 @@ fun AppScaffold(
     title: String? = null,
     navController: NavController? = null,
     topBarVisible: Boolean,
+    backButton: Boolean? = false,
     actions: Boolean? = false,
     onEditClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val navigationIcon: (@Composable () -> Unit)? = //creo q está mal pq si navego a la lista de Reportes para mi no tiene q aparecer la flecha
-        if (navController?.previousBackStackEntry != null) {
-            {
-                IconButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                }
-            }
-        } else null
-
     val navigationBarBackgroundColor = Color.White
     val topBarBackgroundColor = Green900
     val activeColor = Green900
@@ -55,6 +45,16 @@ fun AppScaffold(
                         contentColor = Color.White,
                         title = {
                             Text(text = title ?: stringResource(id = R.string.app_name))
+                        },
+                        navigationIcon = if (backButton == true) {
+                            {
+                                IconButton(onClick = { navController!!.popBackStack() })
+                                {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                }
+                            }
+                        } else {
+                            null
                         },
                         actions = {
                             if (actions == true) {

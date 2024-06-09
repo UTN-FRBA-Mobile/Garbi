@@ -160,8 +160,6 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     ) { granted: Boolean ->
         if (granted) {
             cameraLauncher.launch(tempFileUri)
-        } else {
-            // TODO Handle permission denied case
         }
     }
 
