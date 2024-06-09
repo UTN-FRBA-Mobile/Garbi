@@ -162,8 +162,8 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
                                     icon = containerIcon,
                                     onInfoWindowClick = {
                                         CoroutineScope(Dispatchers.Main).launch {
-                                            var addr = container.address
-                                            navController?.navigate("create_report/${container.sensorId}/${addr.street}/${addr.number}/${addr.neighborhood}") //TODO change sensorId here
+                                            val addr = container.address
+                                            navController?.navigate("create_report/${container._id}/${addr.street}/${addr.number}/${addr.neighborhood}")
                                         }
                                     }
                                 ) {
