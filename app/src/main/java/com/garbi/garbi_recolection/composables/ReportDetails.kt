@@ -141,7 +141,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                 } else {
                     TextField(
                         title = stringResource(R.string.photo_field),
-                        content = ""
+                        content = null
                     )
                 }
 
@@ -195,36 +195,37 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
 fun ReportStatusChip(status: String) {
     val chipColors = when (status) {
         "RESUELTO" -> SuggestionChipDefaults.suggestionChipColors(
-            containerColor = GreenResolved
+            disabledContainerColor = GreenResolved,
         )
 
         "RECHAZADO" -> SuggestionChipDefaults.suggestionChipColors(
-            containerColor = RedRejected
+            disabledContainerColor = RedRejected
         )
 
         "NUEVO" -> SuggestionChipDefaults.suggestionChipColors(
-            containerColor = OrangeNew
+            disabledContainerColor = OrangeNew,
         )
 
         "EN REVISIÓN" -> SuggestionChipDefaults.suggestionChipColors(
-            containerColor = BlueRevision
+            disabledContainerColor = BlueRevision
         )
 
         else -> SuggestionChipDefaults.suggestionChipColors(
-            containerColor = RedRejected
+            disabledContainerColor = RedRejected
         )
     }
 
     SuggestionChip(
         onClick = { },
         label = {
-            Text (
+            Text(
                 text = status,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
             )
         },
         colors = chipColors,
-        border = null
+        border = null,
+        enabled = false //adding this so that the chip does not display click animation on click
     )
 }

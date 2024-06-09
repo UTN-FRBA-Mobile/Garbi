@@ -50,15 +50,15 @@ fun AppScaffold(
         Scaffold(
             topBar =  {
                 if (topBarVisible) {
-                    if (actions == true) {
-                        TopAppBar(
-                            backgroundColor = Green900,
-                            contentColor = Color.White,
-                            title = {
-                                Text(text = title ?: stringResource(id = R.string.app_name))
-                            },
-                            actions = {
-                                Row( modifier = Modifier.padding(end = 8.dp) )
+                    TopAppBar(
+                        backgroundColor = Green900,
+                        contentColor = Color.White,
+                        title = {
+                            Text(text = title ?: stringResource(id = R.string.app_name))
+                        },
+                        actions = {
+                            if (actions == true) {
+                                Row(modifier = Modifier.padding(end = 8.dp))
                                 {
                                     IconButton(onClick = { onEditClick?.invoke() }) {
                                         Icon(
@@ -74,16 +74,8 @@ fun AppScaffold(
                                     }
                                 }
                             }
-                        )
-                    } else {
-                        TopAppBar(
-                            backgroundColor = Green900,
-                            contentColor = Color.White,
-                            title = {
-                                Text(text = title ?: stringResource(id = R.string.app_name))
-                            }
-                        )
-                    }
+                        }
+                    )
                 }
             },
             bottomBar = {

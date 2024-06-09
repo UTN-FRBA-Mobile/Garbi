@@ -4,7 +4,7 @@ data class Address(
     val neighborhood: String
 ) {
     fun convertToString(): String {
-        return street + " " + number
+        return "$street $number - $neighborhood"
     }
 }
 
