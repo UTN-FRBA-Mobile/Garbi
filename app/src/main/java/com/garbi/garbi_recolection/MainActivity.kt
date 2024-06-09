@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +20,7 @@ import com.garbi.garbi_recolection.composables.MapsScreen
 import com.garbi.garbi_recolection.composables.ProfileScreen
 import com.garbi.garbi_recolection.composables.ReportDetailsScreen
 import com.garbi.garbi_recolection.composables.ReportsScreen
+import com.garbi.garbi_recolection.services.RetrofitClient
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +34,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun App() {
     val navController = rememberNavController()
+    val context = LocalContext.current
     val mapsViewModel = remember { MapsViewModel() }
     NavHost(navController = navController, startDestination = "login") {
         composable("home") {
@@ -74,6 +77,10 @@ private fun App() {
         composable("profile") { ProfileScreen(navController)
         }
         composable("login") { LoginForm(navController)
+        }
+        composable("logout") {
+            RetrofitClient.deleteSession(context)
+            LoginForm(navController)
         }
         composable("change_password") { ChangePasswordScreen(navController)
         }

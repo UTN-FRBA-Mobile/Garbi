@@ -63,6 +63,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
@@ -83,10 +84,11 @@ import java.io.File
 @Composable
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     var reportData by remember { mutableStateOf(Report(
         _id = null,
-        userId = "6643c987a06700c2923e5a14", //TODO
+        userId = "",
         containerId = containerId.toString(),
         managerId = null,
         title = "",
@@ -114,7 +116,11 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         disabledLabelColor = DisabledFieldContent
     )
 
-
+    //Get userId
+    LaunchedEffect(context) {
+        val userDetails = RetrofitClient.getSession(context)
+        reportData = reportData.copy(userId = userDetails?._id ?: "")
+    }
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
     val items =  stringArrayResource(R.array.report_items).toList()
@@ -128,7 +134,6 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     var selectedItem by remember { mutableStateOf("") }
 
     ////// Take picture button
-    val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     // Function to create a new temporary file
