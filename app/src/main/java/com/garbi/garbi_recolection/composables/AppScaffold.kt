@@ -21,20 +21,13 @@ import com.garbi.garbi_recolection.ui.theme.Green900
 fun AppScaffold(
     title: String? = null,
     navController: NavController? = null,
-    topBarVisible : Boolean,
+    topBarVisible: Boolean,
+    backButton: Boolean? = false,
+    actions: Boolean? = false,
+    onEditClick: (() -> Unit)? = null,
+    onDeleteClick: (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val navigationIcon: (@Composable () -> Unit)? =
-        if (navController?.previousBackStackEntry != null) {
-            {
-                IconButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                }
-            }
-        } else null
-
     val navigationBarBackgroundColor = Color.White
     val topBarBackgroundColor = Green900
     val activeColor = Green900
@@ -47,20 +40,48 @@ fun AppScaffold(
         Scaffold(
             topBar =  {
                 if (topBarVisible) {
-                    val navigationBarBackgroundColor  = Color.White
-                    val topBarBackgroundColor = Green900
                     TopAppBar(
-                        backgroundColor = topBarBackgroundColor,
+                        backgroundColor = Green900,
                         contentColor = Color.White,
                         title = {
                             Text(text = title ?: stringResource(id = R.string.app_name))
+                        },
+                        navigationIcon = if (backButton == true) {
+                            {
+                                IconButton(onClick = { navController!!.popBackStack() })
+                                {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        actions = {
+                            if (actions == true) {
+                                Row(modifier = Modifier.padding(end = 8.dp))
+                                {
+                                    IconButton(onClick = { onEditClick?.invoke() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit",
+                                        )
+                                    }
+                                    IconButton(onClick = { onDeleteClick?.invoke() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                        )
+                                    }
+                                }
+                            }
                         }
                     )
                 }
             },
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = navigationBarBackgroundColor
+                    backgroundColor = navigationBarBackgroundColor,
+                    elevation = AppBarDefaults.BottomAppBarElevation,
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -85,8 +106,20 @@ fun AppScaffold(
 
                             }
                         }) {
-                            val iconColor = if (currentDestination == "reports") activeColor else inactiveColor
-                            val icon = if (currentDestination == "reports") R.drawable.receipt_filled else R.drawable.receipt
+                            val iconColor: Color
+                            val icon: Int
+                            if (
+                                currentDestination == "reports"
+                                || currentDestination!!.startsWith("create_report")
+                                || currentDestination.startsWith("report_details")
+                            ) {
+                                iconColor = activeColor
+                                icon = R.drawable.receipt_filled
+                            } else {
+                                iconColor = inactiveColor
+                                icon = R.drawable.receipt
+                            }
+
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Reportes", tint = iconColor)
                                 Text("Reportes", color = iconColor)
@@ -121,4 +154,3 @@ fun AppScaffold(
 
         )
     }}
-

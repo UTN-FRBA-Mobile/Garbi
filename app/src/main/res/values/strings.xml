@@ -1,8 +1,34 @@
 <resources>
     <string name="app_name">Garbi</string>
     <string name="reports_screen">Reportes</string>
+    <string name="create_report_screen">Nuevo reporte</string>
+    <string name="report_details_screen">Detalle de reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
+
+<!--Create Report screen & Report Details screen-->
+    <string name="supporting_text_required">Campo requerido</string>
+    <string name="title_field">Título</string>
+    <string name="creation_date_field">Fecha de creación del reporte</string>
+    <string name="type_dropdown">Tipo de problema</string>
+    <string-array name="report_items">
+        <item>Contenedor en mal estado</item>
+        <item>Contenedor sucio</item>
+        <item>Basura en la calle</item>
+        <item>Contenedor faltante</item>
+        <item>Otro</item>
+    </string-array>
+    <string name="description_field">Descripción del problema</string>
+    <string name="take_photo_text">Toma una foto del problema</string>
+    <string name="photo_field">Foto del problema</string>
+    <string name="container_id_field">ID del contenedor</string>
+    <string name="address_field">Dirección aproximada</string>
+    <string name="create_report_button">Crear reporte</string>
+    <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
+    <string name="create_report_dialog_confirm">Crear</string>
+    <string name="complete_fields_toast">Completa los campos obligatorios</string>
+    <string name="report_created_toast">Reporte creado con éxito</string>
+    <string name="report_creation_error_toast">No se pudo crear el reporte</string>
 
 <!--Profile screen-->
     <string name="profile_name">Damian Betular</string>
@@ -15,5 +41,7 @@
     <string name="logout_dialog_dismiss">Cancelar</string>
     <string name="edit_button">Editar</string>
     <string name="delete_button">Eliminar</string>
-
+<!--Commons-->
+    <!--Dialog-->
+    <string name="dialog_dismiss">Cancelar</string>
 </resources>

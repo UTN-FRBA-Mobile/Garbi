@@ -20,5 +20,16 @@ val LightGreenStateBackground = Color(0xffACD793)
 val lightOrangeStateBackground = Color(0xffFFC96F)
 val lightRedStateBackground = Color(0xffFFA27F)
 
+//Disabled
+val DisabledButton = Color(0xff000000).copy(alpha = 0.12f)
+val DisabledButtonText = Color(0xff000000).copy(alpha = 0.38f)
+val DisabledField = Color(0xff000000).copy(alpha = 0.06f)
+val DisabledFieldContent = Color(0xff000000).copy(alpha = 0.38f)
+
+//Status
+val GreenResolved = Color(0xff2E7D32)
+val OrangeNew = Color(0xffEF6C00)
+val RedRejected = Color(0xffD32F2F)
+val BlueRevision = Color(0xff1976d2)
 
 val Transparent = Color(0xffffff00)
