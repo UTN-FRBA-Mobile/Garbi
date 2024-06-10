@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.garbi.garbi_recolection.ui.theme.DisabledButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -54,7 +55,7 @@ fun ReportsScreen(navController: NavController? = null) {
         try {
             val response = withContext(Dispatchers.IO) { service.getReports(userId) }
             reports.value = response.documents
-            println("reports: " + reports)
+            println("reports: $reports")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -76,7 +77,7 @@ fun ReportsScreen(navController: NavController? = null) {
                     ) {
                         ReportsRow(
                             reportDataI.title,
-                            reportDataI.status!![0].status,
+                            reportDataI.status!![reportDataI.status.size -1].status,
                             reportDataI.createdAt!!.substring(0, 10),
                             reportDataI.address!!.convertToString(),
                             navController,
@@ -129,30 +130,34 @@ fun ReportsRow(title: String, status: String, creationDate: String, address: Str
             )
         }
 
+        var iconButtonsEnabled = false
+        if (status == "NUEVO") {
+            iconButtonsEnabled = true
+        }
         Column(
             modifier = Modifier.padding(end = 16.dp)
         ) {
             Row {
-                EditReportItem(onClick = { })
-                DeleteReportItem(onClick = { })
+                EditReportItem(onClick = { }, enabled = iconButtonsEnabled)
+                DeleteReportItem(onClick = { }, enabled = iconButtonsEnabled)
             }
         }
+
     }
 }
 
 @Composable
 private fun EditReportItem(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    enabled: Boolean
 ){
     IconButton(
         onClick = onClick,
-        modifier = modifier
+        enabled = enabled
     ) {
         Icon(
             imageVector = Icons.Filled.Create,
             contentDescription = stringResource(R.string.edit_button),
-            tint = Color.LightGray
         )
     }
 }
@@ -160,16 +165,15 @@ private fun EditReportItem(
 @Composable
 private fun DeleteReportItem(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    enabled: Boolean
 ){
     IconButton(
         onClick = onClick,
-        modifier = modifier
+        enabled = enabled
     ) {
         Icon(
             imageVector = Icons.Filled.Delete,
             contentDescription = stringResource(R.string.delete_button),
-            tint = Color.LightGray
         )
     }
 }

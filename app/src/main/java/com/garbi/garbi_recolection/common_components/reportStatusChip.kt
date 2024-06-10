@@ -15,7 +15,12 @@ import com.garbi.garbi_recolection.ui.theme.RedRejected
 
 @Composable
 fun ReportStatusChip(status: String, modifier: Modifier) {
-    val chipColors = when (status) {
+    var statusText = status
+    if (status == "EN_REVISION") {
+        statusText = "EN REVISIÓN"
+    }
+
+    val chipColors = when (statusText) {
         "RESUELTO" -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = GreenResolved,
         )

@@ -55,7 +55,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
             println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
-            if (listOfStatus!![listOfStatus.size -1].status in listOf("NUEVO", "EN REVISIÓN")) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
+            if (listOfStatus!![listOfStatus.size -1].status == "NUEVO") { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
         } catch (e: Exception) {
