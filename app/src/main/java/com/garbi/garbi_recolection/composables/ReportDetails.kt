@@ -114,7 +114,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     )
 
                     val listOfStatus = details.status!!
-                    ReportStatusChip(listOfStatus[listOfStatus.size -1].status)
+                    ReportStatusChip(listOfStatus[listOfStatus.size -1].status, null)
                 }
 
                 TextField(
@@ -203,7 +203,7 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
 
 
 @Composable
-fun ReportStatusChip(status: String) {
+fun ReportStatusChip(status: String, modifier: Modifier?) {
     val chipColors = when (status) {
         "RESUELTO" -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = GreenResolved,
@@ -232,11 +232,13 @@ fun ReportStatusChip(status: String) {
             Text(
                 text = status,
                 color = Color.White,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp
             )
         },
         colors = chipColors,
         border = null,
+        modifier = modifier!!,
         enabled = false //adding this so that the chip does not display click animation on click
     )
 }

@@ -11,6 +11,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Multipart
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 
 data class CreateReportResponse(
@@ -22,9 +23,9 @@ data class CreateReportResponse(
 )
 
 interface ReportService {
-    @GET("/api/report/{userId}")
+    @GET("/api/report")
     @Headers("accept: application/json")
-    suspend fun getReports(@Path("userId") userId: String): ReportResponse
+    suspend fun getReports(@Query("userId") userId: String): ReportResponse
 
     @GET("/api/report/{id}")
     @Headers("accept: application/json")
