@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -37,11 +34,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.R
+import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.services.RetrofitClient
-import com.garbi.garbi_recolection.ui.theme.BlueRevision
-import com.garbi.garbi_recolection.ui.theme.GreenResolved
-import com.garbi.garbi_recolection.ui.theme.OrangeNew
-import com.garbi.garbi_recolection.ui.theme.RedRejected
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -61,7 +55,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
             println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
-            if (listOfStatus!![listOfStatus.size -1].status in listOf("NUEVO", "EN REVISIÓN")) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
+            if (listOfStatus!![listOfStatus.size -1].status == "NUEVO") { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
         } catch (e: Exception) {
@@ -114,7 +108,10 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     )
 
                     val listOfStatus = details.status!!
-                    ReportStatusChip(listOfStatus[listOfStatus.size -1].status)
+                    ReportStatusChip(
+                        listOfStatus[listOfStatus.size -1].status,
+                        modifier = Modifier
+                    )
                 }
 
                 TextField(
@@ -199,44 +196,4 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
         append("\n")
         append(content)
     }
-}
-
-
-@Composable
-fun ReportStatusChip(status: String) {
-    val chipColors = when (status) {
-        "RESUELTO" -> SuggestionChipDefaults.suggestionChipColors(
-            disabledContainerColor = GreenResolved,
-        )
-
-        "RECHAZADO" -> SuggestionChipDefaults.suggestionChipColors(
-            disabledContainerColor = RedRejected
-        )
-
-        "NUEVO" -> SuggestionChipDefaults.suggestionChipColors(
-            disabledContainerColor = OrangeNew,
-        )
-
-        "EN REVISIÓN" -> SuggestionChipDefaults.suggestionChipColors(
-            disabledContainerColor = BlueRevision
-        )
-
-        else -> SuggestionChipDefaults.suggestionChipColors(
-            disabledContainerColor = RedRejected
-        )
-    }
-
-    SuggestionChip(
-        onClick = { },
-        label = {
-            Text(
-                text = status,
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold
-            )
-        },
-        colors = chipColors,
-        border = null,
-        enabled = false //adding this so that the chip does not display click animation on click
-    )
 }

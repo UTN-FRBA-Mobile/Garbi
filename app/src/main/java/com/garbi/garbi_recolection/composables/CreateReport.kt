@@ -129,6 +129,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         reportData = reportData.copy(userId = userDetails?._id ?: "")
         reportData = reportData.copy(email = userDetails?.email ?: "")
     }
+
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
     val items =  stringArrayResource(R.array.report_items).toList()
