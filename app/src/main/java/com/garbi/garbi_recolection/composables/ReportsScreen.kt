@@ -30,45 +30,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-@Composable
-private fun EditReportItem(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-){
-    IconButton(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Create,
-            contentDescription = stringResource(R.string.edit_button),
-            tint = Color.LightGray
-        )
-    }
-}
-
-@Composable
-private fun DeleteReportItem(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-){
-    IconButton(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Delete,
-            contentDescription = stringResource(R.string.delete_button),
-            tint = Color.LightGray
-        )
-    }
-}
-
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -113,7 +79,8 @@ fun ReportsScreen(navController: NavController? = null) {
                             reportDataI.status!![0].status,
                             reportDataI.createdAt!!.substring(0, 10),
                             reportDataI.address!!.convertToString(),
-                            navController
+                            navController,
+                            reportDataI._id!!
                         )
                         Divider(
                             color = Color.LightGray,
@@ -129,40 +96,80 @@ fun ReportsScreen(navController: NavController? = null) {
 
 
 @Composable
-fun ReportsRow(name: String, reportState: String, date: String, address: String, navController: NavController? = null) {
+fun ReportsRow(title: String, status: String, creationDate: String, address: String, navController: NavController? = null, reportId: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clickable { navController?.navigate("report_details/66650be4edce87678adab6b1") }
+        modifier = Modifier.clickable { navController?.navigate("report_details/$reportId") }
     ) {
         Column(
             Modifier
                 .weight(2F)
-                .padding(start = 10.dp)
+                .padding(horizontal = 16.dp)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                modifier = Modifier.padding(2.dp),
-                text = name,
+                modifier = Modifier.padding(bottom = 4.dp),
+                text = title,
                 style = TextStyle( fontWeight = FontWeight.Bold )
             )
 
             Text(
-                text = date,
-                modifier = Modifier.padding(2.dp)
+                text = creationDate,
+                modifier = Modifier.padding(bottom = 2.dp)
             )
 
             Text(
                 text = address,
-                modifier = Modifier.padding(2.dp)
             )
 
-            ReportStatusChip(reportState, modifier = Modifier.defaultMinSize(minWidth = 10.dp, minHeight = 16.dp))
+            ReportStatusChip(
+                status = status,
+                modifier = Modifier.defaultMinSize(minWidth = 10.dp, minHeight = 16.dp)
+            )
         }
 
         Column(
+            modifier = Modifier.padding(end = 16.dp)
         ) {
-            EditReportItem( onClick = {  })
-            DeleteReportItem( onClick = {  })
+            Row {
+                EditReportItem(onClick = { })
+                DeleteReportItem(onClick = { })
+            }
         }
+    }
+}
+
+@Composable
+private fun EditReportItem(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Create,
+            contentDescription = stringResource(R.string.edit_button),
+            tint = Color.LightGray
+        )
+    }
+}
+
+@Composable
+private fun DeleteReportItem(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(R.string.delete_button),
+            tint = Color.LightGray
+        )
     }
 }
