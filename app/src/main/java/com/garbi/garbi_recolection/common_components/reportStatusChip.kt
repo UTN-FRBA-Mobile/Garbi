@@ -46,7 +46,7 @@ fun ReportStatusChip(status: String, modifier: Modifier) {
         onClick = { },
         label = {
             Text(
-                text = status,
+                text = statusText,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 12.sp
