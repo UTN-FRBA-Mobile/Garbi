@@ -59,11 +59,11 @@ import kotlinx.coroutines.withContext
 fun LoginForm(navController: NavController? = null) {
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Garbi_recolectionTheme {
         Surface {
             var credentials by remember { mutableStateOf(Credentials()) }
-            val context = LocalContext.current
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -175,7 +175,7 @@ suspend fun checkCredentials(creds: Credentials, context: Context): Boolean {
                 val response = loginService.login(LoginRequest(creds.login, creds.pwd))
                 withContext(Dispatchers.Main) {
                     if (response.success) {
-                        RetrofitClient.setToken(response.token)
+                        RetrofitClient.setToken(context, response.token)
                     } else {
                         Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show()
                     }
