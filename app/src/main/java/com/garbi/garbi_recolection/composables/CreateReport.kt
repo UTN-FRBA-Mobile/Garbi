@@ -102,7 +102,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         description = "", //TODO MAYBE SHOULD BE NULLABLE
         address = address,
         phone = "2", //null,
-        email = "string6@admin.com",
+        email = "",
         status = null,
         type = "",
         createdAt = null
@@ -127,6 +127,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     LaunchedEffect(context) {
         val userDetails = RetrofitClient.getSession(context)
         reportData = reportData.copy(userId = userDetails?._id ?: "")
+        reportData = reportData.copy(email = userDetails?.email ?: "")
     }
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
