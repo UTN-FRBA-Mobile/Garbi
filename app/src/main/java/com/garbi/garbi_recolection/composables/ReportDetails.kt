@@ -137,8 +137,9 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
+                    val mockImagePath = R.drawable.broken_container2
                     AsyncImage(
-                        model = details.imagePath,
+                        model = mockImagePath,
                         contentDescription = null,
                         modifier = Modifier
                             .size(200.dp, 280.dp)
