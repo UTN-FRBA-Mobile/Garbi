@@ -71,6 +71,7 @@ object RetrofitClient {
         }else{
             Log.v("session","Token ya estaba ${token}")
         }
+        Log.v("session", "El token expira en ${tokenExpiryTime} y es ${System.currentTimeMillis()}")
         return token
     }
     fun deleteToken(context: Context) {
