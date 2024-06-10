@@ -10,6 +10,8 @@ object RetrofitClient {
     private const val BASE_URL = "http://54.152.182.89"
     private const val PREFERENCES_NAME = "UserSession"
     private var token: String? = null
+    private var tokenExpiryTime: Long? = null
+    private const val TOKEN_EXPIRY_TIME_HOURS = 24
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
@@ -48,10 +50,42 @@ object RetrofitClient {
         retrofit.create(ReportService::class.java)
     }
 
-    fun setToken(token: String){
-        this.token = token;
+    fun setToken(context: Context, tokenSet: String){
+        val expiryTime = System.currentTimeMillis() + (TOKEN_EXPIRY_TIME_HOURS * 3600000)
+        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        token = tokenSet
+        tokenExpiryTime = expiryTime
+        editor.putString("token", tokenSet)
+        editor.putLong("tokenExpiryTime", expiryTime)
+        editor.apply()
+        Log.v("session","Token seteado ${token}")
     }
 
+    fun getToken(context: Context): String? {
+        if(token == null){
+            val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+            token = sharedPreferences.getString("token", null)
+            tokenExpiryTime = sharedPreferences.getLong("tokenExpiryTime", 0L)
+            Log.v("session","Token encontrado en sharedpreferences ${token}")
+        }else{
+            Log.v("session","Token ya estaba ${token}")
+        }
+        return token
+    }
+    fun deleteToken(context: Context) {
+        token = null
+        tokenExpiryTime = null
+        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.remove("token")
+        editor.remove("tokenExpiryTime")
+        editor.apply()
+    }
+
+    fun isTokenValid(): Boolean {
+        return System.currentTimeMillis() < tokenExpiryTime!!
+    }
     suspend fun getSession(context: Context): UserDetails? {
         var session = getStoredSession(context)
         if (session == null) {
@@ -110,4 +144,5 @@ object RetrofitClient {
         editor.remove("role")
         editor.apply()
     }
+
 }

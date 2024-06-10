@@ -64,11 +64,12 @@ import androidx.compose.runtime.setValue
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
+    val context = LocalContext.current;
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
     }
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
-    val context = LocalContext.current;
     var routeAvailable by viewModel.routeAvailable;
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
