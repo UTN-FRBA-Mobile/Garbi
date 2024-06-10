@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.garbi.garbi_recolection.core.ReportData
 import com.garbi.garbi_recolection.core.ReportsAPI
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -93,7 +94,7 @@ fun ReportsScreen(navController: NavController? = null) {
         title = stringResource(R.string.reports_screen),
         topBarVisible = true
     ) {
-        Reports(ReportsAPI.MockReportApi.sampleReports())
+        Reports(ReportsAPI.MockReportApi.sampleReports(), navController)
     }
 
 }
@@ -101,9 +102,11 @@ fun ReportsScreen(navController: NavController? = null) {
 
 
 @Composable
-fun ReportsRow(name: String, reportState: String, date: String, address: String) {
+fun ReportsRow(name: String, reportState: String, date: String, address: String, navController: NavController? = null) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.clickable {
+            navController?.navigate("report_details/66650be4edce87678adab6b1") }
     ) {
 
         Column(
@@ -133,7 +136,7 @@ fun ReportsRow(name: String, reportState: String, date: String, address: String)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(if(reportState==ReportState.ACTIVO.toString()) lightRedStateBackground else if(reportState==ReportState.EN_PROGRESO.toString()) lightOrangeStateBackground else LightGreenStateBackground)
+                    .background(if (reportState == ReportState.ACTIVO.toString()) lightRedStateBackground else if (reportState == ReportState.EN_PROGRESO.toString()) lightOrangeStateBackground else LightGreenStateBackground)
                               ){
                 Text(text = if(reportState==ReportState.ACTIVO.toString()) "Activo" else if(reportState==ReportState.EN_PROGRESO.toString()) "En progreso" else "Resuelto",
                     Modifier
@@ -165,7 +168,7 @@ fun ReportsRow(name: String, reportState: String, date: String, address: String)
 
 
 @Composable
-fun Reports(reports: List<ReportData>) {
+fun Reports(reports: List<ReportData>, navController: NavController? = null) {
 
     LazyColumn {
             items(items = reports) { reportDataI ->
@@ -174,7 +177,7 @@ fun Reports(reports: List<ReportData>) {
                         .background(Color.White)
 
                     ) {
-                            ReportsRow(reportDataI.description, reportDataI.reportState, reportDataI.date, reportDataI.address)
+                            ReportsRow(reportDataI.description, reportDataI.reportState, reportDataI.date, reportDataI.address, navController)
                     Divider(
                         color = Color.LightGray,
                         thickness = 1.dp,
