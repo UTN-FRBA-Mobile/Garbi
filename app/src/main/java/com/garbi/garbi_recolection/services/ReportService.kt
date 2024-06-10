@@ -22,9 +22,9 @@ data class CreateReportResponse(
 )
 
 interface ReportService {
-    @GET("/api/report")
+    @GET("/api/report/{userId}")
     @Headers("accept: application/json")
-    suspend fun getReports(): ReportResponse
+    suspend fun getReports(@Path("userId") userId: String): ReportResponse
 
     @GET("/api/report/{id}")
     @Headers("accept: application/json")
@@ -36,4 +36,5 @@ interface ReportService {
         @Part("report") report: RequestBody,
         @Part image: MultipartBody.Part?
     ): Response<CreateReportResponse>
+
 }

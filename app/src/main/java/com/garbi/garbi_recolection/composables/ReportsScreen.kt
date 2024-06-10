@@ -22,7 +22,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.garbi.garbi_recolection.core.ReportData
-import com.garbi.garbi_recolection.core.ReportsAPI
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,15 +35,26 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.garbi.garbi_recolection.core.ReportState
+import com.garbi.garbi_recolection.models.Report
+import com.garbi.garbi_recolection.models.ReportResponse
+import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.Green700
 import com.garbi.garbi_recolection.ui.theme.Green900
 import com.garbi.garbi_recolection.ui.theme.LightGreenStateBackground
 import com.garbi.garbi_recolection.ui.theme.Orange600
 import com.garbi.garbi_recolection.ui.theme.lightOrangeStateBackground
 import com.garbi.garbi_recolection.ui.theme.lightRedStateBackground
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 private fun EditReportItem(
@@ -84,18 +94,43 @@ private fun DeleteReportItem(
 
 
 
+@Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReportsScreen(navController: NavController? = null) {
+fun ReportsScreen() {
+    val context = LocalContext.current
+    var userId: String = "";
+    var reportDetails: ReportResponse? by remember { mutableStateOf(null) }
 
-    AppScaffold(
-        navController = navController,
-        title = stringResource(R.string.reports_screen),
-        topBarVisible = true
-    ) {
-        Reports(ReportsAPI.MockReportApi.sampleReports(), navController)
+    LaunchedEffect(context) {
+        val userDetails = RetrofitClient.getSession(context)
+        if (userDetails != null) {
+            userId=userDetails._id
+        };
     }
+
+    LaunchedEffect(userId) {
+        val service = RetrofitClient.reportService
+        try {
+            val response = withContext(Dispatchers.IO) { service.getReports(userId) }
+            reportDetails = response
+
+
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    val listOdReports =  listOf(
+        ReportData(
+            description = reportDetails!!.documents[0].description.toString(),
+            reportState =  reportDetails!!.documents[0].status.toString(),
+            date =  reportDetails!!.documents[0].createdAt!!.substring(0, 10),
+            address =  reportDetails!!.documents[0].address!!.convertToString()
+
+
+        )
+    )
 
 }
 

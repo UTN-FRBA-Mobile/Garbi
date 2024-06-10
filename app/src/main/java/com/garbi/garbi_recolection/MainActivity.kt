@@ -48,7 +48,7 @@ private fun App() {
                 MapsScreen(navController, mapsViewModel)
             }
             composable("reports") {
-                ReportsScreen(navController)
+                ReportsScreen()
             }
             composable(
                 "create_report/{containerId}/{street}/{number}/{neighborhood}",
