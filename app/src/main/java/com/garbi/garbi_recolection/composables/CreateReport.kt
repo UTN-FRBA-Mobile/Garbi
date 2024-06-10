@@ -77,6 +77,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import com.google.gson.Gson
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -93,13 +99,14 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         observation = null,
         description = "", //TODO MAYBE SHOULD BE NULLABLE
         address = address,
-        imagePath = null,
         phone = "2", //null,
         email = "string6@admin.com",
         status = null,
         type = "",
         createdAt = null
     )) }
+
+    var imagePath by remember { mutableStateOf<String?>(null) }
 
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = Green900.copy(alpha = 0.05f),
@@ -149,7 +156,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     ) { success: Boolean ->
         if (success) {
             selectedImageUri = tempFileUri
-            reportData.imagePath = tempFile.absolutePath
+            imagePath = tempFile.absolutePath
             isPhotoTaken = true
         }
     }
@@ -301,7 +308,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                             onClick = {
                                 selectedImageUri = null
                                 isPhotoTaken = false
-                                reportData.imagePath = null
+                                imagePath = null
                             },
                             colors = IconButtonDefaults.outlinedIconButtonColors(
                                 containerColor = Color(0xFF000000).copy(alpha = 0.5f),
@@ -394,7 +401,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     onDismissRequest = { openAlertDialog.value = false },
                     onConfirmation = {
                         coroutineScope.launch {
-                            val success = createReport(reportData, context)
+                            val success = createReport(reportData,imagePath, context)
                             if (success) {
                                 navController?.navigate("reports")
                                 openAlertDialog.value = false
@@ -411,15 +418,15 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     }
 }
 
-suspend fun createReport(reportData: Report, context: Context): Boolean {
+suspend fun createReport(reportData: Report, imagePath: String?, context: Context): Boolean {
     val reportService = RetrofitClient.reportService
     return withContext(Dispatchers.IO) {
         try {
-//            println("reportData: " + reportData)
-            val response = reportService.createReport(reportData)
+            val imagePart = createImagePart(imagePath)
+            val reportPart  = createReportRequestBody(reportData)
+            val response = reportService.createReport(reportPart,imagePart)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
-//                    val responseData = response.body()
                     Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
                 } else {
                     println("code: ${response.code()}")
@@ -429,13 +436,24 @@ suspend fun createReport(reportData: Report, context: Context): Boolean {
                 response.isSuccessful
             }
         } catch (e: HttpException) {
-//            val errorBody = e.response()?.errorBody()?.string()
-//            println("Error Body: $errorBody")
-//            e.printStackTrace()
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
                 false
             }
         }
     }
+}
+
+fun createImagePart(imagePath: String?): MultipartBody.Part? {
+    if (imagePath == null) return null
+
+    val file = File(imagePath)
+    val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+    return MultipartBody.Part.createFormData("image", file.name, requestFile)
+}
+
+fun createReportRequestBody(report: Report): RequestBody {
+    val gson = Gson()
+    val json = gson.toJson(report)
+    return json.toRequestBody("application/json".toMediaTypeOrNull())
 }
