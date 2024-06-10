@@ -20,13 +20,7 @@ data class SessionRequest(
 
 data class SessionResponse(
     val success: Boolean,
-    val user: UserWrapper
-)
-
-data class UserWrapper(
-    val user: UserDetails,
-    val iat: Long,
-    val exp: Long
+    val user: UserDetails
 )
 
 data class UserDetails(

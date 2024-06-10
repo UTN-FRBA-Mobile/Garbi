@@ -93,7 +93,7 @@ object RetrofitClient {
             Log.v("session","No estaba guardada la session. Buscandola...")
             val loginResponse = loginService.session(SessionRequest(token ?: ""))
             if (loginResponse.success) {
-                session = loginResponse.user.user
+                session = loginResponse.user
                 storeSession(context, session)
             }
         }else{
