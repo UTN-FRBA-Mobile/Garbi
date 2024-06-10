@@ -86,36 +86,6 @@ fun ProfileScreen(navController: NavController? = null) {
                         fontFamily = FontFamily.SansSerif
                     )
                 }
-
-                Row (
-                    modifier = Modifier
-                        .padding(24.dp, 4.dp)
-                        .fillMaxWidth()
-                        .clickable(
-                            onClick = { switchState.value = !switchState.value },
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() }
-                        ),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.fingerprint),
-                            contentDescription = "fingerprint icon",
-                            tint = Color.Black,
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.biometrics_switch),
-                            fontSize = 20.sp,
-                            fontFamily = FontFamily.SansSerif
-                        )
-                    }
-                    Switch(switchState)
-                }
             }
             
             TextButton(
