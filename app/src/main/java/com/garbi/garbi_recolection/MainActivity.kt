@@ -83,7 +83,7 @@ private fun App() {
                 ProfileScreen(navController)
             }
             composable("login") {
-                LoginForm(navController)
+                LoginScreen(navController)
             }
             composable("logout") {
                 RetrofitClient.deleteSession(context)
