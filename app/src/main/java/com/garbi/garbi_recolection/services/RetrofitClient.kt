@@ -5,6 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 
 object RetrofitClient {
     private const val BASE_URL = "http://54.152.182.89"
@@ -88,18 +89,19 @@ object RetrofitClient {
         return System.currentTimeMillis() < tokenExpiryTime!!
     }
     suspend fun getSession(context: Context): UserDetails? {
-        var session = getStoredSession(context)
-        if (session == null) {
-            Log.v("session","No estaba guardada la session. Buscandola...")
-            val loginResponse = loginService.session(SessionRequest(token ?: ""))
-            if (loginResponse.success) {
-                session = loginResponse.user
-                storeSession(context, session)
-            }
-        }else{
-            Log.v("session","Estaba guardada la session.")
+        return getStoredSession(context)
+    }
+
+
+    suspend fun setSession(context: Context, password: String): UserDetails? {
+        Log.v("session","setSession")
+        var session: UserDetails? = null
+        val loginResponse = loginService.session(SessionRequest(token ?: ""))
+        if (loginResponse.success) {
+            session = loginResponse.user
+            storeSession(context, session, password)
         }
-        Log.v("session",session.toString())
+        Log.v("session",session.toString() + " pwd " + password)
         return session
     }
 
@@ -112,15 +114,16 @@ object RetrofitClient {
         val phone = sharedPreferences.getString("phone", null)
         val email = sharedPreferences.getString("email", null)
         val role = sharedPreferences.getString("role", null)
+        val password = sharedPreferences.getString("password", null)
 
         return if (userId != null && name != null && email != null) {
-            UserDetails(userId, companyId ?: "", name, surname ?: "", phone ?: "", email, role ?: "")
+            UserDetails(userId, companyId ?: "", name, surname ?: "", phone ?: "", email, role ?: "", password ?: "")
         } else {
             null
         }
     }
 
-    private fun storeSession(context: Context, userDetails: UserDetails) {
+    private fun storeSession(context: Context, userDetails: UserDetails, password: String) {
         val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("userId", userDetails._id)
@@ -130,6 +133,7 @@ object RetrofitClient {
         editor.putString("phone", userDetails.phone)
         editor.putString("email", userDetails.email)
         editor.putString("role", userDetails.role)
+        editor.putString("password", password)
         editor.apply()
     }
 
@@ -143,6 +147,7 @@ object RetrofitClient {
         editor.remove("phone")
         editor.remove("email")
         editor.remove("role")
+        editor.remove("password")
         editor.apply()
     }
 

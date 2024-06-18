@@ -43,6 +43,7 @@ import com.garbi.garbi_recolection.models.LoginFieldsResponse
 import com.garbi.garbi_recolection.services.ChangePasswordRequest
 import com.garbi.garbi_recolection.services.LoginRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.garbi.garbi_recolection.services.RetrofitClient.setSession
 import com.garbi.garbi_recolection.ui.theme.Garbi_recolectionTheme
 import com.garbi.garbi_recolection.ui.theme.Green900
 import kotlinx.coroutines.Dispatchers
@@ -145,6 +146,7 @@ fun LoginScreen(navController: NavController? = null) {
                                                 return@launch
                                             }
                                             if(response.success){
+                                                setSession(context,credentials.pwd)
                                                 navController?.navigate("home")
                                             }
                                         }
@@ -218,6 +220,7 @@ fun LoginScreen(navController: NavController? = null) {
                                             val response = changePassword(credentials, context)
                                             isLoading = false
                                             if (response) {
+                                                setSession(context, changePasswordCredentials.password2)
                                                 navController?.navigate("home")
                                             }else{
                                                 Toast.makeText(context, "Error cambiando la contraseña", Toast.LENGTH_SHORT).show()

@@ -31,7 +31,8 @@ data class UserDetails(
     val surname: String,
     val phone: String,
     val email: String,
-    val role: String
+    val role: String,
+    val password: String
 )
 
 data class ChangePasswordRequest(
