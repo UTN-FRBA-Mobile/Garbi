@@ -214,11 +214,13 @@ fun LoginScreen(navController: NavController? = null) {
                                     } else {
                                         isLoading = true
                                         coroutineScope.launch {
-                                            val credentials = ChangePasswordRequest(credentials.login ,changePasswordCredentials.password1, changePasswordCredentials.password2)
+                                            val credentials = ChangePasswordRequest(credentials.login ,credentials.pwd, changePasswordCredentials.password2)
                                             val response = changePassword(credentials, context)
                                             isLoading = false
                                             if (response) {
                                                 navController?.navigate("home")
+                                            }else{
+                                                Toast.makeText(context, "Error cambiando la contraseña", Toast.LENGTH_SHORT).show()
                                             }
                                         }                                    }
                                 },
