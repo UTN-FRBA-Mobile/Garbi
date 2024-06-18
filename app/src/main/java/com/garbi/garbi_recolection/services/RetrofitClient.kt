@@ -6,6 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.navigation.NavController
 
 object RetrofitClient {
     private const val BASE_URL = "http://54.152.182.89"
@@ -88,8 +89,14 @@ object RetrofitClient {
     fun isTokenValid(): Boolean {
         return System.currentTimeMillis() < tokenExpiryTime!!
     }
-    suspend fun getSession(context: Context): UserDetails? {
-        return getStoredSession(context)
+    suspend fun getSession(context: Context, navController: NavController): UserDetails? {
+        val session = getStoredSession(context)
+        if (session == null){
+            deleteSession(context)
+            deleteToken(context)
+            navController.navigate("login")
+        }
+        return session
     }
 
 

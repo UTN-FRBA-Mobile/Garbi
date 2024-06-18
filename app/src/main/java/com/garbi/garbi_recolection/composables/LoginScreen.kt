@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -44,6 +48,7 @@ import com.garbi.garbi_recolection.services.ChangePasswordRequest
 import com.garbi.garbi_recolection.services.LoginRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.services.RetrofitClient.setSession
+import com.garbi.garbi_recolection.services.UserDetails
 import com.garbi.garbi_recolection.ui.theme.Garbi_recolectionTheme
 import com.garbi.garbi_recolection.ui.theme.Green900
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +63,7 @@ fun LoginScreen(navController: NavController? = null) {
     var changePasswordScreen by remember { mutableStateOf(false) }
     var changePasswordCredentials by remember { mutableStateOf(ChangePasswordCredentials()) }
     val context = LocalContext.current
+    var isCheckedTermsAndConditions by remember { mutableStateOf(false) }
 
     fun validatePassword(password: String): String? {
         if(password == "admin1234"){
@@ -199,6 +205,21 @@ fun LoginScreen(navController: NavController? = null) {
                                 isLast = true
                             )
                             Spacer(modifier = Modifier.height(20.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(
+                                    checked = isCheckedTermsAndConditions,
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = Green900
+                                    ),
+                                    onCheckedChange = { isCheckedTermsAndConditions = it }
+                                )
+                                Text(
+                                    text = stringResource(R.string.accept_terms_and_conditions)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
                             Button(
                                 onClick = {
                                     val validationError =
@@ -227,7 +248,7 @@ fun LoginScreen(navController: NavController? = null) {
                                             }
                                         }                                    }
                                 },
-                                enabled = changePasswordCredentials.isNotEmpty(),
+                                enabled = changePasswordCredentials.isNotEmpty() && isCheckedTermsAndConditions,
                                 shape = RoundedCornerShape(5.dp),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(

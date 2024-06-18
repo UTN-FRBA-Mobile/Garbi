@@ -74,12 +74,13 @@ fun ChangePasswordScreen(navController: NavController? = null) {
     var userDetails by remember { mutableStateOf<UserDetails?>(null) }
 
     LaunchedEffect(context) {
-        userDetails = RetrofitClient.getSession(context)
+        userDetails = RetrofitClient.getSession(context, navController!!)
     }
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
+        backButton = true,
         title = stringResource(R.string.change_password_screen)
     ) {
 

@@ -46,7 +46,6 @@ data class ChangePasswordResponse(
     val message: String
 )
 
-
 interface LoginService {
     @POST("/public-api/login")
     @Headers("accept: application/json", "content-type: application/json")

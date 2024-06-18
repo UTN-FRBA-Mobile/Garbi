@@ -54,7 +54,7 @@ fun ProfileScreen(navController: NavController? = null) {
     var userDetails by remember { mutableStateOf<UserDetails?>(null) }
 
     LaunchedEffect(context) {
-        userDetails = RetrofitClient.getSession(context)
+        userDetails = RetrofitClient.getSession(context, navController!!)
         Log.v("user", userDetails.toString())
     }
 
