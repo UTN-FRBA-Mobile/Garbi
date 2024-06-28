@@ -6,8 +6,10 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.BlueRevision
 import com.garbi.garbi_recolection.ui.theme.GreenResolved
 import com.garbi.garbi_recolection.ui.theme.OrangeNew
@@ -17,23 +19,23 @@ import com.garbi.garbi_recolection.ui.theme.RedRejected
 fun ReportStatusChip(status: String, modifier: Modifier) {
     var statusText = status
     if (status == "EN_REVISION") {
-        statusText = "EN REVISIÓN"
+        statusText = stringResource(R.string.status_in_revision)
     }
 
     val chipColors = when (statusText) {
-        "RESUELTO" -> SuggestionChipDefaults.suggestionChipColors(
+        stringResource(R.string.status_resolved) -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = GreenResolved,
         )
 
-        "RECHAZADO" -> SuggestionChipDefaults.suggestionChipColors(
+        stringResource(R.string.status_rejected) -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = RedRejected
         )
 
-        "NUEVO" -> SuggestionChipDefaults.suggestionChipColors(
+        stringResource(R.string.status_new) -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = OrangeNew,
         )
 
-        "EN REVISIÓN" -> SuggestionChipDefaults.suggestionChipColors(
+        stringResource(R.string.status_in_revision) -> SuggestionChipDefaults.suggestionChipColors(
             disabledContainerColor = BlueRevision
         )
 

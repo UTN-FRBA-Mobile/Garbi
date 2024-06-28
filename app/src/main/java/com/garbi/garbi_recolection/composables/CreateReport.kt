@@ -101,7 +101,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         observation = null,
         description = "", //TODO MAYBE SHOULD BE NULLABLE
         address = address,
-        phone = "2", //null,
+        phone = null,
         email = "",
         status = null,
         type = "",
@@ -132,13 +132,13 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
 
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
-    val items =  stringArrayResource(R.array.report_items).toList()
+    val items =  stringArrayResource(R.array.report_types).toList()
     val itemToEnumValue = mapOf(
-        items[0] to "CONTENEDOR_ROTO",
-        items[1] to "CONTENEDOR_SUCIO",
-        items[2] to "BASURA_EN_LA_CALLE",
-        items[3] to "CONTENEDOR_FALTANTE",
-        items[4] to "OTROS"
+        items[0] to stringResource(R.string.report_type_enum_contenedor_roto),
+        items[1] to stringResource(R.string.report_type_enum_contenedor_sucio),
+        items[2] to stringResource(R.string.report_type_enum_basura_calle),
+        items[3] to stringResource(R.string.report_type_enum_contenedor_faltante),
+        items[4] to stringResource(R.string.report_type_enum_otros),
     )
     var selectedItem by remember { mutableStateOf("") }
 
@@ -291,7 +291,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                         modifier = Modifier.padding(8.dp, 8.dp, 4.dp, 8.dp)
                     )
                     Text(
-                        text = stringResource(id = R.string.take_photo_text),
+                        text = stringResource(R.string.take_photo_text),
                         modifier = Modifier.padding(4.dp, 8.dp, 8.dp, 8.dp)
                     )
                 }
@@ -352,7 +352,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                 value = address.convertToString(),
                 enabled = false,
                 onValueChange = {},
-                label = { Text(text = stringResource(id = R.string.address_field)) },
+                label = { Text(text = stringResource(R.string.address_field)) },
                 colors = fieldColors,
                 singleLine = true,
                 modifier = Modifier
@@ -378,7 +378,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = stringResource(id = R.string.create_report_button))
+                    Text(text = stringResource(R.string.create_report_button))
                 }
 
                 if (!reportData.requiredFieldsCompleted()) {
@@ -388,13 +388,9 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                             .background(Color.Transparent)
                             .clickable(
                                 onClick = {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            R.string.complete_fields_toast,
-                                            Toast.LENGTH_SHORT
-                                        )
-                                        .show()
+                                    Toast.makeText(
+                                        context, R.string.complete_fields_toast, Toast.LENGTH_SHORT
+                                    ).show()
                                 },
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }

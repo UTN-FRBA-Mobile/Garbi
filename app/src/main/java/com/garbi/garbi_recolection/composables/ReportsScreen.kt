@@ -2,6 +2,7 @@ package com.garbi.garbi_recolection.composables
 
 import AppScaffold
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
-import com.garbi.garbi_recolection.ui.theme.DisabledButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -68,7 +68,19 @@ fun ReportsScreen(navController: NavController? = null) {
         title = stringResource(R.string.reports_screen)
     ) {
         if (reports.value.isEmpty()) { //TODO ver si es solo ==null o si vacio tmb
-            Text(text = "no hay reportes")
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp, 0.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.empty_reports),
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = stringResource(R.string.empty_reports_description)
+                )
+            }
         } else {
             LazyColumn {
                 items(items = reports.value) { reportDataI ->
@@ -98,6 +110,35 @@ fun ReportsScreen(navController: NavController? = null) {
 
 @Composable
 fun ReportsRow(title: String, status: String, creationDate: String, address: String, navController: NavController? = null, reportId: String) {
+    // for Delete report functionality
+    val context = LocalContext.current
+    val openAlertDialog = remember { mutableStateOf(false) }
+    var deleteConfirmed by remember { mutableStateOf(false) }
+
+    if (deleteConfirmed) {
+        LaunchedEffect(reportId) {
+            val service = RetrofitClient.reportService
+
+            try {
+                val response = withContext(Dispatchers.IO) { service.deleteReport(reportId) }
+                println("response: $response")
+                if (response.isSuccessful) {
+                    navController?.navigate("reports") //todo hará que se recargue? sino hay q hacer algo para q se actualice la pantalla y no se vea el reporte
+                    Toast.makeText(context, R.string.report_deleted_toast, Toast.LENGTH_LONG).show()
+                } else {
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, R.string.report_deletion_error_toast, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+            } finally {
+                deleteConfirmed = false
+            }
+        }
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.clickable { navController?.navigate("report_details/$reportId") }
@@ -131,7 +172,7 @@ fun ReportsRow(title: String, status: String, creationDate: String, address: Str
         }
 
         var iconButtonsEnabled = false
-        if (status == "NUEVO") {
+        if (status == stringResource(R.string.status_new)) {
             iconButtonsEnabled = true
         }
         Column(
@@ -139,8 +180,24 @@ fun ReportsRow(title: String, status: String, creationDate: String, address: Str
         ) {
             Row {
                 EditReportItem(onClick = { }, enabled = iconButtonsEnabled)
-                DeleteReportItem(onClick = { }, enabled = iconButtonsEnabled)
+                DeleteReportItem(
+                    onClick = { openAlertDialog.value = true },
+                    enabled = iconButtonsEnabled
+                )
             }
+        }
+
+        //delete report dialog
+        if (openAlertDialog.value) {
+            com.garbi.garbi_recolection.common_components.AlertDialog(
+                onDismissRequest = { openAlertDialog.value = false },
+                onConfirmation = {
+                    deleteConfirmed = true
+                    openAlertDialog.value = false
+                },
+                dialogText = stringResource(R.string.delete_report_dialog_text),
+                confirmText = stringResource(R.string.delete_report_dialog_confirm)
+            )
         }
 
     }

@@ -1,6 +1,7 @@
 package com.garbi.garbi_recolection.composables
 
 import AppScaffold
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -41,12 +43,14 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, reportId: String) {
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     //For the edit and delete buttons in the TopBar
     var isModifiable by remember { mutableStateOf(false) }
 
     var reportDetails: Report? by remember { mutableStateOf(null) }
+    val newStatus = stringResource(R.string.status_new)
     LaunchedEffect(reportId) {
         val service = RetrofitClient.reportService
         try {
@@ -55,7 +59,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
             println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
-            if (listOfStatus!![listOfStatus.size -1].status == "NUEVO") { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
+            if (listOfStatus!![listOfStatus.size -1].status == newStatus) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
         } catch (e: Exception) {
@@ -63,14 +67,42 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         }
     }
 
-    val items =  stringArrayResource(R.array.report_items).toList()
+    val items =  stringArrayResource(R.array.report_types).toList()
     val enumValueToItem = mapOf(
-        "CONTENEDOR_ROTO" to items[0],
-        "CONTENEDOR_SUCIO" to items[1],
-        "BASURA_EN_LA_CALLE" to items[2],
-        "CONTENEDOR_FALTANTE" to items[3],
-        "OTROS" to items[4]
+        stringResource(R.string.report_type_enum_contenedor_roto) to items[0],
+        stringResource(R.string.report_type_enum_contenedor_sucio) to items[1],
+        stringResource(R.string.report_type_enum_basura_calle) to items[2],
+        stringResource(R.string.report_type_enum_contenedor_faltante) to items[3],
+        stringResource(R.string.report_type_enum_otros) to items[4]
     )
+
+    // for Delete report functionality
+    val openAlertDialog = remember { mutableStateOf(false) }
+    var deleteConfirmed by remember { mutableStateOf(false) }
+
+    if (deleteConfirmed) {
+        LaunchedEffect(reportId) {
+            val service = RetrofitClient.reportService
+
+            try {
+                val response = withContext(Dispatchers.IO) { service.deleteReport(reportId) }
+                println("response: $response")
+                if (response.isSuccessful) {
+                    navController?.navigate("reports")
+                    Toast.makeText(context, R.string.report_deleted_toast, Toast.LENGTH_LONG).show()
+                } else {
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, R.string.report_deletion_error_toast, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+            } finally {
+                deleteConfirmed = false
+            }
+        }
+    }
 
 
     AppScaffold(
@@ -80,7 +112,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         backButton = true,
         actions = isModifiable,
         onEditClick = { /*TODO*/ },
-        onDeleteClick = { /*TODO*/ }
+        onDeleteClick = { openAlertDialog.value = true }
     ) {
         Column (
             modifier = Modifier
@@ -167,6 +199,19 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 //            }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            //delete report dialog
+            if (openAlertDialog.value) {
+                com.garbi.garbi_recolection.common_components.AlertDialog(
+                    onDismissRequest = { openAlertDialog.value = false },
+                    onConfirmation = {
+                        deleteConfirmed = true
+                        openAlertDialog.value = false
+                    },
+                    dialogText = stringResource(R.string.delete_report_dialog_text),
+                    confirmText = stringResource(R.string.delete_report_dialog_confirm)
+                )
+            }
         }
     }
 }
