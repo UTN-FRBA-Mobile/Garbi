@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
@@ -54,7 +55,7 @@ fun ReportsScreen(navController: NavController? = null) {
         val service = RetrofitClient.reportService
         try {
             val response = withContext(Dispatchers.IO) { service.getReports(userId) }
-            reports.value = response.documents
+            reports.value = response.documents.filter { it.deletedAt == null } //TODO later: handle this in the BE and delete the filter here
             println("reports: $reports")
         } catch (e: Exception) {
             e.printStackTrace()
@@ -67,18 +68,21 @@ fun ReportsScreen(navController: NavController? = null) {
         topBarVisible = true,
         title = stringResource(R.string.reports_screen)
     ) {
-        if (reports.value.isEmpty()) { //TODO ver si es solo ==null o si vacio tmb
+        if (reports.value.isEmpty()) {
             Column (
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp, 0.dp)
+                    .padding(24.dp)
             ) {
                 Text(
                     text = stringResource(R.string.empty_reports),
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = stringResource(R.string.empty_reports_description)
+                    text = stringResource(R.string.empty_reports_description),
+                    fontSize = 16.sp
                 )
             }
         } else {

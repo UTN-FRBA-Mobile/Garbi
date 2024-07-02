@@ -8,8 +8,8 @@
 
 <!--All Reports screen-->
     <string name="empty_reports">Todavía no realizaste ningún reporte</string>
-    <string name="empty_reports_description">
-        Para crear uno, toca en un contenedor para ver sus detalles, y toca en "Crear Reporte"
+    <string name="empty_reports_description"
+        >Para crear uno, toca en un contenedor para ver sus detalles, y toca en "Crear Reporte"
     </string>
 
     <string name="supporting_text_required">Campo requerido</string>

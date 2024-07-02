@@ -105,7 +105,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         email = "",
         status = null,
         type = "",
-        createdAt = null
+        createdAt = null,
+        deletedAt = null
     )) }
 
     var imagePath by remember { mutableStateOf<String?>(null) }
