@@ -154,9 +154,11 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     title = stringResource(R.string.type_dropdown),
                     content = enumValueToItem[details.type] ?: details.type
                 )
+
+                val description = details.description?.ifEmpty { null }
                 TextField(
                     title = stringResource(R.string.description_field),
-                    content = details.description,
+                    content = description,
                 )
 
                 if (details.imagePath != null) {

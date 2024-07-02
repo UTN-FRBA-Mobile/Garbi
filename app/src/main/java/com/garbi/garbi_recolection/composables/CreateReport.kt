@@ -68,11 +68,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
 import com.garbi.garbi_recolection.services.RetrofitClient
-import com.garbi.garbi_recolection.ui.theme.DisabledButton
-import com.garbi.garbi_recolection.ui.theme.DisabledButtonText
-import com.garbi.garbi_recolection.ui.theme.DisabledField
-import com.garbi.garbi_recolection.ui.theme.DisabledFieldContent
-import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -99,7 +95,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         managerId = null,
         title = "",
         observation = null,
-        description = "", //TODO MAYBE SHOULD BE NULLABLE
+        description = null, //TODO MAYBE SHOULD BE NULLABLE
         address = address,
         phone = null,
         email = "",
@@ -112,8 +108,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     var imagePath by remember { mutableStateOf<String?>(null) }
 
     val fieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = Green900.copy(alpha = 0.05f),
-        unfocusedContainerColor = Green900.copy(alpha = 0.05f),
+        focusedContainerColor = focusedContainer,
+        unfocusedContainerColor = unfocusedContainer,
         focusedTextColor = Color.Black,
         unfocusedTextColor = Color.Black,
         focusedLabelColor = Color.DarkGray,
