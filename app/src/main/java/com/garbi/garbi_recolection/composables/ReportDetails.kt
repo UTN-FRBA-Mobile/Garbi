@@ -123,6 +123,8 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
             Spacer(modifier = Modifier.height(16.dp))
 
             reportDetails?.let { details ->
+                val lastStatus = details.status!![details.status.size -1]
+
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top,
@@ -139,9 +141,9 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                             .padding(0.dp, 8.dp, 16.dp, 0.dp)
                     )
 
-                    val listOfStatus = details.status!!
+//                    val listOfStatus = details.status!!
                     ReportStatusChip(
-                        listOfStatus[listOfStatus.size -1].status,
+                        lastStatus.status,
                         modifier = Modifier
                     )
                 }
@@ -150,6 +152,13 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     title = stringResource(R.string.creation_date_field),
                     content = details.createdAt!!.substring(0, 10)
                 )
+//                TextField( //TODO BE is returning incorrect date
+//                    title = stringResource(R.string.last_status_update_field),
+//                    content = lastStatus.updatedAt.substring(0, 10)
+//                )
+
+//                Spacer(modifier = Modifier.height(8.dp))
+
                 TextField(
                     title = stringResource(R.string.type_dropdown),
                     content = enumValueToItem[details.type] ?: details.type

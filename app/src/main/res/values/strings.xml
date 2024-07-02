@@ -21,6 +21,7 @@
     <string name="photo_field">Foto del problema</string>
     <string name="container_id_field">ID del contenedor</string>
     <string name="address_field">Dirección aproximada</string>
+    <string name="last_status_update_field">Fecha de última actualización de estado</string>
 
     <string-array name="report_types">
         <item>Contenedor en mal estado</item>
