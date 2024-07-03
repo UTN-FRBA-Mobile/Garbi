@@ -22,7 +22,8 @@ data class Report(
     val email: String,
     val status: List<Status>?,
     var type: String,
-    var createdAt: String?
+    var createdAt: String?,
+    var deletedAt: String?
 ) {
     fun requiredFieldsCompleted(): Boolean {
         return title.isNotEmpty() && type.isNotEmpty()
