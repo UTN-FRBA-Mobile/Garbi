@@ -44,4 +44,7 @@
 <!--Commons-->
     <!--Dialog-->
     <string name="dialog_dismiss">Cancelar</string>
+
+
+    <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
 </resources>

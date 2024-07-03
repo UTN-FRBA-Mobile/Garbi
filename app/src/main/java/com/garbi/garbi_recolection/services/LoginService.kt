@@ -11,7 +11,8 @@ data class LoginRequest(
 
 data class LoginResponse(
     val token: String,
-    val success: Boolean
+    val success: Boolean,
+    val termsAndConditions: Boolean
 )
 
 data class SessionRequest(
@@ -30,8 +31,21 @@ data class UserDetails(
     val surname: String,
     val phone: String,
     val email: String,
-    val role: String
+    val role: String,
+    val password: String
 )
+
+data class ChangePasswordRequest(
+    val email: String,
+    val oldPassword: String,
+    val newPassword: String
+)
+
+data class ChangePasswordResponse(
+    val success: Boolean,
+    val message: String
+)
+
 interface LoginService {
     @POST("/public-api/login")
     @Headers("accept: application/json", "content-type: application/json")
@@ -41,4 +55,10 @@ interface LoginService {
     @POST("/public-api/session")
     @Headers("accept: application/json", "content-type: application/json")
     suspend fun session(@Body sessionRequest: SessionRequest): SessionResponse
+
+
+    @POST("/public-api/change_password")
+    @Headers("accept: application/json", "content-type: application/json")
+    suspend fun changePassword(@Body changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse
+
 }
