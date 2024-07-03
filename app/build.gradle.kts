@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.5")
@@ -86,4 +87,24 @@ dependencies {
 
     //Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Jetpack Compose
+    implementation ("androidx.compose.ui:ui:1.0.5")
+    implementation ("androidx.compose.material:material:1.0.5")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.0.5")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation ("androidx.activity:activity-compose:1.3.1")
+
+// Google Maps
+    implementation ("com.google.android.gms:play-services-maps:18.0.0")
+
+// Navigation
+    implementation ("com.google.maps.android:android-maps-utils:2.2.5")
+    // Otras dependencias
+    implementation("com.google.android.gms:play-services-maps:18.0.0")
+    implementation("com.google.maps:google-maps-services:0.17.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+
+
+
 }
