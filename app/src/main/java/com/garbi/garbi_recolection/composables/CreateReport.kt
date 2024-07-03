@@ -122,7 +122,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
 
     //Get userId
     LaunchedEffect(context) {
-        val userDetails = RetrofitClient.getSession(context)
+        val userDetails = RetrofitClient.getSession(context, navController!!)
         reportData = reportData.copy(userId = userDetails?._id ?: "")
         reportData = reportData.copy(email = userDetails?.email ?: "")
     }

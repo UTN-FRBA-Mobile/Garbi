@@ -48,7 +48,7 @@ fun ReportsScreen(navController: NavController? = null) {
 
     LaunchedEffect(context) {
         //Get user id
-        val userDetails = RetrofitClient.getSession(context)
+        val userDetails = RetrofitClient.getSession(context, navController!!)
         userId = userDetails?._id ?: ""
 
         //Get reports

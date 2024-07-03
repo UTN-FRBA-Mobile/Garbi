@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import com.google.maps.android.compose.MapProperties
 import android.Manifest
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,11 +61,18 @@ import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.setValue
+import com.garbi.garbi_recolection.services.DirectionsClient
+import com.google.maps.android.PolyUtil
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
     val context = LocalContext.current;
+
+    val applicationInfo: ApplicationInfo = context.packageManager
+        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+    val apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY")
+
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
@@ -105,6 +113,8 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
     }
 
     val showDialog = remember { mutableStateOf(false) }
+    val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
+
 
     if (showDialog.value) {
         AlertDialog(
@@ -119,6 +129,27 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
         delay(30_000) //Esto en realidad no tiene que estar con un delay. Se va a setear la variable en true cuando haya un recorrido disponible
         if (!routeAvailable){
             showDialog.value = true;
+        }
+    }
+
+    LaunchedEffect(routeAvailable) {
+        if (routeAvailable) {
+            val directionsService = DirectionsClient.directionsService
+            try {
+                val origin = "-34.5992,-58.3747"
+                val destination = "-34.6286,-58.4355"
+                val waypoints = "-34.5806,-58.4066|-34.5899,-58.4284"
+
+                val response = withContext(Dispatchers.IO) {
+                        directionsService.getDirections(origin, destination, waypoints, apiKey!!)
+                }
+                if (response.routes.isNotEmpty()) {
+                    val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
+                    polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -137,14 +168,9 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
                 val zoom = cameraPositionState.position.zoom
                 val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
 
-                if (routeAvailable){
+                if (polylinePoints.value.isNotEmpty()) {
                     Polyline(
-                        points = listOf(
-                            LatLng(-34.5992,-58.3747),
-                            LatLng(-34.5806,-58.4066),
-                            LatLng(-34.5899,-58.4284),
-                            LatLng(-34.6286,-58.4355)
-                        ),
+                        points = polylinePoints.value,
                         color = Color.Red
                     )
                 }
