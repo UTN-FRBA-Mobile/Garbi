@@ -4,10 +4,10 @@ import androidx.compose.material.TextButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.*
 
 @Composable
 fun AlertDialog(
@@ -20,7 +20,7 @@ fun AlertDialog(
         text = {
             Text(
                 text = dialogText,
-                color = Color.Black
+                color = Black
             )
         },
         onDismissRequest = {
@@ -33,7 +33,7 @@ fun AlertDialog(
                 Text(color = Green900, text = confirmText)
             }
         },
-        containerColor = Color.White,
+        containerColor = White,
         dismissButton = {
             TextButton(
                 onClick = { onDismissRequest() }

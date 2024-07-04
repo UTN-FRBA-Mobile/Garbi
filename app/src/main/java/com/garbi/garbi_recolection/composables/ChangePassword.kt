@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -33,7 +32,7 @@ import com.garbi.garbi_recolection.services.ChangePasswordRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.services.RetrofitClient.setSession
 import com.garbi.garbi_recolection.services.UserDetails
-import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.*
 import kotlinx.coroutines.launch
 
 
@@ -44,31 +43,33 @@ fun ChangePasswordScreen(navController: NavController? = null) {
 
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
-    var changePasswordScreen by remember { mutableStateOf(false) }
     var changePasswordCredentials by remember { mutableStateOf(ChangePasswordCredentials()) }
     val context = LocalContext.current
 
-
-
+    val errorMessagePwLength = stringResource(R.string.error_message_pw_length)
+    val errorMessagePwNumber = stringResource(R.string.error_message_pw_number)
+    val errorMessagePwCapitalLetter = stringResource(R.string.error_message_pw_capital_letter)
+    val errorMessagePwSpecialCharacter = stringResource(R.string.error_message_pw_special_character)
     fun validatePassword(password: String): String? {
         if(password == "admin1234"){
             return null;
         }
         if (password.length < 8) {
-            return "La contraseña debe tener al menos 8 caracteres."
+            return errorMessagePwLength
         }
         if (!password.any { it.isDigit() }) {
-            return "La contraseña debe tener al menos un número."
+            return errorMessagePwNumber
         }
         if (!password.any { it.isUpperCase() }) {
-            return "La contraseña debe tener al menos una letra mayúscula."
+            return errorMessagePwCapitalLetter
         }
         if (!password.any { !it.isLetterOrDigit() }) {
-            return "La contraseña debe tener al menos un caracter especial."
+            return errorMessagePwSpecialCharacter
         }
         return null
     }
-
+    val errorMessagePwNotEqual = stringResource(R.string.error_message_pw_not_equal)
+    val errorMessageErrorChangingPw = stringResource(R.string.error_message_error_changing_pw)
 
 
     var userDetails by remember { mutableStateOf<UserDetails?>(null) }
@@ -101,7 +102,7 @@ fun ChangePasswordScreen(navController: NavController? = null) {
             Spacer(modifier = Modifier.height(15.dp))
             PasswordField(
                 value = changePasswordCredentials.password2,
-                label = "Repite tu clave",
+                label = stringResource(R.string.repeat_pw),
                 modifier = Modifier.fillMaxWidth(),
                 onChange = { data ->
                     changePasswordCredentials =
@@ -120,7 +121,7 @@ fun ChangePasswordScreen(navController: NavController? = null) {
                     } else if (changePasswordCredentials.password1 != changePasswordCredentials.password2) {
                         Toast.makeText(
                             context,
-                            "Las contraseñas no coinciden.",
+                            errorMessagePwNotEqual,
                             Toast.LENGTH_LONG
                         )
                             .show()
@@ -140,7 +141,7 @@ fun ChangePasswordScreen(navController: NavController? = null) {
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "Error cambiando la contraseña",
+                                    errorMessageErrorChangingPw,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -151,15 +152,14 @@ fun ChangePasswordScreen(navController: NavController? = null) {
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = Color.White,
+                    contentColor = White,
                     containerColor = Green900
                 )
             ) {
-                Text("Cambiar clave")
+                Text(stringResource(R.string.change_pw))
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
 }
-

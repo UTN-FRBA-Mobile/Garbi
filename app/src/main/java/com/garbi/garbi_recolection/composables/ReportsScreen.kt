@@ -14,7 +14,6 @@ import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,6 +36,7 @@ import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.garbi.garbi_recolection.ui.theme.*
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -89,7 +89,7 @@ fun ReportsScreen(navController: NavController? = null) {
             LazyColumn {
                 items(items = reports.value) { reportDataI ->
                     Box(
-                        modifier = Modifier.background(Color.White)
+                        modifier = Modifier.background(White)
                     ) {
                         ReportsRow(
                             reportDataI.title,
@@ -100,7 +100,7 @@ fun ReportsScreen(navController: NavController? = null) {
                             reportDataI._id!!
                         )
                         Divider(
-                            color = Color.LightGray,
+                            color = LightGray,
                             thickness = 1.dp,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -136,7 +136,7 @@ fun ReportsRow(title: String, status: String, creationDate: String, address: Str
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
             } finally {
                 deleteConfirmed = false
             }

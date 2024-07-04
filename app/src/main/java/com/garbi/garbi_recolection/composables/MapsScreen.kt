@@ -45,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,11 +55,12 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.geometry.Rect
 import com.garbi.garbi_recolection.services.RetrofitClient
-import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.*
 import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import com.garbi.garbi_recolection.services.DirectionsClient
 import com.google.maps.android.PolyUtil
 
@@ -171,7 +171,7 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
                 if (polylinePoints.value.isNotEmpty()) {
                     Polyline(
                         points = polylinePoints.value,
-                        color = Color.Red
+                        color = Red
                     )
                 }
 
@@ -233,7 +233,7 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
             .width(200.dp)
             .height(100.dp)
             .background(
-                color = Color.White,
+                color = White,
                 shape = bubbleShape
             )
             .padding(8.dp),
@@ -245,13 +245,13 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Capacidad: ${container.capacity}%",
+                text = stringResource(R.string.text_capacity) + "${container.capacity}%",
                 fontWeight = FontWeight.Bold,
-                color = Color.DarkGray
+                color = DarkGray
             )
             Text(
                 text = "${container.address.street} ${container.address.number} ",
-                color = Color.Gray
+                color = Gray
             )
 
             OutlinedButton(
@@ -262,7 +262,7 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
                 }
             ) {
                 Text(
-                    text = "Crear reporte",
+                    text = stringResource(R.string.create_report_button),
                     fontWeight = FontWeight.Bold,
                     color = Green900
                 )
@@ -300,16 +300,16 @@ fun AlertDialog(onAlertAccepted: () -> Unit) {
 
     androidx.compose.material3.AlertDialog(
         text = {
-            Text(text = "Nueva ruta disponible")
+            Text(text = stringResource(R.string.text_new_route))
         },
         onDismissRequest = {},
         confirmButton = {
             androidx.compose.material.TextButton(
                 onClick = { onAlertAccepted() }
             ) {
-                Text(color = Green900, text = "Comenzar")
+                Text(color = Green900, text = stringResource(R.string.button_start))
             }
         },
-        containerColor = Color.White
+        containerColor = White
     )
 }

@@ -12,24 +12,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.garbi.garbi_recolection.R
+import com.garbi.garbi_recolection.ui.theme.*
 
 @Composable
 fun LoaderScreen(){
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
+            .background(Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(
                 modifier = Modifier.size(48.dp),
-                color = Color.White
+                color = White
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Cargando...", color = Color.White)
+            Text(stringResource(R.string.loading_screen), color = White)
         }
     }
 }

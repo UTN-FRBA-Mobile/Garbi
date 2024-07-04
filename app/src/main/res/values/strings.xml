@@ -1,10 +1,35 @@
 <resources>
     <string name="app_name">Garbi</string>
+    <string name="map_screen">Mapa</string>
     <string name="reports_screen">Reportes</string>
     <string name="create_report_screen">Nuevo reporte</string>
     <string name="report_details_screen">Detalle de reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
+    <string name="loading_screen">Cargando...</string>
+
+<!--Login & Change password screen-->
+    <string name="login_text">Iniciar sesión</string>
+    <string name="change_pw">Cambiar clave</string>
+    <string name="repeat_pw">Repite la clave</string>
+    <string name="error_message_pw_length">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="error_message_pw_number">La contraseña debe tener al menos un número</string>
+    <string name="error_message_pw_capital_letter">La contraseña debe tener al menos una letra mayúscula</string>
+    <string name="error_message_pw_special_character">La contraseña debe tener al menos un caracter especial</string>
+    <string name="error_message_pw_not_equal">Las contraseñas no coinciden</string>
+    <string name="error_message_error_changing_pw">Error cambiando la contraseña</string>
+    <string name="error_message_wrong_user_or_pw">Usuario o contraseña incorrectos</string>
+    <string name="message_enter_credentials">Ingresa tus credenciales</string>
+    <string name="email">Email</string>
+    <string name="enter_email">Ingresar email</string>
+    <string name="password">Clave</string>
+    <string name="enter_password">Ingresar la clave</string>
+
+
+<!--Map screen-->
+    <string name="text_capacity">Capacidad: </string>
+    <string name="text_new_route">Nueva ruta disponible</string>
+    <string name="button_start">Comenzar</string>
 
 <!--All Reports screen-->
     <string name="empty_reports">Todavía no realizaste ningún reporte</string>
@@ -36,7 +61,6 @@
     <string name="report_type_enum_contenedor_faltante">CONTENEDOR_FALTANTE</string>
     <string name="report_type_enum_otros">OTROS</string>
 
-    <string name="create_report_button">Crear reporte</string>
     <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
     <string name="create_report_dialog_confirm">Crear</string>
 
@@ -66,8 +90,11 @@
     <string name="edit_button">Editar</string>
     <string name="delete_button">Eliminar</string>
 
+
 <!--Commons-->
     <!--Dialog-->
     <string name="dialog_dismiss">Cancelar</string>
     <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
+    <string name="create_report_button">Crear reporte</string>
+    <string name="network_error">Error de red</string>
 </resources>

@@ -97,7 +97,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
             } finally {
                 deleteConfirmed = false
             }
@@ -204,10 +204,6 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     content = details.address!!.convertToString()
                 )
             }
-//                ?: run {
-//                // Handle loading or error state
-//                Text(text = "Loading...")
-//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

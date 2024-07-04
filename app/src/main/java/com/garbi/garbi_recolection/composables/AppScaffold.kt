@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.Garbi_recolectionTheme
-import com.garbi.garbi_recolection.ui.theme.Green900
+import com.garbi.garbi_recolection.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +28,8 @@ fun AppScaffold(
     onDeleteClick: (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val navigationBarBackgroundColor = Color.White
-    val topBarBackgroundColor = Green900
     val activeColor = Green900
-    val inactiveColor = Color.LightGray
-
+    val inactiveColor = LightGray
 
     val currentDestination = navController?.currentDestination?.route
 
@@ -42,9 +39,9 @@ fun AppScaffold(
                 if (topBarVisible) {
                     TopAppBar(
                         backgroundColor = Green900,
-                        contentColor = Color.White,
+                        contentColor = White,
                         title = {
-                            Text(text = title ?: stringResource(id = R.string.app_name))
+                            Text(text = title ?: stringResource(R.string.app_name))
                         },
                         navigationIcon = if (backButton == true) {
                             {
@@ -80,7 +77,7 @@ fun AppScaffold(
             },
             bottomBar = {
                 BottomAppBar(
-                    backgroundColor = navigationBarBackgroundColor,
+                    backgroundColor = White,
                     elevation = AppBarDefaults.BottomAppBarElevation,
                 ) {
                     Row(
@@ -96,14 +93,13 @@ fun AppScaffold(
                             val icon = if (currentDestination == "home") R.drawable.map_filled else R.drawable.map
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Mapa", tint = iconColor)
-                                Text("Mapa", color = iconColor)
+                                Text(text = stringResource(R.string.map_screen), color = iconColor)
                             }
                         }
 
                         IconButton(onClick = {
                             if (navController != null) {
                                 navController.navigate("reports")
-
                             }
                         }) {
                             val iconColor: Color
@@ -122,7 +118,7 @@ fun AppScaffold(
 
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Reportes", tint = iconColor)
-                                Text("Reportes", color = iconColor)
+                                Text(text = stringResource(R.string.reports_screen), color = iconColor)
                             }
                         }
 
@@ -135,7 +131,7 @@ fun AppScaffold(
                             val icon = if (currentDestination == "profile") R.drawable.person_filled else R.drawable.person
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Perfil", tint = iconColor)
-                                Text("Perfil", color = iconColor)
+                                Text(text = stringResource(R.string.profile_screen), color = iconColor)
                             }
                         }
                     }
@@ -150,7 +146,6 @@ fun AppScaffold(
                     content(it)
                 }
             }
-
 
         )
     }}

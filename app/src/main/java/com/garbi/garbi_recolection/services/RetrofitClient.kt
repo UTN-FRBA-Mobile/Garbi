@@ -1,11 +1,9 @@
 package com.garbi.garbi_recolection.services
-import android.content.SharedPreferences
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.navigation.NavController
 
 object RetrofitClient {

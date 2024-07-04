@@ -8,7 +8,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -110,10 +109,10 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = focusedContainer,
         unfocusedContainerColor = unfocusedContainer,
-        focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black,
-        focusedLabelColor = Color.DarkGray,
-        unfocusedLabelColor = Color.DarkGray,
+        focusedTextColor = Black,
+        unfocusedTextColor = Black,
+        focusedLabelColor = DarkGray,
+        unfocusedLabelColor = DarkGray,
         cursorColor = Green900,
         focusedIndicatorColor = Green900,
         disabledContainerColor = DisabledField,
@@ -276,7 +275,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                         }
                     },
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Black),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(0.dp, 8.dp)
@@ -284,7 +283,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     Icon(
                         painter = painterResource(R.drawable.add_a_photo),
                         contentDescription = "add photo button",
-                        tint = Color.Black,
+                        tint = Black,
                         modifier = Modifier.padding(8.dp, 8.dp, 4.dp, 8.dp)
                     )
                     Text(
@@ -315,10 +314,10 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                                 imagePath = null
                             },
                             colors = IconButtonDefaults.outlinedIconButtonColors(
-                                containerColor = Color(0xFF000000).copy(alpha = 0.5f),
-                                contentColor = Color.White
+                                containerColor = containerColor,
+                                contentColor = White
                             ),
-                            border = BorderStroke(0.1.dp, Color.White),
+                            border = BorderStroke(0.1.dp, White),
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(4.dp)
@@ -326,7 +325,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete photo",
-                                tint = Color.White,
+                                tint = White,
                             )
                         }
                     }
@@ -369,7 +368,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     enabled = reportData.requiredFieldsCompleted(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Green900,
-                        contentColor = Color.White,
+                        contentColor = White,
                         disabledContainerColor = DisabledButton,
                         disabledContentColor = DisabledButtonText
                     ),
@@ -382,7 +381,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .background(Color.Transparent)
+                            .background(Transparent)
                             .clickable(
                                 onClick = {
                                     Toast.makeText(
@@ -437,7 +436,7 @@ suspend fun createReport(reportData: Report, imagePath: String?, context: Contex
             }
         } catch (e: HttpException) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
                 false
             }
         }

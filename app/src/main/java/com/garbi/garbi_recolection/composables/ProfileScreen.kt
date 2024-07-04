@@ -23,7 +23,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,9 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
-import com.garbi.garbi_recolection.ui.theme.Green900
-import com.garbi.garbi_recolection.ui.theme.LightGreen
-import com.garbi.garbi_recolection.ui.theme.LightGreenBackground
+import com.garbi.garbi_recolection.ui.theme.*
 import com.garbi.garbi_recolection.common_components.*
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.services.UserDetails
@@ -90,7 +87,7 @@ fun ProfileScreen(navController: NavController? = null) {
                     Icon(
                         painter = painterResource(R.drawable.lock_reset),
                         contentDescription = "change password button",
-                        tint = Color.Black,
+                        tint = Black,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Text(
@@ -108,7 +105,7 @@ fun ProfileScreen(navController: NavController? = null) {
                 Icon(
                     painter = painterResource(R.drawable.logout),
                     contentDescription = "logout button",
-                    tint = Color.Red,
+                    tint = Red,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
@@ -143,7 +140,7 @@ fun ProfileHeader(image: Painter, name: String) {
         Column {
             Text(text = name,
                 modifier = Modifier.padding(0.dp, 32.dp, 0.dp, 4.dp),
-                color = Color(0xFF757575),
+                color = Gray2,
                 fontWeight = FontWeight(1000),
                 fontSize = 24.sp,
                 fontFamily = FontFamily.SansSerif

@@ -30,7 +30,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,12 +47,10 @@ import com.garbi.garbi_recolection.services.ChangePasswordRequest
 import com.garbi.garbi_recolection.services.LoginRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.services.RetrofitClient.setSession
-import com.garbi.garbi_recolection.services.UserDetails
-import com.garbi.garbi_recolection.ui.theme.Garbi_recolectionTheme
-import com.garbi.garbi_recolection.ui.theme.Green900
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.garbi.garbi_recolection.ui.theme.*
 
 @Preview
 @Composable
@@ -65,24 +62,30 @@ fun LoginScreen(navController: NavController? = null) {
     val context = LocalContext.current
     var isCheckedTermsAndConditions by remember { mutableStateOf(false) }
 
+    val errorMessagePwLength = stringResource(R.string.error_message_pw_length)
+    val errorMessagePwNumber = stringResource(R.string.error_message_pw_number)
+    val errorMessagePwCapitalLetter = stringResource(R.string.error_message_pw_capital_letter)
+    val errorMessagePwSpecialCharacter = stringResource(R.string.error_message_pw_special_character)
     fun validatePassword(password: String): String? {
         if(password == "admin1234"){
             return null;
         }
         if (password.length < 8) {
-            return "La contraseña debe tener al menos 8 caracteres."
+            return errorMessagePwLength
         }
         if (!password.any { it.isDigit() }) {
-            return "La contraseña debe tener al menos un número."
+            return errorMessagePwNumber
         }
         if (!password.any { it.isUpperCase() }) {
-            return "La contraseña debe tener al menos una letra mayúscula."
+            return errorMessagePwCapitalLetter
         }
         if (!password.any { !it.isLetterOrDigit() }) {
-            return "La contraseña debe tener al menos un caracter especial."
+            return errorMessagePwSpecialCharacter
         }
         return null
     }
+    val errorMessagePwNotEqual = stringResource(R.string.error_message_pw_not_equal)
+    val errorMessageErrorChangingPw = stringResource(R.string.error_message_error_changing_pw)
 
     Garbi_recolectionTheme {
         Surface {
@@ -91,16 +94,16 @@ fun LoginScreen(navController: NavController? = null) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
+                        .background(Black.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color.White
+                            color = White
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Cargando...", color = Color.White)
+                        Text(stringResource(R.string.loading_screen), color = White)
                     }
                 }
             } else{
@@ -122,9 +125,9 @@ fun LoginScreen(navController: NavController? = null) {
 
                             Spacer(modifier = Modifier.height(100.dp))
                             Text(
-                                text = "Iniciar sesión",
+                                text = stringResource(R.string.login_text),
                                 style = MaterialTheme.typography.h5,
-                                color = Color.Black
+                                color = Black
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             LoginField(
@@ -163,11 +166,11 @@ fun LoginScreen(navController: NavController? = null) {
                                 shape = RoundedCornerShape(5.dp),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                    contentColor = Color.White,
+                                    contentColor = White,
                                     containerColor = Green900
                                 )
                             ) {
-                                Text("Iniciar sesión")
+                                Text(stringResource(R.string.login_text))
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                         }
@@ -180,7 +183,7 @@ fun LoginScreen(navController: NavController? = null) {
 
                             Spacer(modifier = Modifier.weight(0.35f))
                             Text(
-                                text = "Cambiar clave",
+                                text = stringResource(R.string.change_pw),
                                 style = MaterialTheme.typography.h5,
                                 modifier = Modifier
                                     .padding(vertical = 16.dp)
@@ -196,7 +199,7 @@ fun LoginScreen(navController: NavController? = null) {
                             Spacer(modifier = Modifier.height(15.dp))
                             PasswordField(
                                 value = changePasswordCredentials.password2,
-                                label = "Repite tu clave",
+                                label = stringResource(R.string.repeat_pw),
                                 modifier = Modifier.fillMaxWidth(),
                                 onChange = { data ->
                                     changePasswordCredentials =
@@ -230,7 +233,7 @@ fun LoginScreen(navController: NavController? = null) {
                                     } else if (changePasswordCredentials.password1 != changePasswordCredentials.password2) {
                                         Toast.makeText(
                                             context,
-                                            "Las contraseñas no coinciden.",
+                                            errorMessagePwNotEqual,
                                             Toast.LENGTH_LONG
                                         )
                                             .show()
@@ -244,7 +247,7 @@ fun LoginScreen(navController: NavController? = null) {
                                                 setSession(context, changePasswordCredentials.password2)
                                                 navController?.navigate("home")
                                             }else{
-                                                Toast.makeText(context, "Error cambiando la contraseña", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, errorMessageErrorChangingPw, Toast.LENGTH_SHORT).show()
                                             }
                                         }                                    }
                                 },
@@ -252,11 +255,11 @@ fun LoginScreen(navController: NavController? = null) {
                                 shape = RoundedCornerShape(5.dp),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                    contentColor = Color.White,
+                                    contentColor = White,
                                     containerColor = Green900
                                 )
                             ) {
-                                Text("Cambiar clave")
+                                Text(stringResource(R.string.change_pw))
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Spacer(modifier = Modifier.weight(1f))
@@ -277,19 +280,19 @@ suspend fun login(creds: Credentials, context: Context): LoginFieldsResponse? {
                     if (response.success) {
                         RetrofitClient.setToken(context, response.token)
                     } else {
-                        Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, R.string.error_message_wrong_user_or_pw, Toast.LENGTH_LONG).show()
                     }
                     LoginFieldsResponse(response.success, !response.termsAndConditions)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
                     null
                 }
             }
         }
     } else {
-        Toast.makeText(context, "Please enter credentials", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.message_enter_credentials, Toast.LENGTH_SHORT).show()
         null
     }
 }
@@ -302,7 +305,7 @@ suspend fun changePassword(changePasswordRequest: ChangePasswordRequest, context
             response.success
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
             }
             false
         }
