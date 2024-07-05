@@ -400,7 +400,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     onDismissRequest = { openAlertDialog.value = false },
                     onConfirmation = {
                         coroutineScope.launch {
-                            val success = createReport(reportData,imagePath, context)
+                            val success = createReport(reportData, imagePath, context)
                             if (success) {
                                 navController?.navigate("reports")
                                 openAlertDialog.value = false

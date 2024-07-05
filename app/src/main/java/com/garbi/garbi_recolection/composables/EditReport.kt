@@ -211,7 +211,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         }
     }
 
-    ////// Create Report button
+    ////// Edit Report button
     val openAlertDialog = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -316,6 +316,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                             .align(Alignment.CenterHorizontally),
                         contentScale = ContentScale.Crop
                     )
+                    //todo add delete icon here
                 } else {
                     if (!isPhotoTaken) {
                         OutlinedButton(
@@ -470,7 +471,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                     onDismissRequest = { openAlertDialog.value = false },
                     onConfirmation = {
                         coroutineScope.launch {
-                            val success = createReport(reportData,imagePath, context)
+                            val success = editReport(reportData, imagePath, context)
                             if (success) {
                                 navController?.navigate("reports")
                                 openAlertDialog.value = false
@@ -487,31 +488,31 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     }
 }
 
-//suspend fun createReport(reportData: Report, imagePath: String?, context: Context): Boolean {
-//    val reportService = RetrofitClient.reportService
-//    return withContext(Dispatchers.IO) {
-//        try {
-//            val imagePart = createImagePart(imagePath)
-//            val reportPart  = createReportRequestBody(reportData)
-//            val response = reportService.createReport(reportPart,imagePart)
-//            withContext(Dispatchers.Main) {
-//                if (response.isSuccessful) {
-//                    Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
-//                } else {
-//                    println("code: ${response.code()}")
-//                    println("errorbody: ${response.errorBody()?.string()}")
-//                    Toast.makeText(context, R.string.report_creation_error_toast, Toast.LENGTH_LONG).show()
-//                }
-//                response.isSuccessful
-//            }
-//        } catch (e: HttpException) {
-//            withContext(Dispatchers.Main) {
-//                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
-//                false
-//            }
-//        }
-//    }
-//}
+suspend fun editReport(reportData: Report, imagePath: String?, context: Context): Boolean {
+    val reportService = RetrofitClient.reportService
+    return withContext(Dispatchers.IO) {
+        try {
+            val imagePart = createImagePart(imagePath)
+            val reportPart  = createReportRequestBody(reportData)
+            val response = reportService.editReport(reportData._id!!, reportPart, imagePart)
+            withContext(Dispatchers.Main) {  // todo main? no era IO?
+                if (response.isSuccessful) {
+                    Toast.makeText(context, R.string.report_edited_toast, Toast.LENGTH_LONG).show()
+                } else {
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, R.string.report_edition_error_toast, Toast.LENGTH_LONG).show()
+                }
+                response.isSuccessful
+            }
+        } catch (e: HttpException) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
+                false
+            }
+        }
+    }
+}
 
 //fun createImagePart(imagePath: String?): MultipartBody.Part? {
 //    if (imagePath == null) return null
