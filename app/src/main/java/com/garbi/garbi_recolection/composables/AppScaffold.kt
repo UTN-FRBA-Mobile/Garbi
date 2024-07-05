@@ -23,6 +23,7 @@ fun AppScaffold(
     navController: NavController? = null,
     topBarVisible: Boolean,
     backButton: Boolean? = false,
+    onBackButtonClick: (() -> Unit)? = null,
     actions: Boolean? = false,
     onEditClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
@@ -45,9 +46,16 @@ fun AppScaffold(
                         },
                         navigationIcon = if (backButton == true) {
                             {
-                                IconButton(onClick = { navController!!.popBackStack() })
-                                {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                if (onBackButtonClick != null) {
+                                    IconButton(onClick = { onBackButtonClick.invoke() })
+                                    {
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                    }
+                                } else {
+                                    IconButton(onClick = { navController!!.popBackStack() })
+                                    {
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                    }
                                 }
                             }
                         } else {

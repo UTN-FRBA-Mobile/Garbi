@@ -123,7 +123,7 @@ fun ProfileScreen(navController: NavController? = null) {
                         openAlertDialog.value = false
                     },
                     dialogText = stringResource(R.string.logout_dialog_text),
-                    confirmText = stringResource(R.string.logout_dialog_confirm)
+                    confirmText = stringResource(R.string.dialog_confirm)
                 )
             }
         }

@@ -43,6 +43,8 @@ import com.garbi.garbi_recolection.models.Report
 import android.Manifest
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,6 +65,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
@@ -118,6 +121,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         deletedAt = null
     )) }
 
+    var initialReportData by remember { mutableStateOf(reportData) }
     var reportDetails: Report? by remember { mutableStateOf(null) }
     val newStatus = stringResource(R.string.status_new)
     var selectedItem by remember { mutableStateOf("") }
@@ -136,6 +140,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
             selectedItem = enumValueToItem[reportDetails!!.type] ?: reportDetails!!.type
 
             reportData = reportDetails!!
+            initialReportData = reportDetails!!
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -215,12 +220,33 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val openAlertDialog = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    ////// Back button
+//    val navBackDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+//    val backHandlerEnabled by remember {
+//        derivedStateOf {
+//            reportData != initialReportData
+//        }
+//    }
+
+    var showBackDialog by remember { mutableStateOf(false) }
+//    BackHandler(backHandlerEnabled) {
+//        showBackDialog = true
+//    }
+
+
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.edit_report_screen),
-        backButton = true
+        backButton = true,
+        onBackButtonClick = {
+            if (reportData != initialReportData) {
+                showBackDialog = true
+            } else {
+                navController?.popBackStack()
+            }
+        }
     ) {
         Column (
             modifier = Modifier
@@ -274,7 +300,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                             DropdownMenuItem(
                                 onClick = {
                                     selectedItem = item
-                                    reportData.type = itemToEnumValue[item] ?: item
+                                    reportData = reportData.copy(type = itemToEnumValue[item] ?: item)
                                     expanded = false
                                 }
                             ) {
@@ -307,16 +333,42 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         modifier = Modifier.padding(top = 16.dp)
                     )
                     val mockImagePath = R.drawable.broken_container2
-                    AsyncImage(
-                        model = mockImagePath,
-                        contentDescription = null,
+                    Box(
                         modifier = Modifier
                             .size(200.dp, 280.dp)
                             .padding(0.dp, 8.dp)
-                            .align(Alignment.CenterHorizontally),
-                        contentScale = ContentScale.Crop
-                    )
-                    //todo add delete icon here
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        AsyncImage(
+                            model = mockImagePath,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        OutlinedIconButton(
+                            onClick = { //todo: photo is not being deleted after clicking the button
+//                                details.imagePath = null
+//                                reportDetails = details.copy(imagePath = null)
+                                selectedImageUri = null
+                                isPhotoTaken = false
+                                imagePath = null
+                            },
+                            colors = IconButtonDefaults.outlinedIconButtonColors(
+                                containerColor = containerColor,
+                                contentColor = White
+                            ),
+                            border = BorderStroke(0.1.dp, White),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete photo",
+                                tint = White,
+                            )
+                        }
+                    }
                 } else {
                     if (!isPhotoTaken) {
                         OutlinedButton(
@@ -479,11 +531,23 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         }
                     },
                     dialogText = stringResource(R.string.edit_report_dialog_text),
-                    confirmText = stringResource(R.string.edit_report_dialog_confirm)
+                    confirmText = stringResource(R.string.dialog_confirm)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (showBackDialog) {
+            AlertDialog(
+                onDismissRequest = { showBackDialog = false },
+                onConfirmation = {
+                    navController?.popBackStack()
+                    showBackDialog = false
+                },
+                dialogText = stringResource(R.string.dialog_go_back),
+                confirmText = stringResource(R.string.dialog_confirm)
+            )
         }
     }
 }

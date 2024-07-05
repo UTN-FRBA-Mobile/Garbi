@@ -67,7 +67,6 @@
 
     <string name="edit_report_save">Guardar cambios</string>
     <string name="edit_report_dialog_text">¿Está seguro que desea guardar el reporte con los nuevos cambios?</string>
-    <string name="edit_report_dialog_confirm">Confirmar</string>
 
     <string name="complete_fields_toast">Completa los campos obligatorios</string>
     <string name="report_created_toast">Reporte creado con éxito</string>
@@ -92,8 +91,6 @@
     <string name="biometrics_switch">Acceso biométrico</string>
     <string name="logout_button">Cerrar sesión</string>
     <string name="logout_dialog_text">¿Está seguro que desea cerrar sesión?</string>
-    <string name="logout_dialog_confirm">Confirmar</string>
-    <string name="logout_dialog_dismiss">Cancelar</string>
     <string name="edit_button">Editar</string>
     <string name="delete_button">Eliminar</string>
 
@@ -101,6 +98,10 @@
 <!--Commons-->
     <!--Dialog-->
     <string name="dialog_dismiss">Cancelar</string>
+    <string name="dialog_confirm">Confirmar</string>
+
+    <string name="dialog_go_back">¿Está seguro que desea ir para atrás? Los cambios no serán guardados</string>
+
     <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
     <string name="create_report_button">Crear reporte</string>
     <string name="network_error">Error de red</string>
