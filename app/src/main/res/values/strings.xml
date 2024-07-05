@@ -3,6 +3,7 @@
     <string name="map_screen">Mapa</string>
     <string name="reports_screen">Reportes</string>
     <string name="create_report_screen">Nuevo reporte</string>
+    <string name="edit_report_screen">Editar reporte</string>
     <string name="report_details_screen">Detalle de reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
@@ -63,6 +64,10 @@
 
     <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
     <string name="create_report_dialog_confirm">Crear</string>
+
+    <string name="edit_report_save">Guardar cambios</string>
+    <string name="edit_report_dialog_text">¿Está seguro que desea guardar el reporte con los nuevos cambios?</string>
+    <string name="edit_report_dialog_confirm">Confirmar</string>
 
     <string name="complete_fields_toast">Completa los campos obligatorios</string>
     <string name="report_created_toast">Reporte creado con éxito</string>

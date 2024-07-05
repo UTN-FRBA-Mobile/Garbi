@@ -47,9 +47,11 @@ private fun App() {
             composable("home") {
                 MapsScreen(navController, mapsViewModel)
             }
+
             composable("reports") {
                 ReportsScreen(navController)
             }
+
             composable(
                 "create_report/{containerId}/{street}/{number}/{neighborhood}",
                 arguments = listOf(
@@ -70,6 +72,17 @@ private fun App() {
                 )
                 CreateReportScreen(navController, containerId, address)
             }
+
+            composable(
+                "edit_report/{reportId}",
+                arguments = listOf(
+                    navArgument("reportId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val reportId = backStackEntry.arguments?.getString("reportId")!!
+                EditReportScreen(navController, reportId)
+            }
+
             composable(
                 "report_details/{reportId}",
                 arguments = listOf(
@@ -79,6 +92,7 @@ private fun App() {
                 val reportId = backStackEntry.arguments?.getString("reportId")!!
                 ReportDetailsScreen(navController, reportId)
             }
+
             composable("profile") {
                 ProfileScreen(navController)
             }
