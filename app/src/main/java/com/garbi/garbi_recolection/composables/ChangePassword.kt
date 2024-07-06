@@ -152,8 +152,10 @@ fun ChangePasswordScreen(navController: NavController? = null) {
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
+                    containerColor = Green900,
                     contentColor = White,
-                    containerColor = Green900
+                    disabledContainerColor = DisabledButton,
+                    disabledContentColor = DisabledButtonText
                 )
             ) {
                 Text(stringResource(R.string.change_pw))

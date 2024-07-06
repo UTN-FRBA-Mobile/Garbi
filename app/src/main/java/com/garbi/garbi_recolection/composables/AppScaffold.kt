@@ -116,6 +116,7 @@ fun AppScaffold(
                                 currentDestination == "reports"
                                 || currentDestination!!.startsWith("create_report")
                                 || currentDestination.startsWith("report_details")
+                                || currentDestination.startsWith("edit_report")
                             ) {
                                 iconColor = activeColor
                                 icon = R.drawable.receipt_filled
@@ -135,8 +136,15 @@ fun AppScaffold(
                                 navController.navigate("profile")
                             }
                         }) {
-                            val iconColor = if (currentDestination == "profile") activeColor else inactiveColor
-                            val icon = if (currentDestination == "profile") R.drawable.person_filled else R.drawable.person
+                            val iconColor: Color
+                            val icon: Int
+                            if (currentDestination == "profile" || currentDestination == "change_password") {
+                                iconColor = activeColor
+                                icon = R.drawable.person_filled
+                            } else {
+                                iconColor = inactiveColor
+                                icon = R.drawable.person
+                            }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(painterResource(icon), contentDescription = "Perfil", tint = iconColor)
                                 Text(text = stringResource(R.string.profile_screen), color = iconColor)
