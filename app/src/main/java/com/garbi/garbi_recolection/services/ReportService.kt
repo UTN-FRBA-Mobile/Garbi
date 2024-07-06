@@ -9,8 +9,10 @@ import retrofit2.http.Headers
 import retrofit2.http.Path
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Multipart
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Query
 
@@ -42,4 +44,11 @@ interface ReportService {
     @DELETE("/api/report/{id}")
     @Headers("accept: application/json")
     suspend fun deleteReport(@Path("id") id: String): Response<CreateReportResponse>
+
+    @PUT("/api/report/{id}")
+    @Headers("accept: application/json", "content-type: application/json")
+    suspend fun editReport(
+        @Path("id") id: String,
+        @Body createReport: RequestBody
+    ): Response<CreateReportResponse>
 }

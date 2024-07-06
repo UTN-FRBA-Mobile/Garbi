@@ -183,7 +183,10 @@ fun ReportsRow(title: String, status: String, creationDate: String, address: Str
             modifier = Modifier.padding(end = 16.dp)
         ) {
             Row {
-                EditReportItem(onClick = { }, enabled = iconButtonsEnabled)
+                EditReportItem(
+                    onClick = { navController?.navigate("edit_report/$reportId") },
+                    enabled = iconButtonsEnabled
+                )
                 DeleteReportItem(
                     onClick = { openAlertDialog.value = true },
                     enabled = iconButtonsEnabled

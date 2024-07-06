@@ -3,6 +3,7 @@
     <string name="map_screen">Mapa</string>
     <string name="reports_screen">Reportes</string>
     <string name="create_report_screen">Nuevo reporte</string>
+    <string name="edit_report_screen">Editar reporte</string>
     <string name="report_details_screen">Detalle de reporte</string>
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
@@ -64,9 +65,14 @@
     <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
     <string name="create_report_dialog_confirm">Crear</string>
 
+    <string name="edit_report_save">Guardar cambios</string>
+    <string name="edit_report_dialog_text">¿Está seguro que desea guardar el reporte con los nuevos cambios?</string>
+
     <string name="complete_fields_toast">Completa los campos obligatorios</string>
     <string name="report_created_toast">Reporte creado con éxito</string>
     <string name="report_creation_error_toast">No se pudo crear el reporte</string>
+    <string name="report_edited_toast">Reporte modificado con éxito</string>
+    <string name="report_edition_error_toast">No se pudo modificar el reporte</string>
 
     <string name="delete_report_dialog_text">¿Está seguro que desea eliminar el reporte?</string>
     <string name="delete_report_dialog_confirm">Eliminar</string>
@@ -85,8 +91,6 @@
     <string name="biometrics_switch">Acceso biométrico</string>
     <string name="logout_button">Cerrar sesión</string>
     <string name="logout_dialog_text">¿Está seguro que desea cerrar sesión?</string>
-    <string name="logout_dialog_confirm">Confirmar</string>
-    <string name="logout_dialog_dismiss">Cancelar</string>
     <string name="edit_button">Editar</string>
     <string name="delete_button">Eliminar</string>
 
@@ -94,6 +98,10 @@
 <!--Commons-->
     <!--Dialog-->
     <string name="dialog_dismiss">Cancelar</string>
+    <string name="dialog_confirm">Confirmar</string>
+
+    <string name="dialog_go_back">¿Está seguro que desea ir para atrás? Los cambios no serán guardados</string>
+
     <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
     <string name="create_report_button">Crear reporte</string>
     <string name="network_error">Error de red</string>
