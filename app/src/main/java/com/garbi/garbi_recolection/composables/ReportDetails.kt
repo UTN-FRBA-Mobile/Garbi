@@ -111,7 +111,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         title = stringResource(R.string.report_details_screen),
         backButton = true,
         actions = isModifiable,
-        onEditClick = { /*TODO*/ },
+        onEditClick = { navController?.navigate("edit_report/$reportId") },
         onDeleteClick = { openAlertDialog.value = true }
     ) {
         Column (
@@ -141,7 +141,6 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                             .padding(0.dp, 8.dp, 16.dp, 0.dp)
                     )
 
-//                    val listOfStatus = details.status!!
                     ReportStatusChip(
                         lastStatus.status,
                         modifier = Modifier

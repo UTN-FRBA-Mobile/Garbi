@@ -1,6 +1,5 @@
 package com.garbi.garbi_recolection.composables
 
-import Address
 import AppScaffold
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
@@ -43,8 +42,6 @@ import com.garbi.garbi_recolection.models.Report
 import android.Manifest
 import android.content.Context
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,7 +62,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
@@ -79,12 +75,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import com.google.gson.Gson
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -93,8 +83,22 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
+    val fieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = focusedContainer,
+        unfocusedContainerColor = unfocusedContainer,
+        focusedTextColor = Black,
+        unfocusedTextColor = Black,
+        focusedLabelColor = DarkGray,
+        unfocusedLabelColor = DarkGray,
+        cursorColor = Green900,
+        focusedIndicatorColor = Green900,
+        disabledContainerColor = DisabledField,
+        disabledLabelColor = DisabledFieldContent
+    )
+
     var isModifiable by remember { mutableStateOf(false) }
 
+    ////// Type Dropdown
     val enumItems =  stringArrayResource(R.array.report_types).toList()
     val enumValueToItem = mapOf(
         stringResource(R.string.report_type_enum_contenedor_roto) to enumItems[0],
@@ -104,15 +108,25 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         stringResource(R.string.report_type_enum_otros) to enumItems[4]
     )
 
+    var expanded by remember { mutableStateOf(false) }
+    val textItems =  stringArrayResource(R.array.report_types).toList()
+    val itemToEnumValue = mapOf(
+        textItems[0] to stringResource(R.string.report_type_enum_contenedor_roto),
+        textItems[1] to stringResource(R.string.report_type_enum_contenedor_sucio),
+        textItems[2] to stringResource(R.string.report_type_enum_basura_calle),
+        textItems[3] to stringResource(R.string.report_type_enum_contenedor_faltante),
+        textItems[4] to stringResource(R.string.report_type_enum_otros),
+    )
+
     var reportData by remember { mutableStateOf(Report(
         _id = null,
         userId = "",
-        containerId = "", //todo
+        containerId = "",
         managerId = null,
         title = "",
         observation = null,
         description = null, //TODO MAYBE SHOULD BE NULLABLE
-        address = null, //todo
+        address = null,
         phone = null,
         email = "",
         status = null,
@@ -130,7 +144,6 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         try {
             val response = withContext(Dispatchers.IO) { service.getReport(reportId) }
             reportDetails = response
-            println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
             if (listOfStatus!![listOfStatus.size -1].status == newStatus) {
@@ -146,23 +159,6 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         }
     }
 
-
-    var imagePath by remember { mutableStateOf<String?>(null) }
-
-    val fieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = focusedContainer,
-        unfocusedContainerColor = unfocusedContainer,
-        focusedTextColor = Black,
-        unfocusedTextColor = Black,
-        focusedLabelColor = DarkGray,
-        unfocusedLabelColor = DarkGray,
-        cursorColor = Green900,
-        focusedIndicatorColor = Green900,
-        disabledContainerColor = DisabledField,
-        disabledLabelColor = DisabledFieldContent
-    )
-
-
     //Get userId
     LaunchedEffect(context) {
         val userDetails = RetrofitClient.getSession(context, navController!!)
@@ -170,18 +166,8 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         reportData = reportData.copy(email = userDetails?.email ?: "")
     }
 
-    ////// Type Dropdown
-    var expanded by remember { mutableStateOf(false) }
-    val textItems =  stringArrayResource(R.array.report_types).toList()
-    val itemToEnumValue = mapOf(
-        textItems[0] to stringResource(R.string.report_type_enum_contenedor_roto),
-        textItems[1] to stringResource(R.string.report_type_enum_contenedor_sucio),
-        textItems[2] to stringResource(R.string.report_type_enum_basura_calle),
-        textItems[3] to stringResource(R.string.report_type_enum_contenedor_faltante),
-        textItems[4] to stringResource(R.string.report_type_enum_otros),
-    )
-
     ////// Take picture button
+    var imagePath by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     // Function to create a new temporary file
@@ -220,19 +206,8 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val openAlertDialog = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    ////// Back button
-//    val navBackDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-//    val backHandlerEnabled by remember {
-//        derivedStateOf {
-//            reportData != initialReportData
-//        }
-//    }
 
     var showBackDialog by remember { mutableStateOf(false) }
-//    BackHandler(backHandlerEnabled) {
-//        showBackDialog = true
-//    }
-
 
 
     AppScaffold(
@@ -345,29 +320,29 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
-                        OutlinedIconButton(
-                            onClick = { //todo: photo is not being deleted after clicking the button
-//                                details.imagePath = null
-//                                reportDetails = details.copy(imagePath = null)
-                                selectedImageUri = null
-                                isPhotoTaken = false
-                                imagePath = null
-                            },
-                            colors = IconButtonDefaults.outlinedIconButtonColors(
-                                containerColor = containerColor,
-                                contentColor = White
-                            ),
-                            border = BorderStroke(0.1.dp, White),
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete photo",
-                                tint = White,
-                            )
-                        }
+//                        OutlinedIconButton( //todo later
+//                            onClick = { //todo: photo is not being deleted after clicking the button
+////                                details.imagePath = null
+////                                reportDetails = details.copy(imagePath = null)
+//                                selectedImageUri = null
+//                                isPhotoTaken = false
+//                                imagePath = null
+//                            },
+//                            colors = IconButtonDefaults.outlinedIconButtonColors(
+//                                containerColor = containerColor,
+//                                contentColor = White
+//                            ),
+//                            border = BorderStroke(0.1.dp, White),
+//                            modifier = Modifier
+//                                .align(Alignment.TopEnd)
+//                                .padding(4.dp)
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Delete,
+//                                contentDescription = "Delete photo",
+//                                tint = White,
+//                            )
+//                        }
                     }
                 } else {
                     if (!isPhotoTaken) {
@@ -504,11 +479,13 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                                 .background(Transparent)
                                 .clickable(
                                     onClick = {
-                                        Toast.makeText(
-                                            context,
-                                            R.string.complete_fields_toast,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                R.string.complete_fields_toast,
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
                                     },
                                     indication = null,
                                     interactionSource = remember { MutableInteractionSource() }
@@ -556,9 +533,8 @@ suspend fun editReport(reportData: Report, imagePath: String?, context: Context)
     val reportService = RetrofitClient.reportService
     return withContext(Dispatchers.IO) {
         try {
-            val imagePart = createImagePart(imagePath)
             val reportPart  = createReportRequestBody(reportData)
-            val response = reportService.editReport(reportData._id!!, reportPart, imagePart)
+            val response = reportService.editReport(reportData._id!!, reportPart)
             withContext(Dispatchers.Main) {  // todo main? no era IO?
                 if (response.isSuccessful) {
                     Toast.makeText(context, R.string.report_edited_toast, Toast.LENGTH_LONG).show()
@@ -577,17 +553,3 @@ suspend fun editReport(reportData: Report, imagePath: String?, context: Context)
         }
     }
 }
-
-//fun createImagePart(imagePath: String?): MultipartBody.Part? {
-//    if (imagePath == null) return null
-//
-//    val file = File(imagePath)
-//    val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-//    return MultipartBody.Part.createFormData("image", file.name, requestFile)
-//}
-//
-//fun createReportRequestBody(report: Report): RequestBody {
-//    val gson = Gson()
-//    val json = gson.toJson(report)
-//    return json.toRequestBody("application/json".toMediaTypeOrNull())
-//}
