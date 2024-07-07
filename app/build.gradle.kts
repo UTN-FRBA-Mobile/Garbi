@@ -108,4 +108,11 @@ dependencies {
 
     // refresh
     implementation("androidx.compose.material:material:1.4.3")
+
+
+    implementation ("com.amazonaws:aws-android-sdk-s3:2.25.0")
+    implementation ("com.amazonaws:aws-android-sdk-mobile-client:2.25.0@aar")
+    implementation ("com.amazonaws:aws-android-sdk-auth-userpools:2.25.0@aar")
+
+    implementation ("androidx.security:security-crypto:1.1.0-alpha03")
 }

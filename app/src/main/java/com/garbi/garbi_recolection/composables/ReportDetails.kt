@@ -34,12 +34,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.amazonaws.HttpMethod
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.services.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import java.net.URL
+import java.time.Instant
+import java.util.*
 
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, reportId: String) {
@@ -176,9 +185,10 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
-                    val mockImagePath = R.drawable.broken_container2
+                    //val mockImagePath = R.drawable.broken_container2
+
                     AsyncImage(
-                        model = mockImagePath,
+                        model = generatePresignedUrl("garbi-app", details.imagePath!!),
                         contentDescription = null,
                         modifier = Modifier
                             .size(200.dp, 280.dp)
@@ -247,4 +257,31 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
         append("\n")
         append(content)
     }
+}
+
+
+fun generatePresignedUrl(bucketName: String, objectKey: String): String {
+    var preSignedUrl = ""
+    val s3Client: AmazonS3Client?
+    val credentials: BasicAWSCredentials?
+    credentials = BasicAWSCredentials("","" )
+    s3Client = AmazonS3Client(credentials)
+
+    try {
+        val expiration = Date()
+        var expTimeMillis: Long = Instant.now().toEpochMilli()
+        expTimeMillis += (1000 * 60 * 60 * 24 * 7).toLong()
+        expiration.time = expTimeMillis
+
+        val generateSignedUrlRequest = GeneratePresignedUrlRequest(bucketName, objectKey)
+            .withMethod(HttpMethod.GET)
+            .withExpiration(expiration)
+        val url: URL = s3Client.generatePresignedUrl(generateSignedUrlRequest)
+        preSignedUrl = url.toString()
+        println("getImagePreSignedUrl $preSignedUrl")
+    }catch (illEx: IllegalArgumentException){
+        println("error getImagePreSignedUrl $illEx")
+    }
+
+    return preSignedUrl
 }
