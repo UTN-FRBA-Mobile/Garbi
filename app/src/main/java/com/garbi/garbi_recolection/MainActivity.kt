@@ -2,6 +2,7 @@ package com.garbi.garbi_recolection
 
 import Address
 import MapsViewModel
+import ReportsViewModel
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -34,6 +35,7 @@ private fun App() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val mapsViewModel = remember { MapsViewModel() }
+    val reportViewModel = remember { ReportsViewModel() }
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -49,7 +51,7 @@ private fun App() {
             }
 
             composable("reports") {
-                ReportsScreen(navController)
+                ReportsScreen(navController, reportViewModel)
             }
 
             composable(
