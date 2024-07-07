@@ -1,81 +1,71 @@
 package com.garbi.garbi_recolection.composables
 
 import AppScaffold
+import ReportsViewModel
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import com.garbi.garbi_recolection.R
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Divider
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
-import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.garbi.garbi_recolection.ui.theme.LightGray
+import com.garbi.garbi_recolection.ui.theme.White
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.garbi.garbi_recolection.ui.theme.*
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ReportsScreen(navController: NavController? = null) {
+fun ReportsScreen(navController: NavController? = null, reportsViewModel: ReportsViewModel) {
     val context = LocalContext.current
-    var userId by remember { mutableStateOf("") }
-    val reports = remember { mutableStateOf<List<Report>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(context) {
-        //Get user id
-        isLoading = true
-        val userDetails = RetrofitClient.getSession(context, navController!!)
-        userId = userDetails?._id ?: ""
-
-        //Get reports
-        val service = RetrofitClient.reportService
-        try {
-            val response = withContext(Dispatchers.IO) { service.getReports(userId) }
-            reports.value = response.documents.filter { it.deletedAt == null } //TODO later: handle this in the BE and delete the filter here
-            println("reports: $reports")
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            isLoading = false
-        }
+    LaunchedEffect(Unit) {
+        reportsViewModel.loadReports(context, navController!!)
     }
-
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.reports_screen)
     ) {
-        if(isLoading){
+        if(reportsViewModel.isLoading){
             LoaderScreen()
         } else {
-            if (reports.value.isEmpty()) {
+            if (reportsViewModel.reports.isEmpty()) {
                 Column (
                     modifier = Modifier
                         .fillMaxSize()
@@ -94,7 +84,7 @@ fun ReportsScreen(navController: NavController? = null) {
                 }
             } else {
                 LazyColumn {
-                    items(items = reports.value) { reportDataI ->
+                    items(items = reportsViewModel.reports) { reportDataI ->
                         Box(
                             modifier = Modifier.background(White)
                         ) {
