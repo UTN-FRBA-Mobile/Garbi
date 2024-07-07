@@ -194,17 +194,28 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
-                    //val mockImagePath = R.drawable.broken_container2
+                    if (accessKeyAws == "" || secretKeyAws == ""){
+                        AsyncImage(
+                            model = R.drawable.image_not_available,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop
+                        )
+                    }else{
 
-                    AsyncImage(
-                        model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(200.dp, 280.dp)
-                            .padding(0.dp, 8.dp)
-                            .align(Alignment.CenterHorizontally),
-                        contentScale = ContentScale.Crop
-                    )
+                        println("generando presignedurl")
+                        AsyncImage(
+                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop)
+                    }
                 } else {
                     TextField(
                         title = stringResource(R.string.photo_field),
@@ -272,12 +283,12 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
 fun generatePresignedUrl(bucketName: String, objectKey: String, accessKeyAws:String,secretKeyAws:String ): String {
     var preSignedUrl = ""
     val s3Client: AmazonS3Client?
-    val credentials: BasicAWSCredentials?
-    credentials = BasicAWSCredentials(accessKeyAws,secretKeyAws )
-    s3Client = AmazonS3Client(credentials)
 
     try {
         val expiration = Date()
+        val credentials: BasicAWSCredentials?
+        credentials = BasicAWSCredentials(accessKeyAws,secretKeyAws )
+        s3Client = AmazonS3Client(credentials)
         var expTimeMillis: Long = Instant.now().toEpochMilli()
         expTimeMillis += (1000 * 60 * 60 * 24 * 7).toLong()
         expiration.time = expTimeMillis
