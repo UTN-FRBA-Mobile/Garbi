@@ -1,6 +1,8 @@
 package com.garbi.garbi_recolection.composables
 
 import AppScaffold
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -88,6 +90,13 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
     // for Delete report functionality
     val openAlertDialog = remember { mutableStateOf(false) }
     var deleteConfirmed by remember { mutableStateOf(false) }
+
+
+    val appInfo: ApplicationInfo = context.packageManager
+        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+    val bundle = appInfo.metaData
+    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
+    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     if (deleteConfirmed) {
         LaunchedEffect(reportId) {
@@ -188,7 +197,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                     //val mockImagePath = R.drawable.broken_container2
 
                     AsyncImage(
-                        model = generatePresignedUrl("garbi-app", details.imagePath!!),
+                        model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
                         contentDescription = null,
                         modifier = Modifier
                             .size(200.dp, 280.dp)
@@ -260,11 +269,11 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
 }
 
 
-fun generatePresignedUrl(bucketName: String, objectKey: String): String {
+fun generatePresignedUrl(bucketName: String, objectKey: String, accessKeyAws:String,secretKeyAws:String ): String {
     var preSignedUrl = ""
     val s3Client: AmazonS3Client?
     val credentials: BasicAWSCredentials?
-    credentials = BasicAWSCredentials("","" )
+    credentials = BasicAWSCredentials(accessKeyAws,secretKeyAws )
     s3Client = AmazonS3Client(credentials)
 
     try {
