@@ -45,9 +45,11 @@ fun ReportsScreen(navController: NavController? = null) {
     val context = LocalContext.current
     var userId by remember { mutableStateOf("") }
     val reports = remember { mutableStateOf<List<Report>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(context) {
         //Get user id
+        isLoading = true
         val userDetails = RetrofitClient.getSession(context, navController!!)
         userId = userDetails?._id ?: ""
 
@@ -59,6 +61,8 @@ fun ReportsScreen(navController: NavController? = null) {
             println("reports: $reports")
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
+            isLoading = false
         }
     }
 
@@ -68,46 +72,51 @@ fun ReportsScreen(navController: NavController? = null) {
         topBarVisible = true,
         title = stringResource(R.string.reports_screen)
     ) {
-        if (reports.value.isEmpty()) {
-            Column (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.empty_reports),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.empty_reports_description),
-                    fontSize = 16.sp
-                )
-            }
+        if(isLoading){
+            LoaderScreen()
         } else {
-            LazyColumn {
-                items(items = reports.value) { reportDataI ->
-                    Box(
-                        modifier = Modifier.background(White)
-                    ) {
-                        ReportsRow(
-                            reportDataI.title,
-                            reportDataI.status!![reportDataI.status.size -1].status,
-                            reportDataI.createdAt!!.substring(0, 10),
-                            reportDataI.address!!.convertToString(),
-                            navController,
-                            reportDataI._id!!
-                        )
-                        Divider(
-                            color = LightGray,
-                            thickness = 1.dp,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+            if (reports.value.isEmpty()) {
+                Column (
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.empty_reports),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.empty_reports_description),
+                        fontSize = 16.sp
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(items = reports.value) { reportDataI ->
+                        Box(
+                            modifier = Modifier.background(White)
+                        ) {
+                            ReportsRow(
+                                reportDataI.title,
+                                reportDataI.status!![reportDataI.status.size -1].status,
+                                reportDataI.createdAt!!.substring(0, 10),
+                                reportDataI.address!!.convertToString(),
+                                navController,
+                                reportDataI._id!!
+                            )
+                            Divider(
+                                color = LightGray,
+                                thickness = 1.dp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
