@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ReportsViewModel : ViewModel() {
+
     var userId by mutableStateOf("")
         private set
 
@@ -28,21 +29,31 @@ class ReportsViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            isLoading = true
-            // Obtener el ID del usuario
-            val userDetails = RetrofitClient.getSession(context, navController)
-            userId = userDetails?._id ?: ""
+            fetchReports(context, navController)
+        }
+    }
 
-            // Obtener reportes
-            val service = RetrofitClient.reportService
-            try {
-                val response = withContext(Dispatchers.IO) { service.getReports(userId) }
-                reports = response.documents.filter { it.deletedAt == null }
-            } catch (e: Exception) {
-                Log.e("ReportsViewModel", "Error loading reports", e)
-            } finally {
-                isLoading = false
-            }
+    fun refreshReports(context: Context, navController: NavController) {
+        viewModelScope.launch {
+            fetchReports(context, navController)
+        }
+    }
+
+    private suspend fun fetchReports(context: Context, navController: NavController) {
+        isLoading = true
+        // Obtener el ID del usuario
+        val userDetails = RetrofitClient.getSession(context, navController)
+        userId = userDetails?._id ?: ""
+
+        // Obtener reportes
+        val service = RetrofitClient.reportService
+        try {
+            val response = withContext(Dispatchers.IO) { service.getReports(userId) }
+            reports = response.documents.filter { it.deletedAt == null }
+        } catch (e: Exception) {
+            Log.e("ReportsViewModel", "Error loading reports", e)
+        } finally {
+            isLoading = false
         }
     }
 }

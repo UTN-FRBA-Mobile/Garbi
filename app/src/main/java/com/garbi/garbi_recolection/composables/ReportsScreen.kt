@@ -17,18 +17,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,72 +50,85 @@ import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.LightGray
 import com.garbi.garbi_recolection.ui.theme.White
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ReportsScreen(navController: NavController? = null, reportsViewModel: ReportsViewModel) {
     val context = LocalContext.current
+    val refreshScope = rememberCoroutineScope()
+    var refreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         reportsViewModel.loadReports(context, navController!!)
     }
+
+    fun refresh() = refreshScope.launch {
+        refreshing = true
+        reportsViewModel.refreshReports(context, navController!!)
+        refreshing = false
+    }
+
+    val state = rememberPullRefreshState(refreshing, ::refresh)
+
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.reports_screen)
     ) {
-        if(reportsViewModel.isLoading){
-            LoaderScreen()
-        } else {
-            if (reportsViewModel.reports.isEmpty()) {
-                Column (
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.empty_reports),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.empty_reports_description),
-                        fontSize = 16.sp
-                    )
-                }
+        Box(modifier = Modifier.pullRefresh(state)) {
+            if (reportsViewModel.isLoading && reportsViewModel.reports.isEmpty()) {
+                LoaderScreen()
             } else {
-                LazyColumn {
-                    items(items = reportsViewModel.reports) { reportDataI ->
-                        Box(
-                            modifier = Modifier.background(White)
-                        ) {
-                            ReportsRow(
-                                reportDataI.title,
-                                reportDataI.status!![reportDataI.status.size -1].status,
-                                reportDataI.createdAt!!.substring(0, 10),
-                                reportDataI.address!!.convertToString(),
-                                navController,
-                                reportDataI._id!!
-                            )
-                            Divider(
-                                color = LightGray,
-                                thickness = 1.dp,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                if (reportsViewModel.reports.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.empty_reports),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.empty_reports_description),
+                            fontSize = 16.sp
+                        )
+                    }
+                } else {
+                    LazyColumn {
+                        items(items = reportsViewModel.reports) { reportDataI ->
+                            Box(
+                                modifier = Modifier.background(White)
+                            ) {
+                                ReportsRow(
+                                    reportDataI.title,
+                                    reportDataI.status!![reportDataI.status.size - 1].status,
+                                    reportDataI.createdAt!!.substring(0, 10),
+                                    reportDataI.address!!.convertToString(),
+                                    navController,
+                                    reportDataI._id!!
+                                )
+                                Divider(
+                                    color = LightGray,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
             }
+            PullRefreshIndicator(refreshing, state, Modifier.align(Alignment.TopCenter))
         }
-
     }
 }
-
-
 @Composable
 fun ReportsRow(title: String, status: String, creationDate: String, address: String, navController: NavController? = null, reportId: String) {
     // for Delete report functionality
