@@ -93,7 +93,8 @@ fun MapsScreen(
     }
 
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
-    var routeAvailable by viewModel.routeAvailable;
+    val routeAvailable by viewModel.routeAvailable
+    val routeModal by viewModel.routeModal
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -139,20 +140,20 @@ fun MapsScreen(
     val showDialog = remember { mutableStateOf(false) }
     val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
 
-
     if (showDialog.value) {
         AlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
-                routeAvailable = true;
+                viewModel.updateRouteAvailable(true)
             }
         )
     }
 
     LaunchedEffect(Unit) {
-        delay(15_000) //Esto en realidad no tiene que estar con un delay. Se va a setear la variable en true cuando haya un recorrido disponible
-        if (!routeAvailable){
+        delay(15_000)
+        if (!routeModal){
             showDialog.value = true;
+            viewModel.updateRouteModal(false)
         }
     }
 
@@ -261,7 +262,7 @@ fun MapsScreen(
             if (routeAvailable){
 
                 ExtendedFloatingActionButton(
-                    onClick = { routeAvailable = false;
+                    onClick = { viewModel.updateRouteAvailable(false);
                         polylinePoints.value = emptyList()
                     },
                     icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },

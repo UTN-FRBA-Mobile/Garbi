@@ -1,13 +1,18 @@
 package com.garbi.garbi_recolection.firebase
 
+import MapsViewModel
 import MyNotification
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.garbi.garbi_recolection.MainActivity
 import com.garbi.garbi_recolection.R
+import com.garbi.garbi_recolection.RouteManager
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -28,6 +33,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
 
             sendNotification(title, msg)
+            RouteManager.updateRouteModal(true)
+
         }
 
         private fun sendNotification(title: String, msg: String) {
