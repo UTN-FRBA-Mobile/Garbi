@@ -30,7 +30,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.graphics.Canvas
+import android.location.Location
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -62,19 +62,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.garbi.garbi_recolection.services.DirectionsClient
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.Marker
-import kotlinx.coroutines.coroutineScope
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
+fun MapsScreen(
+    navController: NavController? = null,
+    viewModel: MapsViewModel,
+    fusedLocationClient: FusedLocationProviderClient
+) {
     val context = LocalContext.current;
 
     val applicationInfo: ApplicationInfo = context.packageManager
@@ -105,6 +107,15 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
         hasLocationPermission = permissionsGranted
         navController?.navigate("home")
     }
+
+    var userLat: Double = 0.0
+    var userLng: Double = 0.0
+    fusedLocationClient.lastLocation
+        .addOnSuccessListener { location : Location? ->
+            println("locationnn ${location}")
+            userLat = location!!.latitude
+            userLng = location.longitude
+        }
 
     LaunchedEffect(Unit) {
         val service = RetrofitClient.containerService
@@ -145,14 +156,17 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
         if (routeAvailable) {
             val directionsService = DirectionsClient.directionsService
             try {
-                val latitude = -34.59858609236339
-                val longitude = -58.3742047348732
-                val origin = "${latitude}, ${longitude}"
+
+                val latitude = userLat
+                val longitude = userLng
+                val userLocation = "${latitude}, ${longitude}"
                 val destination = "-34.6286,-58.4355"
                 val waypoints = "-34.5806,-58.4066|-34.5899,-58.4284"
 
+                println("USER LOCATION ${userLocation}")
+
                 val response = withContext(Dispatchers.IO) {
-                        directionsService.getDirections(origin, destination, waypoints, apiKey!!)
+                    directionsService.getDirections(userLocation, destination, waypoints, apiKey!!)
                 }
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
@@ -160,7 +174,7 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
                     cameraPositionState.animate(
                         CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f)
                     )
-                    
+
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -208,59 +222,61 @@ fun MapsScreen(navController: NavController? = null, viewModel: MapsViewModel) {
                             icon = truckIcon
                         )
                     }
+
+
                 }
 
                 if(containersState.value.isNotEmpty()) {
                     containersState.value.forEach { container ->
-                            val containerIconState = remember { mutableStateOf<BitmapDescriptor?>(null) }
+                        val containerIconState = remember { mutableStateOf<BitmapDescriptor?>(null) }
 
-                            LaunchedEffect(container, iconSize) {
-                                containerIconState.value = getContainerIcon(container, context, iconSize)
-                            }
+                        LaunchedEffect(container, iconSize) {
+                            containerIconState.value = getContainerIcon(container, context, iconSize)
+                        }
 
-                            containerIconState.value?.let { containerIcon ->
-                                MarkerInfoWindowContent(
-                                    state = MarkerState(position = LatLng(container.coordinates.lat, container.coordinates.lng)),
-                                    icon = containerIcon,
-                                    onInfoWindowClick = {
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            val addr = container.address
-                                            navController?.navigate("create_report/${container._id}/${addr.street}/${addr.number}/${addr.neighborhood}")
-                                        }
+                        containerIconState.value?.let { containerIcon ->
+                            MarkerInfoWindowContent(
+                                state = MarkerState(position = LatLng(container.coordinates.lat, container.coordinates.lng)),
+                                icon = containerIcon,
+                                onInfoWindowClick = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        val addr = container.address
+                                        navController?.navigate("create_report/${container._id}/${addr.street}/${addr.number}/${addr.neighborhood}")
                                     }
-                                ) {
-                                    MarkerInfoContent(container, navController)
                                 }
+                            ) {
+                                MarkerInfoContent(container, navController)
                             }
                         }
+                    }
                 }
 
 
-                }
             }
         }
     }
+}
 
 
 
 @Composable
 fun MarkerInfoContent(container: Container, navController: NavController?) {
     val bubbleShape: Shape = GenericShape { size, _ ->
-    val path = Path().apply {
-        moveTo(size.width * 0.5f, size.height)
-        lineTo(size.width * 0.4f, size.height * 0.75f)
-        lineTo(size.width * 0.1f, size.height * 0.75f)
-        arcTo(
-            rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
-            startAngleDegrees = 90f,
-            sweepAngleDegrees = 180f,
-            forceMoveTo = false
-        )
-        lineTo(size.width * 0.6f, size.height)
-        close()
+        val path = Path().apply {
+            moveTo(size.width * 0.5f, size.height)
+            lineTo(size.width * 0.4f, size.height * 0.75f)
+            lineTo(size.width * 0.1f, size.height * 0.75f)
+            arcTo(
+                rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
+                startAngleDegrees = 90f,
+                sweepAngleDegrees = 180f,
+                forceMoveTo = false
+            )
+            lineTo(size.width * 0.6f, size.height)
+            close()
+        }
+        addPath(path)
     }
-    addPath(path)
-}
 
 
     Box(
