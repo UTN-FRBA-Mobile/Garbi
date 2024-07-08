@@ -1,6 +1,8 @@
 package com.garbi.garbi_recolection.composables
 
 import AppScaffold
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,12 +36,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.amazonaws.HttpMethod
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
 import com.garbi.garbi_recolection.services.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import java.net.URL
+import java.time.Instant
+import java.util.*
 
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, reportId: String) {
@@ -79,6 +90,13 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
     // for Delete report functionality
     val openAlertDialog = remember { mutableStateOf(false) }
     var deleteConfirmed by remember { mutableStateOf(false) }
+
+
+    val appInfo: ApplicationInfo = context.packageManager
+        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+    val bundle = appInfo.metaData
+    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
+    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     if (deleteConfirmed) {
         LaunchedEffect(reportId) {
@@ -176,16 +194,28 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
-                    val mockImagePath = R.drawable.broken_container2
-                    AsyncImage(
-                        model = mockImagePath,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(200.dp, 280.dp)
-                            .padding(0.dp, 8.dp)
-                            .align(Alignment.CenterHorizontally),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (accessKeyAws == "" || secretKeyAws == ""){
+                        AsyncImage(
+                            model = R.drawable.image_not_available,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop
+                        )
+                    }else{
+
+                        println("generando presignedurl")
+                        AsyncImage(
+                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop)
+                    }
                 } else {
                     TextField(
                         title = stringResource(R.string.photo_field),
@@ -247,4 +277,31 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
         append("\n")
         append(content)
     }
+}
+
+
+fun generatePresignedUrl(bucketName: String, objectKey: String, accessKeyAws:String,secretKeyAws:String ): String {
+    var preSignedUrl = ""
+    val s3Client: AmazonS3Client?
+
+    try {
+        val expiration = Date()
+        val credentials: BasicAWSCredentials?
+        credentials = BasicAWSCredentials(accessKeyAws,secretKeyAws )
+        s3Client = AmazonS3Client(credentials)
+        var expTimeMillis: Long = Instant.now().toEpochMilli()
+        expTimeMillis += (1000 * 60 * 60 * 24 * 7).toLong()
+        expiration.time = expTimeMillis
+
+        val generateSignedUrlRequest = GeneratePresignedUrlRequest(bucketName, objectKey)
+            .withMethod(HttpMethod.GET)
+            .withExpiration(expiration)
+        val url: URL = s3Client.generatePresignedUrl(generateSignedUrlRequest)
+        preSignedUrl = url.toString()
+        println("getImagePreSignedUrl $preSignedUrl")
+    }catch (illEx: IllegalArgumentException){
+        println("error getImagePreSignedUrl $illEx")
+    }
+
+    return preSignedUrl
 }
