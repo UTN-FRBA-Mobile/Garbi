@@ -20,34 +20,44 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.garbi.garbi_recolection.composables.*
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+
+
+private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         setContent {
-            App()
+            App(fusedLocationClient)
         }
     }
 }
 
 @Composable
-private fun App() {
+private fun App(fusedLocationClient: FusedLocationProviderClient) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val mapsViewModel = remember { MapsViewModel() }
     val reportViewModel = remember { ReportsViewModel() }
     var startDestination by remember { mutableStateOf<String?>(null) }
 
+
     LaunchedEffect(Unit) {
         val token = RetrofitClient.getToken(context)
         startDestination = if (token == null || !RetrofitClient.isTokenValid()) "login" else "home"
         Log.v("página inicial", startDestination ?: "null")
+
     }
 
     if (startDestination != null) {
         NavHost(navController = navController, startDestination = startDestination!!) {
             composable("home") {
-                MapsScreen(navController, mapsViewModel)
+                MapsScreen(navController, mapsViewModel, fusedLocationClient)
             }
 
             composable("reports") {

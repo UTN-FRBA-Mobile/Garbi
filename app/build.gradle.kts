@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -37,6 +38,8 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        viewBinding = true
+        dataBinding = true
         compose = true
     }
     composeOptions {
@@ -61,6 +64,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.5")
@@ -109,10 +113,13 @@ dependencies {
     // refresh
     implementation("androidx.compose.material:material:1.4.3")
 
-
     implementation ("com.amazonaws:aws-android-sdk-s3:2.25.0")
     implementation ("com.amazonaws:aws-android-sdk-mobile-client:2.25.0@aar")
     implementation ("com.amazonaws:aws-android-sdk-auth-userpools:2.25.0@aar")
 
     implementation ("androidx.security:security-crypto:1.1.0-alpha03")
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation ("com.google.firebase:firebase-messaging")
+    implementation ("com.google.firebase:firebase-analytics")
 }
+
