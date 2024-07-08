@@ -26,6 +26,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val title: String = notification!!.title!!
             val msg: String = notification.body!!
 
+
             sendNotification(title, msg)
         }
 

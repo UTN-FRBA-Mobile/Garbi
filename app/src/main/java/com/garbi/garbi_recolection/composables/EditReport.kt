@@ -41,6 +41,7 @@ import com.garbi.garbi_recolection.common_components.*
 import com.garbi.garbi_recolection.models.Report
 import android.Manifest
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -82,6 +83,14 @@ import java.io.File
 fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+
+
+
+    val appInfo: ApplicationInfo = context.packageManager
+        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+    val bundle = appInfo.metaData
+    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
+    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = focusedContainer,
@@ -299,7 +308,42 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         .padding(0.dp, 8.dp)
                 )
 
+                if (details.imagePath != null) {
+                    androidx.compose.material.Text(
+                        text = stringResource(R.string.photo_field),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                    if (accessKeyAws == "" || secretKeyAws == ""){
+                        AsyncImage(
+                            model = R.drawable.image_not_available,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop
+                        )
+                    }else{
 
+                        println("generando presignedurl")
+                        AsyncImage(
+                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp, 280.dp)
+                                .padding(0.dp, 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            contentScale = ContentScale.Crop)
+                    }
+                } else {
+                    TextField(
+                        title = stringResource(R.string.photo_field),
+                        content = null
+                    )
+                }
+/*
                 if (details.imagePath != null) {
                     androidx.compose.material.Text(
                         text = stringResource(R.string.photo_field),
@@ -424,7 +468,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                             }
                         }
                     }
-                }
+                }*/
 
 
                 TextField(
