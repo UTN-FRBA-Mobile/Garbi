@@ -8,8 +8,10 @@
     <string name="profile_screen">Perfil</string>
     <string name="change_password_screen">Cambiá tu contraseña</string>
     <string name="loading_screen">Cargando...</string>
+    <string name="notification_channel_group_general">Notificacion</string>
 
-<!--Login & Change password screen-->
+
+    <!--Login & Change password screen-->
     <string name="login_text">Iniciar sesión</string>
     <string name="change_pw">Cambiar clave</string>
     <string name="repeat_pw">Repite la clave</string>

@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.databinding.DataBindingUtil.setContentView
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,13 +21,22 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.garbi.garbi_recolection.composables.*
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.garbi.garbi_recolection.databinding.ActivityMainBinding
+
 
 class MainActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
+
             App()
+
+
         }
+
     }
 }
 
@@ -38,10 +48,12 @@ private fun App() {
     val reportViewModel = remember { ReportsViewModel() }
     var startDestination by remember { mutableStateOf<String?>(null) }
 
+
     LaunchedEffect(Unit) {
         val token = RetrofitClient.getToken(context)
         startDestination = if (token == null || !RetrofitClient.isTokenValid()) "login" else "home"
         Log.v("página inicial", startDestination ?: "null")
+
     }
 
     if (startDestination != null) {
