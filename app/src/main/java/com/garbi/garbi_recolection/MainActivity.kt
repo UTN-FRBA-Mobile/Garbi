@@ -21,27 +21,27 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.garbi.garbi_recolection.composables.*
 import com.garbi.garbi_recolection.services.RetrofitClient
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+
 import com.garbi.garbi_recolection.databinding.ActivityMainBinding
 
+private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class MainActivity : ComponentActivity() {
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         setContent {
-
-            App()
-
-
+            App(fusedLocationClient)
         }
-
     }
 }
 
 @Composable
-private fun App() {
+private fun App(fusedLocationClient: FusedLocationProviderClient) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val mapsViewModel = remember { MapsViewModel() }
@@ -59,7 +59,7 @@ private fun App() {
     if (startDestination != null) {
         NavHost(navController = navController, startDestination = startDestination!!) {
             composable("home") {
-                MapsScreen(navController, mapsViewModel)
+                MapsScreen(navController, mapsViewModel, fusedLocationClient)
             }
 
             composable("reports") {
