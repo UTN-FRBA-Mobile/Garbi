@@ -6,15 +6,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -29,38 +26,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.*
 import com.garbi.garbi_recolection.models.Report
-import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -343,133 +330,6 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         content = null
                     )
                 }
-/*
-                if (details.imagePath != null) {
-                    androidx.compose.material.Text(
-                        text = stringResource(R.string.photo_field),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                    val mockImagePath = R.drawable.broken_container2
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp, 280.dp)
-                            .padding(0.dp, 8.dp)
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        AsyncImage(
-                            model = mockImagePath,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-//                        OutlinedIconButton( //todo later
-//                            onClick = { //todo: photo is not being deleted after clicking the button
-////                                details.imagePath = null
-////                                reportDetails = details.copy(imagePath = null)
-//                                selectedImageUri = null
-//                                isPhotoTaken = false
-//                                imagePath = null
-//                            },
-//                            colors = IconButtonDefaults.outlinedIconButtonColors(
-//                                containerColor = containerColor,
-//                                contentColor = White
-//                            ),
-//                            border = BorderStroke(0.1.dp, White),
-//                            modifier = Modifier
-//                                .align(Alignment.TopEnd)
-//                                .padding(4.dp)
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Delete,
-//                                contentDescription = "Delete photo",
-//                                tint = White,
-//                            )
-//                        }
-                    }
-                } else {
-                    if (!isPhotoTaken) {
-                        OutlinedButton(
-                            onClick = {
-                                when {
-                                    ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.CAMERA
-                                    ) == PackageManager.PERMISSION_GRANTED -> {
-                                        tempFile = createTempFile()
-                                        tempFileUri = FileProvider.getUriForFile(
-                                            context,
-                                            "com.garbi.garbi_recolection.provider",
-                                            tempFile
-                                        )
-                                        cameraLauncher.launch(tempFileUri)
-                                    }
-
-                                    else -> {
-                                        permissionLauncher.launch(Manifest.permission.CAMERA)
-                                    }
-                                }
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Black),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(0.dp, 8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.add_a_photo),
-                                contentDescription = "add photo button",
-                                tint = Black,
-                                modifier = Modifier.padding(8.dp, 8.dp, 4.dp, 8.dp)
-                            )
-                            Text(
-                                text = stringResource(R.string.take_photo_text),
-                                modifier = Modifier.padding(4.dp, 8.dp, 8.dp, 8.dp)
-                            )
-                        }
-                    }
-
-                    selectedImageUri?.let { uri ->
-                        Box(
-                            modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally)
-                        ) {
-                            Image(
-                                painter = rememberAsyncImagePainter(model = uri),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                            if (isPhotoTaken) {
-                                OutlinedIconButton(
-                                    onClick = {
-                                        selectedImageUri = null
-                                        isPhotoTaken = false
-                                        imagePath = null
-                                    },
-                                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                                        containerColor = containerColor,
-                                        contentColor = White
-                                    ),
-                                    border = BorderStroke(0.1.dp, White),
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete photo",
-                                        tint = White,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }*/
-
 
                 TextField(
                     value = reportData.containerId,
