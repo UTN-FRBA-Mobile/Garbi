@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">Garbi</string>
+    <string name="map_screen">Mapa</string>
+    <string name="reports_screen">Reportes</string>
+    <string name="create_report_screen">Nuevo reporte</string>
+    <string name="edit_report_screen">Editar reporte</string>
+    <string name="report_details_screen">Detalle de reporte</string>
+    <string name="profile_screen">Perfil</string>
+    <string name="change_password_screen">Cambiá tu contraseña</string>
+    <string name="loading_screen">Cargando...</string>
+    <string name="notification_channel_group_general">Notificacion</string>
+
+
+    <!--Login & Change password screen-->
+    <string name="login_text">Iniciar sesión</string>
+    <string name="change_pw">Cambiar clave</string>
+    <string name="repeat_pw">Repite la clave</string>
+    <string name="error_message_pw_length">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="error_message_pw_number">La contraseña debe tener al menos un número</string>
+    <string name="error_message_pw_capital_letter">La contraseña debe tener al menos una letra mayúscula</string>
+    <string name="error_message_pw_special_character">La contraseña debe tener al menos un caracter especial</string>
+    <string name="error_message_pw_not_equal">Las contraseñas no coinciden</string>
+    <string name="error_message_error_changing_pw">Error cambiando la contraseña</string>
+    <string name="error_message_wrong_user_or_pw">Usuario o contraseña incorrectos</string>
+    <string name="message_enter_credentials">Ingresa tus credenciales</string>
+    <string name="email">Email</string>
+    <string name="enter_email">Ingresar email</string>
+    <string name="password">Clave</string>
+    <string name="enter_password">Ingresar la clave</string>
+
+
+<!--Map screen-->
+    <string name="text_capacity">Capacidad: </string>
+    <string name="text_new_route">Nueva ruta disponible</string>
+    <string name="button_start">Comenzar</string>
+
+<!--All Reports screen-->
+    <string name="empty_reports">Todavía no realizaste ningún reporte</string>
+    <string name="empty_reports_description"
+        >Para crear uno, toca en un contenedor para ver sus detalles, y toca en "Crear Reporte"
+    </string>
+
+    <string name="supporting_text_required">Campo requerido</string>
+    <string name="title_field">Título</string>
+    <string name="creation_date_field">Fecha de creación del reporte</string>
+    <string name="type_dropdown">Tipo de problema</string>
+    <string name="description_field">Descripción del problema</string>
+    <string name="take_photo_text">Toma una foto del problema</string>
+    <string name="photo_field">Foto del problema</string>
+    <string name="container_id_field">ID del contenedor</string>
+    <string name="address_field">Dirección aproximada</string>
+    <string name="last_status_update_field">Fecha de última actualización de estado</string>
+
+    <string-array name="report_types">
+        <item>Contenedor en mal estado</item>
+        <item>Contenedor sucio</item>
+        <item>Basura en la calle</item>
+        <item>Contenedor faltante</item>
+        <item>Otro</item>
+    </string-array>
+    <string name="report_type_enum_contenedor_roto">CONTENEDOR_ROTO</string>
+    <string name="report_type_enum_contenedor_sucio">CONTENEDOR_SUCIO</string>
+    <string name="report_type_enum_basura_calle">BASURA_EN_LA_CALLE</string>
+    <string name="report_type_enum_contenedor_faltante">CONTENEDOR_FALTANTE</string>
+    <string name="report_type_enum_otros">OTROS</string>
+
+    <string name="create_report_dialog_text">¿Está seguro que desea crear el reporte?</string>
+    <string name="create_report_dialog_confirm">Crear</string>
+
+    <string name="edit_report_save">Guardar cambios</string>
+    <string name="edit_report_dialog_text">¿Está seguro que desea guardar el reporte con los nuevos cambios?</string>
+
+    <string name="complete_fields_toast">Completa los campos obligatorios</string>
+    <string name="report_created_toast">Reporte creado con éxito</string>
+    <string name="report_creation_error_toast">No se pudo crear el reporte</string>
+    <string name="report_edited_toast">Reporte modificado con éxito</string>
+    <string name="report_edition_error_toast">No se pudo modificar el reporte</string>
+
+    <string name="delete_report_dialog_text">¿Está seguro que desea eliminar el reporte?</string>
+    <string name="delete_report_dialog_confirm">Eliminar</string>
+    <string name="report_deleted_toast">Reporte eliminado exitosamente</string>
+    <string name="report_deletion_error_toast">No se pudo eliminar el reporte</string>
+
+    <string name="status_new">NUEVO</string>
+    <string name="status_in_revision">EN REVISIÓN</string>
+    <string name="status_resolved">RESUELTO</string>
+    <string name="status_rejected">RECHAZADO</string>
+
+<!--Profile screen-->
+    <string name="profile_name">Damian Betular</string>
+    <string name="profile_email">damian_betular@cliba.com</string>
+    <string name="change_password_button">Cambiar contraseña</string>
+    <string name="biometrics_switch">Acceso biométrico</string>
+    <string name="logout_button">Cerrar sesión</string>
+    <string name="logout_dialog_text">¿Está seguro que desea cerrar sesión?</string>
+    <string name="edit_button">Editar</string>
+    <string name="delete_button">Eliminar</string>
+
+
+<!--Commons-->
+    <!--Dialog-->
+    <string name="dialog_dismiss">Cancelar</string>
+    <string name="dialog_confirm">Confirmar</string>
+
+    <string name="dialog_go_back">¿Está seguro que desea ir para atrás? Los cambios no serán guardados</string>
+
+    <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
+    <string name="create_report_button">Crear reporte</string>
+    <string name="network_error">Error de red</string>
+</resources>
