@@ -40,7 +40,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
@@ -252,6 +256,19 @@ fun MapsScreen(
                 }
 
 
+            }
+
+            if (routeAvailable){
+
+                ExtendedFloatingActionButton(
+                    onClick = { routeAvailable = false;
+                        polylinePoints.value = emptyList()
+                    },
+                    icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
+                    text = { Text(text = "Finalizar ruta", color = Green900) },
+                    containerColor = White,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp).height(30.dp)
+                )
             }
         }
     }
