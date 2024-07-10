@@ -22,6 +22,8 @@ import com.garbi.garbi_recolection.composables.*
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 
 
 private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -32,6 +34,18 @@ class MainActivity : ComponentActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.v("ROUTE", "Failed to get token.", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Log and use the token as needed
+            Log.v("ROUTE", "FCM Token: $token")
+        })
         setContent {
             App(fusedLocationClient)
         }

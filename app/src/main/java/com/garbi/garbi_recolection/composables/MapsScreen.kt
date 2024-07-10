@@ -62,9 +62,7 @@ import androidx.compose.ui.geometry.Rect
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.*
 import com.google.maps.android.compose.Polyline
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.garbi.garbi_recolection.services.DirectionsClient
@@ -150,8 +148,7 @@ fun MapsScreen(
     }
 
     LaunchedEffect(Unit) {
-        delay(15_000)
-        if (!routeModal){
+        if (routeModal){
             showDialog.value = true;
             viewModel.updateRouteModal(false)
         }
@@ -165,13 +162,12 @@ fun MapsScreen(
                 val latitude = userLat
                 val longitude = userLng
                 val userLocation = "${latitude}, ${longitude}"
-                val destination = "-34.6286,-58.4355"
                 val waypoints = "-34.5806,-58.4066|-34.5899,-58.4284"
 
                 println("USER LOCATION ${userLocation}")
 
                 val response = withContext(Dispatchers.IO) {
-                    directionsService.getDirections(userLocation, destination, waypoints, apiKey!!)
+                    directionsService.getDirections(userLocation, userLocation, waypoints, apiKey!!)
                 }
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
