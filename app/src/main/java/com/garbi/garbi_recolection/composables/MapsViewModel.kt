@@ -9,6 +9,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MapsViewModel : ViewModel() {
+    var routeWaypoints = mutableStateOf(RouteManager.routeWaypoints)
+        private set
+
     var routeAvailable = mutableStateOf(RouteManager.routeAvailable)
         private set
 
@@ -21,6 +24,7 @@ class MapsViewModel : ViewModel() {
                 delay(100)
                 routeAvailable.value = RouteManager.routeAvailable
                 routeModal.value = RouteManager.routeModal
+                routeWaypoints.value = RouteManager.routeWaypoints
             }
         }
     }
@@ -31,5 +35,8 @@ class MapsViewModel : ViewModel() {
 
     fun updateRouteModal(value: Boolean) {
         RouteManager.updateRouteModal(value)
+    }
+    fun updateRouteWaypoints(value: String) {
+        RouteManager.updateRouteWaypoints(value)
     }
 }

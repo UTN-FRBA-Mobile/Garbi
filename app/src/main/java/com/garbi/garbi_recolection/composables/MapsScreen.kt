@@ -31,6 +31,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.location.Location
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -93,6 +94,7 @@ fun MapsScreen(
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
+    val routeWaypoints by viewModel.routeWaypoints
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -162,9 +164,9 @@ fun MapsScreen(
                 val latitude = userLat
                 val longitude = userLng
                 val userLocation = "${latitude}, ${longitude}"
-                val waypoints = "-34.5806,-58.4066|-34.5899,-58.4284"
+                val waypoints = routeWaypoints
 
-                println("USER LOCATION ${userLocation}")
+                Log.v("ROUTE", "Generando ruta con userLocation ${userLocation} y waypoints ${waypoints}")
 
                 val response = withContext(Dispatchers.IO) {
                     directionsService.getDirections(userLocation, userLocation, waypoints, apiKey!!)

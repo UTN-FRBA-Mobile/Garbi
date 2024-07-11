@@ -11,11 +11,18 @@ object RouteManager {
     var routeModal by mutableStateOf(false)
         private set
 
+    var routeWaypoints by mutableStateOf("")
+        private set
+
     fun updateRouteAvailable(value: Boolean) {
         routeAvailable = value
     }
 
     fun updateRouteModal(value: Boolean) {
         routeModal = value
+    }
+
+    fun updateRouteWaypoints(waypoints: String){
+        routeWaypoints = waypoints
     }
 }
