@@ -149,7 +149,7 @@ fun MapsScreen(
         )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(routeModal) {
         if (routeModal){
             showDialog.value = true;
             viewModel.updateRouteModal(false)

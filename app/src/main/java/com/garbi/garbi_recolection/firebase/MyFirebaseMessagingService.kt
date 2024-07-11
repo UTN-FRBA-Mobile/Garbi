@@ -20,9 +20,9 @@ import com.garbi.garbi_recolection.RouteManager
 class MyFirebaseMessagingService : FirebaseMessagingService() {
         override fun onMessageReceived(remoteMessage: RemoteMessage) {
             super.onMessageReceived(remoteMessage)
-            val notification = remoteMessage.notification
-            val title: String = notification!!.title!!
-            val msg: String = notification.body!!
+
+            val title = getString(R.string.route_notification_title)
+            val msg = getString(R.string.route_notification_msg)
 
             val data = remoteMessage.data
             val waypoints = data["waypoints"]
@@ -36,7 +36,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         private fun sendNotification(title: String, msg: String) {
-            Log.v("ROUTE","sendNotification")
             val intent = Intent(this, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(
                 this,
