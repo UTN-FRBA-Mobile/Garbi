@@ -31,6 +31,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,9 +49,11 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,6 +71,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.garbi.garbi_recolection.services.DirectionsClient
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
@@ -113,20 +119,41 @@ fun MapsScreen(
         navController?.navigate("home")
     }
 
-    var userLat: Double = 0.0
-    var userLng: Double = 0.0
-    fusedLocationClient.lastLocation
-        .addOnSuccessListener { location : Location? ->
-            println("locationnn ${location}")
-            userLat = location!!.latitude
-            userLng = location.longitude
+    var userLat by remember { mutableStateOf(0.0) }
+    var userLng by remember { mutableStateOf(0.0) }
+
+    val locationRequest = LocationRequest.create().apply {
+        interval = 2000 // Intervalo en milisegundos para las actualizaciones
+        fastestInterval = 2000 // Intervalo más rápido en milisegundos
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Alta precisión
+    }
+    val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            for (location in locationResult.locations) {
+                Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat}")
+                userLat = location.latitude
+                userLng = location.longitude
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        if (hasLocationPermission) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+    }
 
     LaunchedEffect(Unit) {
         val service = RetrofitClient.containerService
         try {
             val response = withContext(Dispatchers.IO) { service.getContainers() }
             containersState.value = response.documents
+            Log.v("Containers", response.toString())
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -161,6 +188,7 @@ fun MapsScreen(
             val directionsService = DirectionsClient.directionsService
             try {
 
+                println("CALCULANDO CON ${userLng} ${userLat}")
                 val latitude = userLat
                 val longitude = userLng
                 val userLocation = "${latitude}, ${longitude}"
@@ -175,8 +203,18 @@ fun MapsScreen(
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
                     cameraPositionState.animate(
+                        CameraUpdateFactory.newCameraPosition(
+                            CameraPosition.Builder()
+                                .target(LatLng(userLat, userLng)) // Posición actual del usuario
+                                .zoom(18f) // Nivel de zoom
+                                //.bearing(bearing) // Mantén la dirección hacia adelante
+                                .tilt(45f) // Opcional: Agrega inclinación para una vista en perspectiva
+                                .build()
+                        )
+                    )/*
+                    cameraPositionState.animate(
                         CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f)
-                    )
+                    )*/
 
                 }
             } catch (e: Exception) {
