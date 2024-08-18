@@ -121,6 +121,7 @@ fun MapsScreen(
 
     var userLat by remember { mutableStateOf(0.0) }
     var userLng by remember { mutableStateOf(0.0) }
+    var userBearing by remember { mutableStateOf(0f) }
 
     val locationRequest = LocationRequest.create().apply {
         interval = 2000 // Intervalo en milisegundos para las actualizaciones
@@ -130,9 +131,11 @@ fun MapsScreen(
     val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             for (location in locationResult.locations) {
-                Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat}")
                 userLat = location.latitude
                 userLng = location.longitude
+                userBearing = location.bearing
+                Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat} bearing: ${userBearing}")
+
             }
         }
     }
@@ -202,24 +205,38 @@ fun MapsScreen(
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newCameraPosition(
-                            CameraPosition.Builder()
-                                .target(LatLng(userLat, userLng)) // Posición actual del usuario
-                                .zoom(18f) // Nivel de zoom
-                                //.bearing(bearing) // Mantén la dirección hacia adelante
-                                .tilt(45f) // Opcional: Agrega inclinación para una vista en perspectiva
-                                .build()
-                        )
-                    )/*
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f)
-                    )*/
 
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    LaunchedEffect(userLat, userLng, userBearing, routeAvailable) {//centra la camara en modo navegación
+        if (routeAvailable) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                        .target(LatLng(userLat, userLng)) // Ubicación actual del usuario
+                        .zoom(20f) // Nivel de zoom
+                        .bearing(userBearing) // Dirección actual del usuario
+                        .tilt(45f) // Vista en perspectiva
+                        .build()
+                )
+            )
+        } else {
+            // Configuración de la cámara al finalizar la ruta
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                        .target(LatLng(userLat, userLng))
+                        .zoom(15f) // Zoom estándar
+                        .bearing(0f) // Sin rotación
+                        .tilt(0f) // Vista plana
+                        .build()
+                )
+            )
         }
     }
 
@@ -243,28 +260,13 @@ fun MapsScreen(
                 val zoom = cameraPositionState.position.zoom
                 val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
 
-
-
                 if (polylinePoints.value.isNotEmpty()) {
-
-                    val truckBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.camion_garbi_medium)
-                    val truckIcon: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(truckBitmap)
-
-
-
                     Polyline(
                         points = polylinePoints.value,
-                        color = Color.Blue
+                        color = Color.Blue,
+                        width = 25f
+
                     )
-                    polylinePoints.value.firstOrNull()?.let { firstPoint ->
-                        Marker(
-                            state = MarkerState(position = firstPoint),
-                            title = "Camión",
-                            icon = truckIcon
-                        )
-                    }
-
-
                 }
 
                 if(containersState.value.isNotEmpty()) {
