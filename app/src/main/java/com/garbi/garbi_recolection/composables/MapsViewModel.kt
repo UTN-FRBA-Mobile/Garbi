@@ -16,6 +16,8 @@ class MapsViewModel : ViewModel() {
 
     var routeModal = mutableStateOf(RouteManager.routeModal)
         private set
+    var routeDestination = mutableStateOf(RouteManager.routeDestination)
+        private set
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
@@ -24,6 +26,7 @@ class MapsViewModel : ViewModel() {
                 routeAvailable.value = RouteManager.routeAvailable
                 routeModal.value = RouteManager.routeModal
                 routeWaypoints.value = RouteManager.routeWaypoints
+                routeDestination.value = RouteManager.routeDestination
             }
         }
     }
@@ -37,5 +40,8 @@ class MapsViewModel : ViewModel() {
     }
     fun updateRouteWaypoints(context: Context,value: String) {
         RouteManager.updateRouteWaypoints(context,value)
+    }
+    fun updateRouteDestination(context: Context,value: String) {
+        RouteManager.updateRouteDestination(context,value)
     }
 }

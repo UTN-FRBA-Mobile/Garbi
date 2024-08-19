@@ -107,6 +107,8 @@ fun MapsScreen(
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
     val routeWaypoints by viewModel.routeWaypoints
+    val routeDestination by viewModel.routeDestination
+
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -205,10 +207,10 @@ fun MapsScreen(
                 val userLocation = "${latitude}, ${longitude}"
                 val waypoints = routeWaypoints
 
-                Log.v("ROUTE", "Generando ruta con userLocation ${userLocation} y waypoints ${waypoints}")
+                Log.v("ROUTE", "Generando ruta con userLocation ${userLocation} y waypoints ${waypoints}, termina en ${routeDestination}")
 
                 val response = withContext(Dispatchers.IO) {
-                    directionsService.getDirections(userLocation, userLocation, waypoints, apiKey!!)
+                    directionsService.getDirections(userLocation, routeDestination, waypoints, apiKey!!)
                 }
                 println(response)
                 if (response.routes.isNotEmpty()) {
@@ -261,9 +263,10 @@ fun MapsScreen(
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
             centerNavigation.value = false
-            println("navegacion no centrada")
+            println("cambiaste la camara. navegacion no centrada")
         }
     }
+
 
     AppScaffold(navController = navController, topBarVisible = false) {
         Column(
