@@ -30,7 +30,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -84,7 +83,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
-import com.google.maps.android.compose.Marker
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -105,6 +103,7 @@ fun MapsScreen(
     }
 
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
+
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
     val routeWaypoints by viewModel.routeWaypoints
@@ -183,7 +182,8 @@ fun MapsScreen(
         AlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
-                viewModel.updateRouteAvailable(true)
+                viewModel.updateRouteModal(context,false)
+                viewModel.updateRouteAvailable(context,true)
             }
         )
     }
@@ -191,7 +191,6 @@ fun MapsScreen(
     LaunchedEffect(routeModal) {
         if (routeModal){
             showDialog.value = true;
-            viewModel.updateRouteModal(false)
         }
     }
 
@@ -349,7 +348,7 @@ fun MapsScreen(
 
             if (routeAvailable){
                 ExtendedFloatingActionButton(
-                    onClick = { viewModel.updateRouteAvailable(false);
+                    onClick = { viewModel.updateRouteAvailable(context,false);
                         polylinePoints.value = emptyList()
                         centerNavigation.value = false
                     },

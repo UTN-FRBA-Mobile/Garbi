@@ -1,12 +1,11 @@
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.garbi.garbi_recolection.RouteManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.content.Context
 
 class MapsViewModel : ViewModel() {
     var routeWaypoints = mutableStateOf(RouteManager.routeWaypoints)
@@ -29,14 +28,14 @@ class MapsViewModel : ViewModel() {
         }
     }
 
-    fun updateRouteAvailable(value: Boolean) {
-        RouteManager.updateRouteAvailable(value)
+    fun updateRouteAvailable(context: Context, value: Boolean) {
+        RouteManager.updateRouteAvailable(context,value)
     }
 
-    fun updateRouteModal(value: Boolean) {
-        RouteManager.updateRouteModal(value)
+    fun updateRouteModal(context: Context,value: Boolean) {
+        RouteManager.updateRouteModal(context,value)
     }
-    fun updateRouteWaypoints(value: String) {
-        RouteManager.updateRouteWaypoints(value)
+    fun updateRouteWaypoints(context: Context,value: String) {
+        RouteManager.updateRouteWaypoints(context,value)
     }
 }

@@ -28,8 +28,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val waypoints = data["waypoints"]
 
             Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
-            RouteManager.updateRouteModal(true)
-            RouteManager.updateRouteWaypoints(waypoints!!)
+            RouteManager.updateRouteModal(context = applicationContext,true)
+            RouteManager.updateRouteWaypoints(context = applicationContext,waypoints!!)
 
             sendNotification(title, msg)
 

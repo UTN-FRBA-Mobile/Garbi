@@ -32,6 +32,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+        RouteManager.init(this)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
