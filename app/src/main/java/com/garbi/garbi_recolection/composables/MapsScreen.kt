@@ -38,12 +38,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -68,7 +73,9 @@ import com.garbi.garbi_recolection.ui.theme.*
 import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.sp
 import com.garbi.garbi_recolection.services.DirectionsClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -122,6 +129,7 @@ fun MapsScreen(
     var userLat by remember { mutableStateOf(0.0) }
     var userLng by remember { mutableStateOf(0.0) }
     var userBearing by remember { mutableStateOf(0f) }
+    var centerNavigation = remember { mutableStateOf(false) }
 
     val locationRequest = LocationRequest.create().apply {
         interval = 2000 // Intervalo en milisegundos para las actualizaciones
@@ -135,6 +143,7 @@ fun MapsScreen(
                 userLng = location.longitude
                 userBearing = location.bearing
                 Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat} bearing: ${userBearing}")
+                println("routeavailable ${routeAvailable} centernavigation ${centerNavigation}")
 
             }
         }
@@ -202,19 +211,26 @@ fun MapsScreen(
                 val response = withContext(Dispatchers.IO) {
                     directionsService.getDirections(userLocation, userLocation, waypoints, apiKey!!)
                 }
+                println(response)
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
 
                 }
+                centerNavigation.value = true
+
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    LaunchedEffect(userLat, userLng, userBearing, routeAvailable) {//centra la camara en modo navegación
-        if (routeAvailable) {
+    LaunchedEffect(userLat, userLng, userBearing, routeAvailable, centerNavigation.value) {
+        //centra la camara en modo navegación. ahora se hace con unos segundos de lag, funciona solo en celular. en el emulador no anda tan bien
+        println("routeavailable ${routeAvailable} centernavigation ${centerNavigation}")
+        if (routeAvailable and centerNavigation.value) {
+            println("Vista de navegación")
             cameraPositionState.animate(
                 CameraUpdateFactory.newCameraPosition(
                     CameraPosition.Builder()
@@ -226,35 +242,69 @@ fun MapsScreen(
                 )
             )
         } else {
-            // Configuración de la cámara al finalizar la ruta
-            cameraPositionState.animate(
-                CameraUpdateFactory.newCameraPosition(
-                    CameraPosition.Builder()
-                        .target(LatLng(userLat, userLng))
-                        .zoom(15f) // Zoom estándar
-                        .bearing(0f) // Sin rotación
-                        .tilt(0f) // Vista plana
-                        .build()
+            if (!routeAvailable and centerNavigation.value){
+                println("Vista centrada sin navegación")
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.Builder()
+                            .target(LatLng(userLat, userLng))
+                            .zoom(15f) // Zoom estándar
+                            .bearing(0f) // Sin rotación
+                            .tilt(0f) // Vista plana
+                            .build()
+                    )
                 )
-            )
+
+            }
         }
     }
 
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
+            centerNavigation.value = false
+            println("navegacion no centrada")
         }
     }
 
     AppScaffold(navController = navController, topBarVisible = false) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ){
+            if (routeAvailable){
+
+                Box (
+                    modifier = Modifier
+                    .background(Green900)
+                    .height(100.dp)
+                    .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        Icon(painter = painterResource(R.drawable.arrow_upward), contentDescription = "Derecho", tint= Color.White,
+                            modifier = Modifier
+                                .height(60.dp)
+                                .aspectRatio(1f))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(color= Color.White, text="Head northeast on Los Nogales toward Los Alamos", fontSize= 20.sp)
+                    }
+                }
+            }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(),
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
-                cameraPositionState = cameraPositionState
+                cameraPositionState = cameraPositionState/*,
+                onMyLocationButtonClick = {
+                    println("clickeaste onMyLocationButtonClick. centrando navigation")
+                    centerLocation.value = true
+                    true
+                }*/
 
             ) {
                 val zoom = cameraPositionState.position.zoom
@@ -298,18 +348,37 @@ fun MapsScreen(
             }
 
             if (routeAvailable){
-
                 ExtendedFloatingActionButton(
                     onClick = { viewModel.updateRouteAvailable(false);
                         polylinePoints.value = emptyList()
+                        centerNavigation.value = false
                     },
                     icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
                     text = { Text(text = "Finalizar ruta", color = Green900) },
                     containerColor = White,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp).height(30.dp)
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(10.dp)
+                        .height(30.dp)
                 )
+
+                if (!centerNavigation.value){
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            centerNavigation.value = true
+                        },
+                        icon = { Icon(Icons.Filled.LocationOn, "Centrar ruta", tint = Green900) },
+                        text = { Text(text = "Centrar ruta", color = Green900) },
+                        containerColor = White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(50.dp)
+                            .height(30.dp)
+                    )
+
+                }
             }
-        }
+        }}
     }
 }
 

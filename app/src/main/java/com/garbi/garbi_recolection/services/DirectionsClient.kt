@@ -1,4 +1,5 @@
 package com.garbi.garbi_recolection.services
+import android.location.Location
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -18,8 +19,23 @@ data class DirectionsResponse(
     val routes: List<Route>
 )
 
+data class Leg(
+    val steps: List<Step>
+)
+
+data class Step (
+    val start_location: LocationStep,
+    val end_location: LocationStep,
+    val html_instructions: String
+)
+
+data class LocationStep(
+    val lat: Double,
+    val lng: Double
+)
 data class Route(
-    val overview_polyline: OverviewPolyline
+    val overview_polyline: OverviewPolyline,
+    val legs: List<Leg>
 )
 
 data class OverviewPolyline(
