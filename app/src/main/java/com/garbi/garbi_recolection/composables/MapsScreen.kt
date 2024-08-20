@@ -334,6 +334,8 @@ fun MapsScreen(
                 viewModel.updateRouteAvailable(context,false);
                 polylinePoints.value = emptyList()
                 centerNavigation.value = false
+                currentStepIndex = 0
+                previousDistanceToEnd = Double.POSITIVE_INFINITY
 
                 if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
 
