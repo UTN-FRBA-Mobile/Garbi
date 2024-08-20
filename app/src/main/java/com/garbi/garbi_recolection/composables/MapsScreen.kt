@@ -324,6 +324,28 @@ fun MapsScreen(
         )
     }
 
+    val showConfirmEndRouteDialog = remember { mutableStateOf(false) }
+
+    if (showConfirmEndRouteDialog.value) {
+        ConfirmEndRouteDialog(
+            onConfirm = {
+                showConfirmEndRouteDialog.value = false
+
+                viewModel.updateRouteAvailable(context,false);
+                polylinePoints.value = emptyList()
+                centerNavigation.value = false
+
+                if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
+
+                    viewModel.updateContinueRouteModal(context,true)
+                    showContinueDialog.value = true
+                }
+            },
+            onDismiss = {
+                showConfirmEndRouteDialog.value = false
+            }
+        )
+    }
     AppScaffold(navController = navController, topBarVisible = false) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -415,16 +437,8 @@ fun MapsScreen(
 
             if (routeAvailable){
                 ExtendedFloatingActionButton(
-                    onClick = { viewModel.updateRouteAvailable(context,false);
-                        polylinePoints.value = emptyList()
-                        centerNavigation.value = false
-
-                        if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
-
-                            viewModel.updateContinueRouteModal(context,true)
-                            showContinueDialog.value = true
-                        }
-
+                    onClick = {
+                        showConfirmEndRouteDialog.value = true
                     },
                     icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
                     text = { Text(text = "Finalizar ruta", color = Green900) },
@@ -588,4 +602,30 @@ fun ContinueRouteDialog(onAlertAccepted: () -> Unit, onAlertDismissed : () -> Un
         } ,
         containerColor = White
     )
+}
+
+
+@Composable
+fun ConfirmEndRouteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = onDismiss,
+            text = { androidx.compose.material.Text(text = stringResource(id = R.string.end_route_modal)) },
+            confirmButton = {
+                androidx.compose.material.TextButton(
+                    onClick = {onConfirm()}
+                ) {
+                    Text(color = Green900, text = stringResource(R.string.dialog_confirm))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material.TextButton(
+                    onClick = {onDismiss()}
+                ) {
+                    Text(color = Gray, text = stringResource(R.string.dialog_dismiss))
+                }
+            },
+        )
 }

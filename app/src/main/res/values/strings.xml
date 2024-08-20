@@ -115,6 +115,7 @@
 
 
     <string name="continue_route">¿Desea volver al lugar del inicio?</string>
+    <string name="end_route_modal">¿Estás seguro de terminar la ruta?</string>
     <string name="left">izquierda</string>
     <string name="right">derecha</string>
 </resources>
