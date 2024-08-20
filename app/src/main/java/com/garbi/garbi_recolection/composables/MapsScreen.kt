@@ -76,12 +76,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.garbi.garbi_recolection.services.DirectionsClient
+import com.garbi.garbi_recolection.services.Step
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
+import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -144,7 +146,6 @@ fun MapsScreen(
                 userLng = location.longitude
                 userBearing = location.bearing
                 Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat} bearing: ${userBearing}")
-                println("routeavailable ${routeAvailable} centernavigation ${centerNavigation}")
 
             }
         }
@@ -196,12 +197,17 @@ fun MapsScreen(
         }
     }
 
+    var steps by remember { mutableStateOf(emptyList<Step>()) }
+    // Variables para manejar el estado
+    var currentStepIndex by remember { mutableStateOf(0) }
+    var currentInstruction by remember { mutableStateOf("") }
+    var nextInstruction by remember { mutableStateOf("") }
+
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
             val directionsService = DirectionsClient.directionsService
             try {
 
-                println("CALCULANDO CON ${userLng} ${userLat}")
                 val latitude = userLat
                 val longitude = userLng
                 val userLocation = "${latitude}, ${longitude}"
@@ -212,7 +218,11 @@ fun MapsScreen(
                 val response = withContext(Dispatchers.IO) {
                     directionsService.getDirections(userLocation, routeDestination, waypoints, apiKey!!)
                 }
-                println(response)
+                Log.v("ROUTE","response ${response}")
+                steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
+                currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    ?: "Instrucción no disponible"
+                Log.v("ROUTE","steps ${steps} currentInstruction ${currentInstruction}")
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
@@ -229,9 +239,7 @@ fun MapsScreen(
 
     LaunchedEffect(userLat, userLng, userBearing, routeAvailable, centerNavigation.value) {
         //centra la camara en modo navegación. ahora se hace con unos segundos de lag, funciona solo en celular. en el emulador no anda tan bien
-        println("routeavailable ${routeAvailable} centernavigation ${centerNavigation}")
         if (routeAvailable and centerNavigation.value) {
-            println("Vista de navegación")
             cameraPositionState.animate(
                 CameraUpdateFactory.newCameraPosition(
                     CameraPosition.Builder()
@@ -244,7 +252,6 @@ fun MapsScreen(
             )
         } else {
             if (!routeAvailable and centerNavigation.value){
-                println("Vista centrada sin navegación")
                 cameraPositionState.animate(
                     CameraUpdateFactory.newCameraPosition(
                         CameraPosition.Builder()
@@ -263,10 +270,30 @@ fun MapsScreen(
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
             centerNavigation.value = false
-            println("cambiaste la camara. navegacion no centrada")
         }
     }
 
+    LaunchedEffect(userLat, userLng, routeAvailable) {
+        Log.v("ROUTE","routeAvailable ${routeAvailable} steps ${steps}")
+        if (routeAvailable && steps.isNotEmpty()) {
+            val currentStep = steps.getOrNull(currentStepIndex)
+            currentStep?.let {
+                val endLocation = LatLng(it.end_location.lat, it.end_location.lng)
+                val userLocation = LatLng(userLat, userLng)
+                val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
+
+                // Si estamos cerca del punto final del Step, avanzamos al siguiente
+                if (distanceToEnd < 20) { // Ajusta el umbral de distancia según sea necesario
+                    currentStepIndex = (currentStepIndex + 1).coerceAtMost(steps.size - 1)
+                }
+                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    ?: "Instrucción no disponible"
+                nextInstruction= steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    ?: "Instrucción no disponible"
+                Log.v("ROUTE","distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction} nextInstruction ${nextInstruction}")
+            }
+        }
+    }
 
     AppScaffold(navController = navController, topBarVisible = false) {
         Column(
@@ -285,12 +312,15 @@ fun MapsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ){
-                        Icon(painter = painterResource(R.drawable.arrow_upward), contentDescription = "Derecho", tint= Color.White,
-                            modifier = Modifier
-                                .height(60.dp)
-                                .aspectRatio(1f))
+                        val arrow = if (currentInstruction.contains("izquierda",ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains("derecha",ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
+                        Box(modifier = Modifier.height(100.dp).width(100.dp)){
+                            Icon(painter = arrow , contentDescription = "Flecha de dirección", tint= Color.White,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f))
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(color= Color.White, text="Head northeast on Los Nogales toward Los Alamos", fontSize= 20.sp)
+                        Text(color= Color.White, text=currentInstruction, fontSize= 20.sp)
                     }
                 }
             }
@@ -301,12 +331,7 @@ fun MapsScreen(
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(),
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
-                cameraPositionState = cameraPositionState/*,
-                onMyLocationButtonClick = {
-                    println("clickeaste onMyLocationButtonClick. centrando navigation")
-                    centerLocation.value = true
-                    true
-                }*/
+                cameraPositionState = cameraPositionState
 
             ) {
                 val zoom = cameraPositionState.position.zoom
