@@ -75,6 +75,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.garbi.garbi_recolection.services.DirectionsClient
 import com.garbi.garbi_recolection.services.Step
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -110,6 +111,8 @@ fun MapsScreen(
     val routeModal by viewModel.routeModal
     val routeWaypoints by viewModel.routeWaypoints
     val routeDestination by viewModel.routeDestination
+    val routeStart by viewModel.routeStart
+    val continueRouteModal by viewModel.continueRouteModal
 
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -201,7 +204,6 @@ fun MapsScreen(
     // Variables para manejar el estado
     var currentStepIndex by remember { mutableStateOf(0) }
     var currentInstruction by remember { mutableStateOf("") }
-    var nextInstruction by remember { mutableStateOf("") }
 
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
@@ -218,6 +220,7 @@ fun MapsScreen(
                 val response = withContext(Dispatchers.IO) {
                     directionsService.getDirections(userLocation, routeDestination, waypoints, apiKey!!)
                 }
+                viewModel.updateRouteStart(context,userLocation)
                 Log.v("ROUTE","response ${response}")
                 steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
                 currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
@@ -286,13 +289,34 @@ fun MapsScreen(
                 if (distanceToEnd < 20) { // Ajusta el umbral de distancia según sea necesario
                     currentStepIndex = (currentStepIndex + 1).coerceAtMost(steps.size - 1)
                 }
-                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
-                nextInstruction= steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
-                    ?: "Instrucción no disponible"
-                Log.v("ROUTE","distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction} nextInstruction ${nextInstruction}")
+                Log.v("ROUTE","distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction}")
             }
         }
+    }
+
+    val showContinueDialog = remember { mutableStateOf(false) }
+    LaunchedEffect(continueRouteModal){
+        if (continueRouteModal){
+            showContinueDialog.value = true;
+        }
+    }
+
+    if (showContinueDialog.value){
+        ContinueRouteDialog(onAlertAccepted = {
+            viewModel.updateRouteDestination(context,routeStart)
+            viewModel.updateRouteWaypoints(context,"")
+            viewModel.updateRouteAvailable(context,true)
+            showContinueDialog.value = false
+            viewModel.updateContinueRouteModal(context,false)
+        },
+            onAlertDismissed = {
+                showContinueDialog.value = false
+                viewModel.updateContinueRouteModal(context,false)
+
+            }
+        )
     }
 
     AppScaffold(navController = navController, topBarVisible = false) {
@@ -303,17 +327,20 @@ fun MapsScreen(
 
                 Box (
                     modifier = Modifier
-                    .background(Green900)
-                    .height(100.dp)
-                    .fillMaxWidth(),
+                        .background(Green900)
+                        .height(100.dp)
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ){
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ){
-                        val arrow = if (currentInstruction.contains("izquierda",ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains("derecha",ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
-                        Box(modifier = Modifier.height(100.dp).width(100.dp)){
+                        val arrow = if (currentInstruction.contains(stringResource(id = R.string.left),ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains(
+                                stringResource(id = R.string.right),ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
+                        Box(modifier = Modifier
+                            .height(100.dp)
+                            .width(100.dp)){
                             Icon(painter = arrow , contentDescription = "Flecha de dirección", tint= Color.White,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -379,6 +406,13 @@ fun MapsScreen(
                     onClick = { viewModel.updateRouteAvailable(context,false);
                         polylinePoints.value = emptyList()
                         centerNavigation.value = false
+
+                        if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
+
+                            viewModel.updateContinueRouteModal(context,true)
+                            showContinueDialog.value = true
+                        }
+
                     },
                     icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
                     text = { Text(text = "Finalizar ruta", color = Green900) },
@@ -513,6 +547,33 @@ fun AlertDialog(onAlertAccepted: () -> Unit) {
                 Text(color = Green900, text = stringResource(R.string.button_start))
             }
         },
+        containerColor = White
+    )
+}
+
+
+@Composable
+fun ContinueRouteDialog(onAlertAccepted: () -> Unit, onAlertDismissed : () -> Unit) {
+
+    androidx.compose.material3.AlertDialog(
+        text = {
+            Text(text = stringResource(R.string.continue_route))
+        },
+        onDismissRequest = {},
+        confirmButton = {
+            androidx.compose.material.TextButton(
+                onClick = {onAlertAccepted()}
+            ) {
+                Text(color = Green900, text = stringResource(R.string.dialog_confirm))
+            }
+        },
+        dismissButton ={
+            androidx.compose.material.TextButton(
+                onClick = { onAlertDismissed() }
+            ) {
+                Text(color = LightGray, text = stringResource(R.string.dialog_dismiss))
+            }
+        } ,
         containerColor = White
     )
 }

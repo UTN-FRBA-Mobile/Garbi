@@ -112,4 +112,9 @@
     <!--Commons-->
     <string name="route_notification_title">Nueva ruta disponible</string>
     <string name="route_notification_msg">Tienes una nueva ruta disponible</string>
+
+
+    <string name="continue_route">¿Desea volver al lugar del inicio?</string>
+    <string name="left">izquierda</string>
+    <string name="right">derecha</string>
 </resources>

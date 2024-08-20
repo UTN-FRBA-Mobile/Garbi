@@ -11,6 +11,8 @@ object RouteManager {
     private const val KEY_ROUTE_MODAL = "routeModal"
     private const val KEY_ROUTE_WAYPOINTS = "routeWaypoints"
     private const val KEY_ROUTE_DESTINATION = "routeDestination"
+    private const val KEY_ROUTE_START = "routeStart"
+    private const val KEY_CONTINUE_ROUTE_MODAL = "continueRouteModal"
 
     var routeAvailable by mutableStateOf(false)
         private set
@@ -22,6 +24,10 @@ object RouteManager {
         private set
     var routeDestination by mutableStateOf("")
         private set
+    var routeStart by mutableStateOf("")
+        private set
+    var continueRouteModal by mutableStateOf(false)
+        private set
 
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -29,6 +35,8 @@ object RouteManager {
         routeModal = prefs.getBoolean(KEY_ROUTE_MODAL, false)
         routeWaypoints = prefs.getString(KEY_ROUTE_WAYPOINTS, "") ?: ""
         routeDestination = prefs.getString(KEY_ROUTE_DESTINATION, "") ?: ""
+        routeStart = prefs.getString(KEY_ROUTE_START, "") ?: ""
+        continueRouteModal = prefs.getBoolean(KEY_CONTINUE_ROUTE_MODAL, false)
 
     }
 
@@ -53,6 +61,16 @@ object RouteManager {
         saveToPreferences(context)
 
     }
+    fun updateRouteStart(context: Context, start: String) {
+        routeStart = start
+        saveToPreferences(context)
+
+    }
+    fun updateContinueRouteModal(context: Context, value: Boolean) {
+        continueRouteModal = value
+        saveToPreferences(context)
+
+    }
     private fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         with(prefs.edit()) {
@@ -60,6 +78,8 @@ object RouteManager {
             putBoolean(KEY_ROUTE_MODAL, routeModal)
             putString(KEY_ROUTE_WAYPOINTS, routeWaypoints)
             putString(KEY_ROUTE_DESTINATION, routeDestination)
+            putString(KEY_ROUTE_START, routeStart)
+            putBoolean(KEY_CONTINUE_ROUTE_MODAL, continueRouteModal)
             apply()
         }
     }
