@@ -43,6 +43,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
@@ -58,6 +59,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,7 +77,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.garbi.garbi_recolection.services.DirectionsClient
 import com.garbi.garbi_recolection.services.Step
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -204,6 +205,7 @@ fun MapsScreen(
     // Variables para manejar el estado
     var currentStepIndex by remember { mutableStateOf(0) }
     var currentInstruction by remember { mutableStateOf("") }
+    var previousDistanceToEnd by remember { mutableStateOf(Double.POSITIVE_INFINITY) }
 
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
@@ -223,7 +225,7 @@ fun MapsScreen(
                 viewModel.updateRouteStart(context,userLocation)
                 Log.v("ROUTE","response ${response}")
                 steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
-                currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                currentInstruction = steps.getOrNull(1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
                     ?: "Instrucción no disponible"
                 Log.v("ROUTE","steps ${steps} currentInstruction ${currentInstruction}")
                 if (response.routes.isNotEmpty()) {
@@ -285,13 +287,16 @@ fun MapsScreen(
                 val userLocation = LatLng(userLat, userLng)
                 val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
 
-                // Si estamos cerca del punto final del Step, avanzamos al siguiente
-                if (distanceToEnd < 20) { // Ajusta el umbral de distancia según sea necesario
-                    currentStepIndex = (currentStepIndex + 1).coerceAtMost(steps.size - 1)
+                //Avanza un step si la distancia al final es menor a 10 metros o si la distancia es mayor que la anterior con dif de mas de 3
+                if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
+                    currentStepIndex = (currentStepIndex+1).coerceAtMost(steps.size - 1)
+                    previousDistanceToEnd = Double.POSITIVE_INFINITY
+                }else{
+                    previousDistanceToEnd = distanceToEnd
                 }
-                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[^>]*>"), "")
+                currentInstruction = steps.getOrNull(currentStepIndex+1)?.html_instructions?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
-                Log.v("ROUTE","distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction}")
+                Log.v("ROUTE"," ${currentStepIndex} distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction}")
             }
         }
     }
@@ -339,15 +344,22 @@ fun MapsScreen(
                         val arrow = if (currentInstruction.contains(stringResource(id = R.string.left),ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains(
                                 stringResource(id = R.string.right),ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
                         Box(modifier = Modifier
-                            .height(100.dp)
-                            .width(100.dp)){
-                            Icon(painter = arrow , contentDescription = "Flecha de dirección", tint= Color.White,
+                            .size(100.dp)){
+                            Icon(
+                                painter = arrow ,
+                                contentDescription = "Flecha de dirección",
+                                tint= Color.White,
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .size(60.dp)
+                                    .align(Alignment.Center)
                                     .aspectRatio(1f))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(color= Color.White, text=currentInstruction, fontSize= 20.sp)
+                        Text(
+                            color= Color.White,
+                            text=currentInstruction, fontSize= 20.sp,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
                     }
                 }
             }
@@ -571,7 +583,7 @@ fun ContinueRouteDialog(onAlertAccepted: () -> Unit, onAlertDismissed : () -> Un
             androidx.compose.material.TextButton(
                 onClick = { onAlertDismissed() }
             ) {
-                Text(color = LightGray, text = stringResource(R.string.dialog_dismiss))
+                Text(color = Green900, text = stringResource(R.string.dialog_dismiss))
             }
         } ,
         containerColor = White
