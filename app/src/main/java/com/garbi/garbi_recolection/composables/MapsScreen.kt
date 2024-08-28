@@ -30,26 +30,36 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.location.Location
+import android.os.Looper
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,17 +72,21 @@ import androidx.compose.ui.geometry.Rect
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.*
 import com.google.maps.android.compose.Polyline
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.sp
 import com.garbi.garbi_recolection.services.DirectionsClient
+import com.garbi.garbi_recolection.services.Step
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
+import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraMoveStartedReason
-import com.google.maps.android.compose.Marker
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -93,7 +107,14 @@ fun MapsScreen(
     }
 
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
-    var routeAvailable by viewModel.routeAvailable;
+
+    val routeAvailable by viewModel.routeAvailable
+    val routeModal by viewModel.routeModal
+    val routeWaypoints by viewModel.routeWaypoints
+    val routeDestination by viewModel.routeDestination
+    val routeStart by viewModel.routeStart
+    val continueRouteModal by viewModel.continueRouteModal
+
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -112,20 +133,45 @@ fun MapsScreen(
         navController?.navigate("home")
     }
 
-    var userLat: Double = 0.0
-    var userLng: Double = 0.0
-    fusedLocationClient.lastLocation
-        .addOnSuccessListener { location : Location? ->
-            println("locationnn ${location}")
-            userLat = location!!.latitude
-            userLng = location.longitude
+    var userLat by remember { mutableStateOf(0.0) }
+    var userLng by remember { mutableStateOf(0.0) }
+    var userBearing by remember { mutableStateOf(0f) }
+    var centerNavigation = remember { mutableStateOf(false) }
+
+    val locationRequest = LocationRequest.create().apply {
+        interval = 2000 // Intervalo en milisegundos para las actualizaciones
+        fastestInterval = 2000 // Intervalo más rápido en milisegundos
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Alta precisión
+    }
+    val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            for (location in locationResult.locations) {
+                userLat = location.latitude
+                userLng = location.longitude
+                userBearing = location.bearing
+                Log.v("Ubicacion","La ubicación del usuario es lng: ${userLng} lat: ${userLat} bearing: ${userBearing}")
+
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        if (hasLocationPermission) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+    }
 
     LaunchedEffect(Unit) {
         val service = RetrofitClient.containerService
         try {
             val response = withContext(Dispatchers.IO) { service.getContainers() }
             containersState.value = response.documents
+            Log.v("Containers", response.toString())
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -139,22 +185,27 @@ fun MapsScreen(
     val showDialog = remember { mutableStateOf(false) }
     val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
 
-
     if (showDialog.value) {
         AlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
-                routeAvailable = true;
+                viewModel.updateRouteModal(context,false)
+                viewModel.updateRouteAvailable(context,true)
             }
         )
     }
 
-    LaunchedEffect(Unit) {
-        delay(15_000) //Esto en realidad no tiene que estar con un delay. Se va a setear la variable en true cuando haya un recorrido disponible
-        if (!routeAvailable){
+    LaunchedEffect(routeModal) {
+        if (routeModal){
             showDialog.value = true;
         }
     }
+
+    var steps by remember { mutableStateOf(emptyList<Step>()) }
+    // Variables para manejar el estado
+    var currentStepIndex by remember { mutableStateOf(0) }
+    var currentInstruction by remember { mutableStateOf("") }
+    var previousDistanceToEnd by remember { mutableStateOf(Double.POSITIVE_INFINITY) }
 
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
@@ -164,39 +215,182 @@ fun MapsScreen(
                 val latitude = userLat
                 val longitude = userLng
                 val userLocation = "${latitude}, ${longitude}"
-                val destination = "-34.6286,-58.4355"
-                val waypoints = "-34.5806,-58.4066|-34.5899,-58.4284"
+                val waypoints = routeWaypoints
 
-                println("USER LOCATION ${userLocation}")
+                Log.v("ROUTE", "Generando ruta con userLocation ${userLocation} y waypoints ${waypoints}, termina en ${routeDestination}")
 
                 val response = withContext(Dispatchers.IO) {
-                    directionsService.getDirections(userLocation, destination, waypoints, apiKey!!)
+                    directionsService.getDirections(userLocation, routeDestination, waypoints, apiKey!!)
                 }
+                viewModel.updateRouteStart(context,userLocation)
+                Log.v("ROUTE","response ${response}")
+                steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
+                currentInstruction = steps.getOrNull(1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    ?: "Instrucción no disponible"
+                Log.v("ROUTE","steps ${steps} currentInstruction ${currentInstruction}")
                 if (response.routes.isNotEmpty()) {
                     val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f)
-                    )
 
                 }
+                centerNavigation.value = true
+
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    LaunchedEffect(cameraPositionState.isMoving) {
-        if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
+    LaunchedEffect(userLat, userLng, userBearing, routeAvailable, centerNavigation.value) {
+        //centra la camara en modo navegación. ahora se hace con unos segundos de lag, funciona solo en celular. en el emulador no anda tan bien
+        if (routeAvailable and centerNavigation.value) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                        .target(LatLng(userLat, userLng)) // Ubicación actual del usuario
+                        .zoom(20f) // Nivel de zoom
+                        .bearing(userBearing) // Dirección actual del usuario
+                        .tilt(45f) // Vista en perspectiva
+                        .build()
+                )
+            )
+        } else {
+            if (!routeAvailable and centerNavigation.value){
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.Builder()
+                            .target(LatLng(userLat, userLng))
+                            .zoom(15f) // Zoom estándar
+                            .bearing(0f) // Sin rotación
+                            .tilt(0f) // Vista plana
+                            .build()
+                    )
+                )
+
+            }
         }
     }
 
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
+            centerNavigation.value = false
+        }
+    }
+
+    LaunchedEffect(userLat, userLng, routeAvailable) {
+        Log.v("ROUTE","routeAvailable ${routeAvailable} steps ${steps}")
+        if (routeAvailable && steps.isNotEmpty()) {
+            val currentStep = steps.getOrNull(currentStepIndex)
+            currentStep?.let {
+                val endLocation = LatLng(it.end_location.lat, it.end_location.lng)
+                val userLocation = LatLng(userLat, userLng)
+                val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
+
+                //Avanza un step si la distancia al final es menor a 10 metros o si la distancia es mayor que la anterior con dif de mas de 3
+                if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
+                    currentStepIndex = (currentStepIndex+1).coerceAtMost(steps.size - 1)
+                    previousDistanceToEnd = Double.POSITIVE_INFINITY
+                }else{
+                    previousDistanceToEnd = distanceToEnd
+                }
+                currentInstruction = steps.getOrNull(currentStepIndex+1)?.html_instructions?.replace(Regex("<[^>]*>"), "")
+                    ?: "Instrucción no disponible"
+                Log.v("ROUTE"," ${currentStepIndex} distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction}")
+            }
+        }
+    }
+
+    val showContinueDialog = remember { mutableStateOf(false) }
+    LaunchedEffect(continueRouteModal){
+        if (continueRouteModal){
+            showContinueDialog.value = true;
+        }
+    }
+
+    if (showContinueDialog.value){
+        ContinueRouteDialog(onAlertAccepted = {
+            viewModel.updateRouteDestination(context,routeStart)
+            viewModel.updateRouteWaypoints(context,"")
+            viewModel.updateRouteAvailable(context,true)
+            showContinueDialog.value = false
+            viewModel.updateContinueRouteModal(context,false)
+        },
+            onAlertDismissed = {
+                showContinueDialog.value = false
+                viewModel.updateContinueRouteModal(context,false)
+
+            }
+        )
+    }
+
+    val showConfirmEndRouteDialog = remember { mutableStateOf(false) }
+
+    if (showConfirmEndRouteDialog.value) {
+        ConfirmEndRouteDialog(
+            onConfirm = {
+                showConfirmEndRouteDialog.value = false
+
+                viewModel.updateRouteAvailable(context,false);
+                polylinePoints.value = emptyList()
+                centerNavigation.value = false
+                currentStepIndex = 0
+                previousDistanceToEnd = Double.POSITIVE_INFINITY
+
+                if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
+
+                    viewModel.updateContinueRouteModal(context,true)
+                    showContinueDialog.value = true
+                }
+            },
+            onDismiss = {
+                showConfirmEndRouteDialog.value = false
+            }
+        )
+    }
     AppScaffold(navController = navController, topBarVisible = false) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ){
+            if (routeAvailable){
+
+                Box (
+                    modifier = Modifier
+                        .background(Green900)
+                        .height(100.dp)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        val arrow = if (currentInstruction.contains(stringResource(id = R.string.left),ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains(
+                                stringResource(id = R.string.right),ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
+                        Box(modifier = Modifier
+                            .size(100.dp)){
+                            Icon(
+                                painter = arrow ,
+                                contentDescription = "Flecha de dirección",
+                                tint= Color.White,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .align(Alignment.Center)
+                                    .aspectRatio(1f))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            color= Color.White,
+                            text=currentInstruction, fontSize= 20.sp,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+            }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(),
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
@@ -206,28 +400,13 @@ fun MapsScreen(
                 val zoom = cameraPositionState.position.zoom
                 val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
 
-
-
                 if (polylinePoints.value.isNotEmpty()) {
-
-                    val truckBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.camion_garbi_medium)
-                    val truckIcon: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(truckBitmap)
-
-
-
                     Polyline(
                         points = polylinePoints.value,
-                        color = Color.Blue
+                        color = Color.Blue,
+                        width = 25f
+
                     )
-                    polylinePoints.value.firstOrNull()?.let { firstPoint ->
-                        Marker(
-                            state = MarkerState(position = firstPoint),
-                            title = "Camión",
-                            icon = truckIcon
-                        )
-                    }
-
-
                 }
 
                 if(containersState.value.isNotEmpty()) {
@@ -259,18 +438,36 @@ fun MapsScreen(
             }
 
             if (routeAvailable){
-
                 ExtendedFloatingActionButton(
-                    onClick = { routeAvailable = false;
-                        polylinePoints.value = emptyList()
+                    onClick = {
+                        showConfirmEndRouteDialog.value = true
                     },
                     icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
                     text = { Text(text = "Finalizar ruta", color = Green900) },
                     containerColor = White,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp).height(30.dp)
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(10.dp)
+                        .height(30.dp)
                 )
+
+                if (!centerNavigation.value){
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            centerNavigation.value = true
+                        },
+                        icon = { Icon(Icons.Filled.LocationOn, "Centrar ruta", tint = Green900) },
+                        text = { Text(text = "Centrar ruta", color = Green900) },
+                        containerColor = White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(50.dp)
+                            .height(30.dp)
+                    )
+
+                }
             }
-        }
+        }}
     }
 }
 
@@ -380,4 +577,57 @@ fun AlertDialog(onAlertAccepted: () -> Unit) {
         },
         containerColor = White
     )
+}
+
+
+@Composable
+fun ContinueRouteDialog(onAlertAccepted: () -> Unit, onAlertDismissed : () -> Unit) {
+
+    androidx.compose.material3.AlertDialog(
+        text = {
+            Text(text = stringResource(R.string.continue_route))
+        },
+        onDismissRequest = {},
+        confirmButton = {
+            androidx.compose.material.TextButton(
+                onClick = {onAlertAccepted()}
+            ) {
+                Text(color = Green900, text = stringResource(R.string.dialog_confirm))
+            }
+        },
+        dismissButton ={
+            androidx.compose.material.TextButton(
+                onClick = { onAlertDismissed() }
+            ) {
+                Text(color = Green900, text = stringResource(R.string.dialog_dismiss))
+            }
+        } ,
+        containerColor = White
+    )
+}
+
+
+@Composable
+fun ConfirmEndRouteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = onDismiss,
+            text = { androidx.compose.material.Text(text = stringResource(id = R.string.end_route_modal)) },
+            confirmButton = {
+                androidx.compose.material.TextButton(
+                    onClick = {onConfirm()}
+                ) {
+                    Text(color = Green900, text = stringResource(R.string.dialog_confirm))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material.TextButton(
+                    onClick = {onDismiss()}
+                ) {
+                    Text(color = Gray, text = stringResource(R.string.dialog_dismiss))
+                }
+            },
+        )
 }

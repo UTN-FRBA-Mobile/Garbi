@@ -1,33 +1,40 @@
 package com.garbi.garbi_recolection.firebase
 
+import MapsViewModel
 import MyNotification
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.garbi.garbi_recolection.MainActivity
 import com.garbi.garbi_recolection.R
+import com.garbi.garbi_recolection.RouteManager
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-    class MyFirebaseMessagingService : FirebaseMessagingService() {
-        override fun onNewToken(p0: String) {
-            super.onNewToken(p0)
-        }
-
-        companion object {
-            private const val TAG = "MyFirebaseMsgService"
-        }
-
         override fun onMessageReceived(remoteMessage: RemoteMessage) {
             super.onMessageReceived(remoteMessage)
-            val notification = remoteMessage.notification
-            val title: String = notification!!.title!!
-            val msg: String = notification.body!!
 
+            val title = getString(R.string.route_notification_title)
+            val msg = getString(R.string.route_notification_msg)
+
+            val data = remoteMessage.data
+            val waypoints = data["waypoints"]
+            val destination = data["destination"]
+
+            Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
+            RouteManager.updateRouteModal(context = applicationContext,true)
+            RouteManager.updateRouteWaypoints(context = applicationContext,waypoints!!)
+            RouteManager.updateRouteDestination(context = applicationContext,destination!!)
 
             sendNotification(title, msg)
+
         }
 
         private fun sendNotification(title: String, msg: String) {
@@ -48,4 +55,3 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             notification.show(MyNotification.NOTIFICATION_ID)
         }
     }
-}

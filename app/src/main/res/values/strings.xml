@@ -107,4 +107,15 @@
     <string name="accept_terms_and_conditions">Aceptar términos y condiciones</string>
     <string name="create_report_button">Crear reporte</string>
     <string name="network_error">Error de red</string>
+
+
+    <!--Commons-->
+    <string name="route_notification_title">Nueva ruta disponible</string>
+    <string name="route_notification_msg">Tienes una nueva ruta disponible</string>
+
+
+    <string name="continue_route">¿Desea volver al lugar del inicio?</string>
+    <string name="end_route_modal">¿Estás seguro de terminar la ruta?</string>
+    <string name="left">izquierda</string>
+    <string name="right">derecha</string>
 </resources>
