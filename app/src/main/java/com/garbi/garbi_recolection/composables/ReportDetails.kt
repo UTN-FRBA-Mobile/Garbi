@@ -3,6 +3,7 @@ package com.garbi.garbi_recolection.composables
 import AppScaffold
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,17 +63,25 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 
     var reportDetails: Report? by remember { mutableStateOf(null) }
     val newStatus = stringResource(R.string.status_new)
+    var timestamp = ""
     LaunchedEffect(reportId) {
         val service = RetrofitClient.reportService
         try {
             val response = withContext(Dispatchers.IO) { service.getReport(reportId) }
-            reportDetails = response
+            Log.v("report", "response de details de un reporte: ${response}")
+            reportDetails = response.body()
             println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
             if (listOfStatus!![listOfStatus.size -1].status == newStatus) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
+            listOfStatus?.find { it.status == "NUEVO" }
+                ?.let { nuevoStatus ->
+                    timestamp = nuevoStatus.timestamp.substring(0, 10)
+                    Log.v("report", "timestamp de status NUEVO: ${timestamp}")
+                }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -167,7 +176,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 
                 TextField(
                     title = stringResource(R.string.creation_date_field),
-                    content = details.createdAt!!.substring(0, 10)
+                    content = timestamp
                 )
 //                TextField( //TODO BE is returning incorrect date
 //                    title = stringResource(R.string.last_status_update_field),
@@ -208,7 +217,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 
                         println("generando presignedurl")
                         AsyncImage(
-                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
+                            model = generatePresignedUrl("garbi-integration-report-bucket", details.id!! + ".jpg",accessKeyAws!!,secretKeyAws!!),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(200.dp, 280.dp)
@@ -230,7 +239,7 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
                 )
                 TextField(
                     title = stringResource(R.string.address_field),
-                    content = details.address!!.convertToString()
+                    content = details.address!!
                 )
             }
 
@@ -293,6 +302,7 @@ fun generatePresignedUrl(bucketName: String, objectKey: String, accessKeyAws:Str
         expTimeMillis += (1000 * 60 * 60 * 24 * 7).toLong()
         expiration.time = expTimeMillis
 
+        println("bucketName $bucketName objectKey $objectKey")
         val generateSignedUrlRequest = GeneratePresignedUrlRequest(bucketName, objectKey)
             .withMethod(HttpMethod.GET)
             .withExpiration(expiration)

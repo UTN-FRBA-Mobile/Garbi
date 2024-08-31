@@ -74,7 +74,7 @@ fun ProfileScreen(navController: NavController? = null) {
                 )
 
                 Text(
-                    text = userDetails!!.email,
+                    text = userDetails!!.companyEmail,
                     fontSize = 20.sp,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.padding(16.dp, 0.dp)

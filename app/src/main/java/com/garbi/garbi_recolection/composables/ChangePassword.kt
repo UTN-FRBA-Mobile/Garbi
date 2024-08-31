@@ -129,7 +129,6 @@ fun ChangePasswordScreen(navController: NavController? = null) {
                         isLoading = true
                         coroutineScope.launch {
                             val credentials = ChangePasswordRequest(
-                                userDetails!!.email,
                                 userDetails!!.password,
                                 changePasswordCredentials.password2
                             )

@@ -32,6 +32,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -170,8 +171,13 @@ fun MapsScreen(
         val service = RetrofitClient.containerService
         try {
             val response = withContext(Dispatchers.IO) { service.getContainers() }
-            containersState.value = response.documents
-            Log.v("Containers", response.toString())
+            Log.v("containers","response ${response} body ${response.body()}")
+            if (response.isSuccessful) {
+                containersState.value = response.body()?.result ?: emptyList()
+            } else {
+                Toast.makeText(context, "Error cargando los contenedores", Toast.LENGTH_LONG).show()
+            }
+            response.body()?.toString()?.let { Log.v("Containers", it) }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -424,7 +430,7 @@ fun MapsScreen(
                                 onInfoWindowClick = {
                                     CoroutineScope(Dispatchers.Main).launch {
                                         val addr = container.address
-                                        navController?.navigate("create_report/${container._id}/${addr.street}/${addr.number}/${addr.neighborhood}")
+                                        navController?.navigate("create_report/${container.id}/${addr.street}/${addr.number}/${addr.neighborhood}")
                                     }
                                 }
                             ) {
@@ -510,7 +516,7 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = stringResource(R.string.text_capacity) + "${container.capacity}%",
+                text = stringResource(R.string.text_capacity) + " ${container.capacity}%",
                 fontWeight = FontWeight.Bold,
                 color = DarkGray
             )

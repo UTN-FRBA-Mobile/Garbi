@@ -66,6 +66,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.window.PopupProperties
+import com.garbi.garbi_recolection.services.CreateReportRequest
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.ui.theme.*
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +80,9 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import com.google.gson.Gson
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import android.util.Base64
+import android.util.Log
+import java.io.FileInputStream
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -86,22 +90,32 @@ import okhttp3.RequestBody.Companion.toRequestBody
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-
+/*
     var reportData by remember { mutableStateOf(Report(
-        _id = null,
+        id = null,
         userId = "",
         containerId = containerId.toString(),
         managerId = null,
         title = "",
         observation = null,
         description = null, //TODO MAYBE SHOULD BE NULLABLE
-        address = address,
+        address = address.toString(),
+        companyId = "",
         phone = null,
         email = "",
         status = null,
+        type = ""
+    )) }*/
+    var createReportRequest by remember { mutableStateOf(CreateReportRequest(
+        userId = "",
+        containerId = containerId.toString(),
+        title = "",
+        description = null, //TODO MAYBE SHOULD BE NULLABLE
+        address = address.convertToString(),
+        phone = null,
+        email = "",
         type = "",
-        createdAt = null,
-        deletedAt = null
+        image = ""
     )) }
 
     var imagePath by remember { mutableStateOf<String?>(null) }
@@ -122,8 +136,9 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     //Get userId
     LaunchedEffect(context) {
         val userDetails = RetrofitClient.getSession(context, navController!!)
-        reportData = reportData.copy(userId = userDetails?._id ?: "")
-        reportData = reportData.copy(email = userDetails?.email ?: "")
+        createReportRequest = createReportRequest.copy(userId = userDetails?.id ?: "")
+        createReportRequest = createReportRequest.copy(email = userDetails?.companyEmail ?: "")
+        createReportRequest = createReportRequest.copy(phone = userDetails?.personalPhone ?: "")
     }
 
     ////// Type Dropdown
@@ -192,8 +207,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = reportData.title,
-                onValueChange = { data -> reportData = reportData.copy(title = data) },
+                value = createReportRequest.title,
+                onValueChange = { data -> createReportRequest = createReportRequest.copy(title = data) },
                 label = { Text( text = stringResource(R.string.title_field) + "*" ) },
 //                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
                 singleLine = true,
@@ -235,7 +250,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                         DropdownMenuItem(
                             onClick = {
                                 selectedItem = item
-                                reportData.type = itemToEnumValue[item] ?: item
+                                createReportRequest.type = itemToEnumValue[item] ?: item
                                 expanded = false
                             }
                         ) {
@@ -247,8 +262,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
 
 
             TextField(
-                value = reportData.description ?: "",
-                onValueChange = { data -> reportData = reportData.copy(description = data) },
+                value = createReportRequest.description ?: "",
+                onValueChange = { data -> createReportRequest = createReportRequest.copy(description = data) },
                 label = { Text(text = stringResource(R.string.description_field)) },
                 colors = fieldColors,
                 singleLine = false,
@@ -365,7 +380,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
             ) {
                 Button(
                     onClick = { openAlertDialog.value = true },
-                    enabled = reportData.requiredFieldsCompleted(),
+                    enabled = createReportRequest.requiredFieldsCompleted(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Green900,
                         contentColor = White,
@@ -377,7 +392,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     Text(text = stringResource(R.string.create_report_button))
                 }
 
-                if (!reportData.requiredFieldsCompleted()) {
+                if (!createReportRequest.requiredFieldsCompleted()) {
                     Box(
                         modifier = Modifier
                             .matchParentSize()
@@ -400,7 +415,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                     onDismissRequest = { openAlertDialog.value = false },
                     onConfirmation = {
                         coroutineScope.launch {
-                            val success = createReport(reportData, imagePath, context)
+                            val success = createReport(createReportRequest, imagePath, context)
                             if (success) {
                                 navController?.navigate("reports")
                                 openAlertDialog.value = false
@@ -417,13 +432,14 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     }
 }
 
-suspend fun createReport(reportData: Report, imagePath: String?, context: Context): Boolean {
+suspend fun createReport(report: CreateReportRequest, imagePath: String?, context: Context): Boolean {
     val reportService = RetrofitClient.reportService
     return withContext(Dispatchers.IO) {
         try {
-            val imagePart = createImagePart(imagePath)
-            val reportPart  = createReportRequestBody(reportData)
-            val response = reportService.createReport(reportPart,imagePart)
+            report.image = imagePath?.let { encodeImageToBase64(it) }
+            Log.v("report","reporte que se postea ${report} o tambien ${createReportRequestBody(report)}")
+            val response = reportService.createReport(createReportRequestBody(report))
+            Log.v("report", "reponse de crear report ${response}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(context, R.string.report_created_toast, Toast.LENGTH_LONG).show()
@@ -443,16 +459,26 @@ suspend fun createReport(reportData: Report, imagePath: String?, context: Contex
     }
 }
 
-fun createImagePart(imagePath: String?): MultipartBody.Part? {
-    if (imagePath == null) return null
 
-    val file = File(imagePath)
-    val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-    return MultipartBody.Part.createFormData("image", file.name, requestFile)
+fun createReportRequestBody(report: CreateReportRequest): RequestBody {
+    val gson = Gson()
+    val json = gson.toJson(report)
+    return json.toRequestBody("application/json".toMediaTypeOrNull())
 }
-
 fun createReportRequestBody(report: Report): RequestBody {
     val gson = Gson()
     val json = gson.toJson(report)
     return json.toRequestBody("application/json".toMediaTypeOrNull())
+}
+
+
+fun encodeImageToBase64(imagePath: String): String? {
+    return try {
+        val file = File(imagePath)
+        val bytes = file.readBytes()
+        Base64.encodeToString(bytes, Base64.DEFAULT)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }

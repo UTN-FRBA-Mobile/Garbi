@@ -2,6 +2,7 @@ package com.garbi.garbi_recolection.services
 
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.models.ReportResponse
+import com.garbi.garbi_recolection.models.Status
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -18,34 +19,45 @@ import retrofit2.http.Query
 
 
 data class CreateReportResponse(
-    val success: Boolean,
-    val message: String,
-    val code: Number,
-    val body: String,
-    val errorBody: String
+    val message: String
 )
 
+data class CreateReportRequest(
+    val userId: String,
+    val containerId: String,
+    val title: String,
+    val description: String?,
+    val address: String?,
+    val phone: String?,
+    val email: String,
+    var type: String,
+    var image: String? = null
+){
+    fun requiredFieldsCompleted(): Boolean {
+        return title.isNotEmpty() && type.isNotEmpty()
+    }
+}
+
 interface ReportService {
-    @GET("/api/report")
+    @GET("/integration/report")
     @Headers("accept: application/json")
-    suspend fun getReports(@Query("userId") userId: String): ReportResponse
+    suspend fun getReports(@Query("userId") userId: String): Response<ReportResponse>
 
-    @GET("/api/report/{id}")
+    @GET("/integration/report/{id}")
     @Headers("accept: application/json")
-    suspend fun getReport(@Path("id") id: String): Report
+    suspend fun getReport(@Path("id") id: String): Response<Report>
 
-    @Multipart
-    @POST("/api/report")
+    @POST("/integration/report")
+    @Headers("accept: application/json", "content-type: application/json")
     suspend fun createReport(
-        @Part("report") report: RequestBody,
-        @Part image: MultipartBody.Part?
+        @Body createReport: RequestBody
     ): Response<CreateReportResponse>
 
-    @DELETE("/api/report/{id}")
+    @DELETE("/integration/report/{id}")
     @Headers("accept: application/json")
     suspend fun deleteReport(@Path("id") id: String): Response<CreateReportResponse>
 
-    @PUT("/api/report/{id}")
+    @PUT("/integration/report/{id}")
     @Headers("accept: application/json", "content-type: application/json")
     suspend fun editReport(
         @Path("id") id: String,

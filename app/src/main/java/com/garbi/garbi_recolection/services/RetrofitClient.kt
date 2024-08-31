@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.navigation.NavController
 
 object RetrofitClient {
-    private const val BASE_URL = "http://54.152.182.89"
+    private const val BASE_URL = "https://1r9y6bh0g9.execute-api.us-east-1.amazonaws.com"
     private const val PREFERENCES_NAME = "UserSession"
     private var token: String? = null
     private var tokenExpiryTime: Long? = null
@@ -29,10 +29,15 @@ object RetrofitClient {
                     .header("accept", "application/json")
 
                 token?.let {
-                    requestBuilder.header("Authorization", "Bearer $it")
+                    Log.v("login","seteando $it en retrofit")
+                    requestBuilder.header("token", "$it")
                 }
 
                 val request = requestBuilder.build()
+
+                // Loguear la request
+                Log.d("RetrofitClient", "Request: ${request.url}")
+                Log.d("RetrofitClient", "Headers: ${request.headers}")
                 chain.proceed(request)
             }
             .build()
@@ -89,7 +94,9 @@ object RetrofitClient {
     }
     suspend fun getSession(context: Context, navController: NavController): UserDetails? {
         val session = getStoredSession(context)
+        Log.v("session", session.toString())
         if (session == null){
+            Log.v("session","no se encontro session. redirigiendo al login")
             deleteSession(context)
             deleteToken(context)
             navController.navigate("login")
@@ -102,9 +109,12 @@ object RetrofitClient {
         Log.v("session","setSession")
         var session: UserDetails? = null
         val loginResponse = loginService.session(SessionRequest(token ?: ""))
-        if (loginResponse.success) {
-            session = loginResponse.user
-            storeSession(context, session, password)
+        Log.v("session","loginResponse ${loginResponse}")
+        if (loginResponse.isSuccessful) {
+            session = loginResponse.body()?.user
+            if (session != null) {
+                storeSession(context, session, password)
+            }
         }
         Log.v("session",session.toString() + " pwd " + password)
         return session
@@ -117,12 +127,13 @@ object RetrofitClient {
         val name = sharedPreferences.getString("name", null)
         val surname = sharedPreferences.getString("surname", null)
         val phone = sharedPreferences.getString("phone", null)
-        val email = sharedPreferences.getString("email", null)
+        val personalEmail = sharedPreferences.getString("personalEmail", null)
+        val companyEmail = sharedPreferences.getString("companyEmail", null)
         val role = sharedPreferences.getString("role", null)
         val password = sharedPreferences.getString("password", null)
 
-        return if (userId != null && name != null && email != null) {
-            UserDetails(userId, companyId ?: "", name, surname ?: "", phone ?: "", email, role ?: "", password ?: "")
+        return if (userId != null && name != null) {
+            UserDetails(userId, companyId ?: "", name, surname ?: "", phone ?: "", personalEmail ?: "",companyEmail ?: "", role ?: "", password ?: "")
         } else {
             null
         }
@@ -131,26 +142,33 @@ object RetrofitClient {
     private fun storeSession(context: Context, userDetails: UserDetails, password: String) {
         val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putString("userId", userDetails._id)
+
+        Log.v("session","storeSession ${userDetails}")
+        editor.putString("userId", userDetails.id)
         editor.putString("companyId", userDetails.companyId)
         editor.putString("name", userDetails.name)
         editor.putString("surname", userDetails.surname)
-        editor.putString("phone", userDetails.phone)
-        editor.putString("email", userDetails.email)
+        editor.putString("phone", userDetails.personalPhone)
+        editor.putString("personalEmail", userDetails.personalEmail)
+        editor.putString("companyEmail", userDetails.companyEmail)
         editor.putString("role", userDetails.role)
         editor.putString("password", password)
         editor.apply()
     }
 
+
+
     fun deleteSession(context: Context) {
         val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
+        Log.v("session","borrando la session")
         editor.remove("userId")
         editor.remove("companyId")
         editor.remove("name")
         editor.remove("surname")
         editor.remove("phone")
-        editor.remove("email")
+        editor.remove("personalEmail")
+        editor.remove("companyEmail")
         editor.remove("role")
         editor.remove("password")
         editor.apply()

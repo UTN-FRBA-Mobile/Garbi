@@ -13,17 +13,19 @@ data class Coordinates(
     val lng: Double
 )
 data class Container(
-    val _id: String,
+    val id: String,
     val areaId: String,
     val sensorId: String,
     val address: Address,
     val coordinates: Coordinates,
     val height: Int,
     val capacity: Int,
-    val batery: Int
+    val battery: Int
 )
 
 data class ContainerResponse(
-    val documents: List<Container>,
-    val total: Int
+    val result: List<Container>?,
+    val total: Int?,
+    val limit: Int?,
+    val message: String?
 )
