@@ -36,7 +36,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
@@ -54,9 +53,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.garbi.garbi_recolection.ui.theme.*
 
-@Preview
+
 @Composable
-fun LoginScreen(navController: NavController? = null) {
+fun LoginScreen(navController: NavController? = null, loginViewModel: LoginViewModel) {
+
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     var changePasswordScreen by remember { mutableStateOf(false) }
@@ -150,7 +150,7 @@ fun LoginScreen(navController: NavController? = null) {
                                 onClick = {
                                     isLoading = true
                                     coroutineScope.launch {
-                                        val response = login(credentials, context)
+                                        val response = login(credentials, loginViewModel.token,context)
                                         Log.v("login","response del login ${response}")
                                         if (response!= null) {
                                             if(response.success && response.needChangePassword){
@@ -274,12 +274,13 @@ fun LoginScreen(navController: NavController? = null) {
         }
     }
 }
-suspend fun login(creds: Credentials, context: Context): LoginFieldsResponse? {
+suspend fun login(creds: Credentials, token: String?, context: Context): LoginFieldsResponse? {
     val loginService = RetrofitClient.loginService
     return if (creds.isNotEmpty()) {
         withContext(Dispatchers.IO) {
             try {
-                val response = loginService.login(LoginRequest(creds.login, creds.pwd, ""))
+                Log.v("login", "LoginRequest ${LoginRequest(creds.login, creds.pwd, token)}")
+                val response = loginService.login(LoginRequest(creds.login, creds.pwd, token))
                 withContext(Dispatchers.Main) {
                     Log.v("login", "response de la api ${response}")
                     if (response.isSuccessful) {

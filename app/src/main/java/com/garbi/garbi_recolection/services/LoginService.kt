@@ -8,7 +8,7 @@ import retrofit2.Response
 data class LoginRequest(
     val personalEmail: String,
     val password: String,
-    val tokenFCM: String
+    val tokenFCM: String?
 )
 
 data class LoginResponse(

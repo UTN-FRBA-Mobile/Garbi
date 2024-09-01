@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class MainActivity : ComponentActivity() {
+
+    private val loginViewModel: LoginViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -45,18 +48,19 @@ class MainActivity : ComponentActivity() {
 
             // Get new FCM registration token
             val token = task.result
+            loginViewModel.updateToken(token)
 
             // Log and use the token as needed
             Log.v("ROUTE", "FCM Token: $token")
         })
         setContent {
-            App(fusedLocationClient)
+            App(fusedLocationClient,loginViewModel)
         }
     }
 }
 
 @Composable
-private fun App(fusedLocationClient: FusedLocationProviderClient) {
+private fun App(fusedLocationClient: FusedLocationProviderClient, loginViewModel: LoginViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val mapsViewModel = remember { MapsViewModel() }
@@ -126,7 +130,7 @@ private fun App(fusedLocationClient: FusedLocationProviderClient) {
                 ProfileScreen(navController)
             }
             composable("login") {
-                LoginScreen(navController)
+                LoginScreen(navController, loginViewModel)
             }
             composable("logout") {
                 RetrofitClient.deleteSession(context)
