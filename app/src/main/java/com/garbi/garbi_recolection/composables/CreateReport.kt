@@ -417,7 +417,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                         coroutineScope.launch {
                             val success = createReport(createReportRequest, imagePath, context)
                             if (success) {
-                                navController?.navigate("reports")
+                                navController?.navigate("reports?refresh=true")
                                 openAlertDialog.value = false
                             }
                         }

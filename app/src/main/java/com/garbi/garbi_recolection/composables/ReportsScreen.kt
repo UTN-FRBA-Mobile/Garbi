@@ -58,19 +58,28 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ReportsScreen(navController: NavController? = null, reportsViewModel: ReportsViewModel) {
+fun ReportsScreen(
+    navController: NavController? = null,
+    reportsViewModel: ReportsViewModel,
+    needRefresh: Boolean?
+) {
     val context = LocalContext.current
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        reportsViewModel.loadReports(context, navController!!)
-    }
+
 
     fun refresh() = refreshScope.launch {
         refreshing = true
         reportsViewModel.refreshReports(context, navController!!)
         refreshing = false
+    }
+
+    LaunchedEffect(Unit) {
+        if (needRefresh == true){
+            refresh()
+        }
+        reportsViewModel.loadReports(context, navController!!)
     }
 
     val state = rememberPullRefreshState(refreshing, ::refresh)

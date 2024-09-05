@@ -15,6 +15,8 @@ import com.google.firebase.messaging.RemoteMessage
 import com.garbi.garbi_recolection.MainActivity
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.RouteManager
+import com.garbi.garbi_recolection.services.Route
+import com.google.gson.Gson
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -25,13 +27,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val msg = getString(R.string.route_notification_msg)
 
             val data = remoteMessage.data
-            val waypoints = data["waypoints"]
-            val destination = data["destination"]
+            val routeString = data["route"]
+            Log.v("route","route ${routeString}")
+            val route : Route = Gson().fromJson(routeString, Route::class.java)
+            Log.v("route","route ${route}")
 
             Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
             RouteManager.updateRouteModal(context = applicationContext,true)
-            RouteManager.updateRouteWaypoints(context = applicationContext,waypoints!!)
-            RouteManager.updateRouteDestination(context = applicationContext,destination!!)
+            RouteManager.updateRoute(context = applicationContext, route)
 
             sendNotification(title, msg)
 

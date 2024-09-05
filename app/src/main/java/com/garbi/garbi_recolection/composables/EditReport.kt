@@ -405,7 +405,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         coroutineScope.launch {
                             val success = editReport(reportData, imagePath, context)
                             if (success) {
-                                navController?.navigate("reports")
+                                navController?.navigate("reports?refresh=true")
                                 openAlertDialog.value = false
                             }
                         }

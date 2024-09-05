@@ -93,22 +93,7 @@ fun LoginScreen(navController: NavController? = null, loginViewModel: LoginViewM
         Surface {
             var credentials by remember { mutableStateOf(Credentials()) }
             if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .background(color = Color.White)
-                        .fillMaxSize()
-                        .background(Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = Green900
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(stringResource(R.string.loading_screen), color = White)
-                    }
-                }
+                LoaderScreen()
             } else{
                 Column {
                     Spacer(modifier = Modifier.height(40.dp))

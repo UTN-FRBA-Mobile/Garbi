@@ -60,7 +60,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -111,8 +110,7 @@ fun MapsScreen(
 
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
-    val routeWaypoints by viewModel.routeWaypoints
-    val routeDestination by viewModel.routeDestination
+    val route by viewModel.route
     val routeStart by viewModel.routeStart
     val continueRouteModal by viewModel.continueRouteModal
 
@@ -215,35 +213,60 @@ fun MapsScreen(
 
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
-            val directionsService = DirectionsClient.directionsService
-            try {
+            Log.v("route","route available!! ${routeStart}")
+            if(routeStart == ""){ //ruta común
+                try {
+                    val latitude = userLat
+                    val longitude = userLng
+                    val userLocation = "${latitude}, ${longitude}"
 
-                val latitude = userLat
-                val longitude = userLng
-                val userLocation = "${latitude}, ${longitude}"
-                val waypoints = routeWaypoints
-
-                Log.v("ROUTE", "Generando ruta con userLocation ${userLocation} y waypoints ${waypoints}, termina en ${routeDestination}")
-
-                val response = withContext(Dispatchers.IO) {
-                    directionsService.getDirections(userLocation, routeDestination, waypoints, apiKey!!)
-                }
-                viewModel.updateRouteStart(context,userLocation)
-                Log.v("ROUTE","response ${response}")
-                steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
-                currentInstruction = steps.getOrNull(1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
-                    ?: "Instrucción no disponible"
-                Log.v("ROUTE","steps ${steps} currentInstruction ${currentInstruction}")
-                if (response.routes.isNotEmpty()) {
-                    val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
+                    viewModel.updateRouteStart(context,userLocation)
+                    Log.v("ROUTE","route COMUN ${route}")
+                    steps = route?.legs?.flatMap { it.steps } ?: emptyList()
+                    //route?.legs?.firstOrNull()?.steps!!
+                    currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                        ?: "Instrucción no disponible"
+                    Log.v("ROUTE","0 currentInstruction ${currentInstruction}")
+                    val points = PolyUtil.decode(route!!.overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
 
+                    centerNavigation.value = true
+
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-                centerNavigation.value = true
+
+            }else{//ruta de regreso al depo
+                val directionsService = DirectionsClient.directionsService
+                try {
+
+                    Log.v("ROUTE","RUTA REGRESO AL DEPO")
+                    val latitude = userLat
+                    val longitude = userLng
+                    val userLocation = "${latitude}, ${longitude}"
+
+                    val response = withContext(Dispatchers.IO) {
+                        directionsService.getDirections(userLocation, routeStart, "", apiKey!!)
+                    }
+                    viewModel.updateRouteStart(context,"")
+                    Log.v("ROUTE","response ${response}")
+                    steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
+                    currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                        ?: "Instrucción no disponible"
+                    Log.v("ROUTE","0 currentInstruction ${currentInstruction}")
+                    if (response.routes.isNotEmpty()) {
+                        val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
+                        polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
+
+                    }
+                    centerNavigation.value = true
 
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
             }
         }
     }
@@ -294,15 +317,18 @@ fun MapsScreen(
                 val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
 
                 //Avanza un step si la distancia al final es menor a 10 metros o si la distancia es mayor que la anterior con dif de mas de 3
+                Log.v("ROUTE", "distanceToEnd ${distanceToEnd} previousDistanceToEnd ${previousDistanceToEnd}")
                 if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
+                    Log.v("ROUTE", "avanzando un pasoo")
                     currentStepIndex = (currentStepIndex+1).coerceAtMost(steps.size - 1)
                     previousDistanceToEnd = Double.POSITIVE_INFINITY
                 }else{
                     previousDistanceToEnd = distanceToEnd
                 }
-                currentInstruction = steps.getOrNull(currentStepIndex+1)?.html_instructions?.replace(Regex("<[^>]*>"), "")
+                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<div.*"), "")
+                    ?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
-                Log.v("ROUTE"," ${currentStepIndex} distanceToEnd ${distanceToEnd} end ${endLocation} currentInstruction ${currentInstruction}")
+                Log.v("ROUTE"," ${currentStepIndex} currentInstruction ${currentInstruction} distanceToEnd ${distanceToEnd} end ${endLocation} ")
             }
         }
     }
@@ -316,8 +342,7 @@ fun MapsScreen(
 
     if (showContinueDialog.value){
         ContinueRouteDialog(onAlertAccepted = {
-            viewModel.updateRouteDestination(context,routeStart)
-            viewModel.updateRouteWaypoints(context,"")
+            //cuando elige continuar la ruta
             viewModel.updateRouteAvailable(context,true)
             showContinueDialog.value = false
             viewModel.updateContinueRouteModal(context,false)
@@ -325,6 +350,7 @@ fun MapsScreen(
             onAlertDismissed = {
                 showContinueDialog.value = false
                 viewModel.updateContinueRouteModal(context,false)
+                viewModel.updateRouteStart(context,"")
 
             }
         )
@@ -336,18 +362,19 @@ fun MapsScreen(
         ConfirmEndRouteDialog(
             onConfirm = {
                 showConfirmEndRouteDialog.value = false
+                Log.v("route","route terminada route ${route} routeStart ${routeStart}")
+                if(routeStart != ""){ //si ocurre esto es porque es no el camino de regreso al deposito
 
+                    viewModel.updateContinueRouteModal(context,true)
+                    showContinueDialog.value = true
+                }
                 viewModel.updateRouteAvailable(context,false);
+                viewModel.updateRoute(context,null);
                 polylinePoints.value = emptyList()
                 centerNavigation.value = false
                 currentStepIndex = 0
                 previousDistanceToEnd = Double.POSITIVE_INFINITY
 
-                if(!(routeWaypoints == "")){ //si ocurre esto es porque es no el camino de regreso al deposito
-
-                    viewModel.updateContinueRouteModal(context,true)
-                    showContinueDialog.value = true
-                }
             },
             onDismiss = {
                 showConfirmEndRouteDialog.value = false
@@ -501,8 +528,8 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
 
     Box(
         modifier = Modifier
-            .width(200.dp)
-            .height(100.dp)
+            //.width(200.dp)
+            //.height(100.dp)
             .background(
                 color = White,
                 shape = bubbleShape
@@ -511,9 +538,9 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            //modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = stringResource(R.string.text_capacity) + " ${container.capacity}%",
@@ -522,7 +549,8 @@ fun MarkerInfoContent(container: Container, navController: NavController?) {
             )
             Text(
                 text = "${container.address.street} ${container.address.number} ",
-                color = Gray
+                color = Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             OutlinedButton(

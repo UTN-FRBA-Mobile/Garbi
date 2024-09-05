@@ -149,103 +149,101 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            reportDetails?.let { details ->
-                val lastStatus = details.status!![details.status.size -1]
+            if(reportDetails == null){
+                LoaderScreen() //creo que está quedando raro, como que lo alinea arriba wtf
+            } else{
+                reportDetails?.let { details ->
+                    val lastStatus = details.status!![details.status.size -1]
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp, 0.dp, 16.dp)
-                ) {
-                    Text(
-                        text = details.title,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(0.dp, 8.dp, 16.dp, 0.dp)
-                    )
-
-                    ReportStatusChip(
-                        lastStatus.status,
-                        modifier = Modifier
-                    )
-                }
-
-                TextField(
-                    title = stringResource(R.string.creation_date_field),
-                    content = timestamp
-                )
-//                TextField( //TODO BE is returning incorrect date
-//                    title = stringResource(R.string.last_status_update_field),
-//                    content = lastStatus.updatedAt.substring(0, 10)
-//                )
-
-//                Spacer(modifier = Modifier.height(8.dp))
-
-                TextField(
-                    title = stringResource(R.string.type_dropdown),
-                    content = enumValueToItem[details.type] ?: details.type
-                )
-
-                val description = details.description?.ifEmpty { null }
-                TextField(
-                    title = stringResource(R.string.description_field),
-                    content = description,
-                )
-
-                if (details.imagePath != null) {
-                    Text(
-                        text = stringResource(R.string.photo_field),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                    if (accessKeyAws == "" || secretKeyAws == ""){
-                        AsyncImage(
-                            model = R.drawable.image_not_available,
-                            contentDescription = null,
+                            .fillMaxWidth()
+                            .padding(0.dp, 8.dp, 0.dp, 16.dp)
+                    ) {
+                        Text(
+                            text = details.title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop
+                                .weight(1f)
+                                .padding(0.dp, 8.dp, 16.dp, 0.dp)
                         )
-                    }else{
 
-                        println("generando presignedurl")
-                        AsyncImage(
-                            model = generatePresignedUrl("garbi-integration-report-bucket", details.id!! + ".jpg",accessKeyAws!!,secretKeyAws!!),
-                            contentDescription = null,
+                        ReportStatusChip(
+                            lastStatus.status,
                             modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop)
+                        )
                     }
-                } else {
+
                     TextField(
-                        title = stringResource(R.string.photo_field),
-                        content = null
+                        title = stringResource(R.string.creation_date_field),
+                        content = timestamp
+                    )
+
+                    TextField(
+                        title = stringResource(R.string.type_dropdown),
+                        content = enumValueToItem[details.type] ?: details.type
+                    )
+
+                    val description = details.description?.ifEmpty { null }
+                    TextField(
+                        title = stringResource(R.string.description_field),
+                        content = description,
+                    )
+
+                    if (details.imagePath != null) {
+                        Text(
+                            text = stringResource(R.string.photo_field),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                        if (accessKeyAws == "" || secretKeyAws == ""){
+                            AsyncImage(
+                                model = R.drawable.image_not_available,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(200.dp, 280.dp)
+                                    .padding(0.dp, 8.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                contentScale = ContentScale.Crop
+                            )
+                        }else{
+
+                            AsyncImage(
+                                model = generatePresignedUrl("garbi-integration-report-bucket", details.id!! + ".jpg",accessKeyAws!!,secretKeyAws!!),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(200.dp, 280.dp)
+                                    .padding(0.dp, 8.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                contentScale = ContentScale.Crop)
+                        }
+                    } else {
+                        TextField(
+                            title = stringResource(R.string.photo_field),
+                            content = null
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        title = stringResource(R.string.container_id_field),
+                        content = details.containerId
+                    )
+                    TextField(
+                        title = stringResource(R.string.address_field),
+                        content = details.address!!
                     )
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    title = stringResource(R.string.container_id_field),
-                    content = details.containerId
-                )
-                TextField(
-                    title = stringResource(R.string.address_field),
-                    content = details.address!!
-                )
             }
+
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //delete report dialog
             if (openAlertDialog.value) {
                 com.garbi.garbi_recolection.common_components.AlertDialog(
                     onDismissRequest = { openAlertDialog.value = false },

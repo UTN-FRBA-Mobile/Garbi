@@ -81,8 +81,14 @@ private fun App(fusedLocationClient: FusedLocationProviderClient, loginViewModel
                 MapsScreen(navController, mapsViewModel, fusedLocationClient)
             }
 
-            composable("reports") {
-                ReportsScreen(navController, reportViewModel)
+            composable(
+                route = "reports?refresh={refresh}",
+                arguments = listOf(navArgument("refresh") {
+                    type = NavType.BoolType
+                    defaultValue = false // Valor por defecto si no se pasa "refresh"
+                })
+            ) {backStackEntry ->
+                ReportsScreen(navController, reportViewModel,backStackEntry.arguments?.getBoolean("refresh") )
             }
 
             composable(

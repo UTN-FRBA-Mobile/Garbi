@@ -6,17 +6,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.content.Context
+import com.garbi.garbi_recolection.services.Route
 
 class MapsViewModel : ViewModel() {
-    var routeWaypoints = mutableStateOf(RouteManager.routeWaypoints)
-        private set
 
     var routeAvailable = mutableStateOf(RouteManager.routeAvailable)
         private set
 
     var routeModal = mutableStateOf(RouteManager.routeModal)
         private set
-    var routeDestination = mutableStateOf(RouteManager.routeDestination)
+    var route = mutableStateOf(RouteManager.route)
         private set
     var routeStart = mutableStateOf(RouteManager.routeStart)
         private set
@@ -29,8 +28,7 @@ class MapsViewModel : ViewModel() {
                 delay(100)
                 routeAvailable.value = RouteManager.routeAvailable
                 routeModal.value = RouteManager.routeModal
-                routeWaypoints.value = RouteManager.routeWaypoints
-                routeDestination.value = RouteManager.routeDestination
+                route.value = RouteManager.route
                 routeStart.value = RouteManager.routeStart
                 continueRouteModal.value = RouteManager.continueRouteModal
             }
@@ -44,11 +42,10 @@ class MapsViewModel : ViewModel() {
     fun updateRouteModal(context: Context,value: Boolean) {
         RouteManager.updateRouteModal(context,value)
     }
-    fun updateRouteWaypoints(context: Context,value: String) {
-        RouteManager.updateRouteWaypoints(context,value)
-    }
-    fun updateRouteDestination(context: Context,value: String) {
-        RouteManager.updateRouteDestination(context,value)
+    fun updateRoute(context: Context, value: Route?) {
+        if (value != null) {
+            RouteManager.updateRoute(context,value)
+        }
     }
     fun updateRouteStart(context: Context,value: String) {
         RouteManager.updateRouteStart(context,value)
