@@ -14,6 +14,7 @@ object RouteManager {
     private const val KEY_ROUTE_START = "routeStart"
     private const val KEY_CONTINUE_ROUTE_MODAL = "continueRouteModal"
     private const val KEY_ROUTE = "route"
+    private const val KEY_FIRST_ROUTE = "firstRoute"
 
     var routeAvailable by mutableStateOf(false)
         private set
@@ -26,6 +27,8 @@ object RouteManager {
         private set
     var route by mutableStateOf<Route?>(null)
         private set
+    var firstRoute by mutableStateOf(false)
+        private set
 
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -33,6 +36,7 @@ object RouteManager {
         routeModal = prefs.getBoolean(KEY_ROUTE_MODAL, false)
         routeStart = prefs.getString(KEY_ROUTE_START, "") ?: ""
         continueRouteModal = prefs.getBoolean(KEY_CONTINUE_ROUTE_MODAL, false)
+        firstRoute = prefs.getBoolean(KEY_FIRST_ROUTE, false)
 
         val routeJson = prefs.getString(KEY_ROUTE,null)
         route = if (routeJson != null) Gson().fromJson(routeJson, Route::class.java) else null
@@ -64,6 +68,12 @@ object RouteManager {
         saveToPreferences(context)
 
     }
+
+
+    fun updateFirstRoute(context: Context, value: Boolean) {
+        firstRoute = value
+        saveToPreferences(context)
+    }
     private fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         with(prefs.edit()) {
@@ -71,6 +81,7 @@ object RouteManager {
             putBoolean(KEY_ROUTE_MODAL, routeModal)
             putString(KEY_ROUTE_START, routeStart)
             putBoolean(KEY_CONTINUE_ROUTE_MODAL, continueRouteModal)
+            putBoolean(KEY_FIRST_ROUTE, firstRoute)
 
             val routeJson = Gson().toJson(route)
             putString(KEY_ROUTE, routeJson)

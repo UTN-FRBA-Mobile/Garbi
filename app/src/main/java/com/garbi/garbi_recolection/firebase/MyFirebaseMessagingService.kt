@@ -35,6 +35,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
             RouteManager.updateRouteModal(context = applicationContext,true)
             RouteManager.updateRoute(context = applicationContext, route)
+            RouteManager.updateFirstRoute(context = applicationContext, true)
 
             sendNotification(title, msg)
 

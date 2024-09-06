@@ -21,6 +21,8 @@ class MapsViewModel : ViewModel() {
         private set
     var continueRouteModal = mutableStateOf(RouteManager.continueRouteModal)
         private set
+    var firstRoute = mutableStateOf(RouteManager.firstRoute)
+        private set
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
@@ -31,6 +33,7 @@ class MapsViewModel : ViewModel() {
                 route.value = RouteManager.route
                 routeStart.value = RouteManager.routeStart
                 continueRouteModal.value = RouteManager.continueRouteModal
+                firstRoute.value = RouteManager.firstRoute
             }
         }
     }
@@ -52,5 +55,8 @@ class MapsViewModel : ViewModel() {
     }
     fun updateContinueRouteModal(context: Context,value: Boolean) {
         RouteManager.updateContinueRouteModal(context,value)
+    }
+    fun updateFirstRoute(context: Context,value: Boolean) {
+        RouteManager.updateFirstRoute(context,value)
     }
 }

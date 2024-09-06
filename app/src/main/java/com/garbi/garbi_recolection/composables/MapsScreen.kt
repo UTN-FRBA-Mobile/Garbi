@@ -113,6 +113,7 @@ fun MapsScreen(
     val route by viewModel.route
     val routeStart by viewModel.routeStart
     val continueRouteModal by viewModel.continueRouteModal
+    val firstRoute by viewModel.firstRoute
 
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -214,7 +215,7 @@ fun MapsScreen(
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
             Log.v("route","route available!! ${routeStart}")
-            if(routeStart == ""){ //ruta común
+            if(firstRoute){ //ruta común
                 try {
                     val latitude = userLat
                     val longitude = userLng
@@ -363,12 +364,14 @@ fun MapsScreen(
             onConfirm = {
                 showConfirmEndRouteDialog.value = false
                 Log.v("route","route terminada route ${route} routeStart ${routeStart}")
-                if(routeStart != ""){ //si ocurre esto es porque es no el camino de regreso al deposito
+                if(firstRoute){ //si ocurre esto es porque es no el camino de regreso al deposito
 
                     viewModel.updateContinueRouteModal(context,true)
                     showContinueDialog.value = true
                 }
                 viewModel.updateRouteAvailable(context,false);
+                viewModel.updateFirstRoute(context,false);
+
                 viewModel.updateRoute(context,null);
                 polylinePoints.value = emptyList()
                 centerNavigation.value = false
