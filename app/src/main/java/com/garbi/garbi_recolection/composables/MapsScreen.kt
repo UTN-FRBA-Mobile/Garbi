@@ -115,6 +115,9 @@ fun MapsScreen(
     val continueRouteModal by viewModel.continueRouteModal
     val firstRoute by viewModel.firstRoute
 
+    var currentStepIndex by viewModel.currentStepIndex
+    var previousDistanceToEnd by viewModel.previousDistanceToEnd
+
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -207,10 +210,7 @@ fun MapsScreen(
     }
 
     var steps by remember { mutableStateOf(emptyList<Step>()) }
-    // Variables para manejar el estado
-    var currentStepIndex by remember { mutableStateOf(0) }
     var currentInstruction by remember { mutableStateOf("") }
-    var previousDistanceToEnd by remember { mutableStateOf(Double.POSITIVE_INFINITY) }
 
     LaunchedEffect(routeAvailable) {
         if (routeAvailable) {
@@ -224,10 +224,8 @@ fun MapsScreen(
                     viewModel.updateRouteStart(context,userLocation)
                     Log.v("ROUTE","route COMUN ${route}")
                     steps = route?.legs?.flatMap { it.steps } ?: emptyList()
-                    //route?.legs?.firstOrNull()?.steps!!
-                    currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
                         ?: "Instrucción no disponible"
-                    Log.v("ROUTE","0 currentInstruction ${currentInstruction}")
                     val points = PolyUtil.decode(route!!.overview_polyline.points)
                     polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
 
@@ -310,21 +308,21 @@ fun MapsScreen(
 
     LaunchedEffect(userLat, userLng, routeAvailable) {
         Log.v("ROUTE","routeAvailable ${routeAvailable} steps ${steps}")
-        if (routeAvailable && steps.isNotEmpty()) {
+        if (routeAvailable && steps.isNotEmpty() && userLat != 0.0 && userLng != 0.0) {
             val currentStep = steps.getOrNull(currentStepIndex)
             currentStep?.let {
                 val endLocation = LatLng(it.end_location.lat, it.end_location.lng)
                 val userLocation = LatLng(userLat, userLng)
                 val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
-
+                Log.v("ROUTE"," userLocation ${userLocation} endLocation ${endLocation}")
                 //Avanza un step si la distancia al final es menor a 10 metros o si la distancia es mayor que la anterior con dif de mas de 3
                 Log.v("ROUTE", "distanceToEnd ${distanceToEnd} previousDistanceToEnd ${previousDistanceToEnd}")
                 if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
                     Log.v("ROUTE", "avanzando un pasoo")
-                    currentStepIndex = (currentStepIndex+1).coerceAtMost(steps.size - 1)
-                    previousDistanceToEnd = Double.POSITIVE_INFINITY
+                    viewModel.updateCurrentStepIndex(context,(currentStepIndex+1).coerceAtMost(steps.size - 1))
+                    viewModel.updatePreviousDistanceToEnd(context,Double.POSITIVE_INFINITY)
                 }else{
-                    previousDistanceToEnd = distanceToEnd
+                    viewModel.updatePreviousDistanceToEnd(context,distanceToEnd)
                 }
                 currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<div.*"), "")
                     ?.replace(Regex("<[^>]*>"), "")
@@ -375,8 +373,8 @@ fun MapsScreen(
                 viewModel.updateRoute(context,null);
                 polylinePoints.value = emptyList()
                 centerNavigation.value = false
-                currentStepIndex = 0
-                previousDistanceToEnd = Double.POSITIVE_INFINITY
+                viewModel.updateCurrentStepIndex(context,0);
+                viewModel.updatePreviousDistanceToEnd(context,Double.POSITIVE_INFINITY)
 
             },
             onDismiss = {

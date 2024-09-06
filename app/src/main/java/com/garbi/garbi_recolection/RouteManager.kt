@@ -15,6 +15,8 @@ object RouteManager {
     private const val KEY_CONTINUE_ROUTE_MODAL = "continueRouteModal"
     private const val KEY_ROUTE = "route"
     private const val KEY_FIRST_ROUTE = "firstRoute"
+    private const val KEY_CURRENT_STEP_INDEX = "currentStepIndex"
+    private const val KEY_PREVIOUS_DISTANCE_TO_END = "previousDistanceToEnd"
 
     var routeAvailable by mutableStateOf(false)
         private set
@@ -30,6 +32,10 @@ object RouteManager {
     var firstRoute by mutableStateOf(false)
         private set
 
+    var currentStepIndex by mutableStateOf(0)
+        private set
+    var previousDistanceToEnd by mutableStateOf(Double.POSITIVE_INFINITY)
+        private set
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         routeAvailable = prefs.getBoolean(KEY_ROUTE_AVAILABLE, false)
@@ -37,6 +43,9 @@ object RouteManager {
         routeStart = prefs.getString(KEY_ROUTE_START, "") ?: ""
         continueRouteModal = prefs.getBoolean(KEY_CONTINUE_ROUTE_MODAL, false)
         firstRoute = prefs.getBoolean(KEY_FIRST_ROUTE, false)
+        currentStepIndex = prefs.getInt(KEY_CURRENT_STEP_INDEX, 0)
+        previousDistanceToEnd = prefs.getString(KEY_PREVIOUS_DISTANCE_TO_END, Double.POSITIVE_INFINITY.toString())
+            ?.toDouble()!!
 
         val routeJson = prefs.getString(KEY_ROUTE,null)
         route = if (routeJson != null) Gson().fromJson(routeJson, Route::class.java) else null
@@ -74,6 +83,16 @@ object RouteManager {
         firstRoute = value
         saveToPreferences(context)
     }
+
+    fun updateCurrentStepIndex(context: Context, value: Int) {
+        currentStepIndex = value
+        saveToPreferences(context)
+    }
+
+    fun updatePreviousDistanceToEnd(context: Context, value: Double) {
+        previousDistanceToEnd = value
+        saveToPreferences(context)
+    }
     private fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         with(prefs.edit()) {
@@ -82,6 +101,8 @@ object RouteManager {
             putString(KEY_ROUTE_START, routeStart)
             putBoolean(KEY_CONTINUE_ROUTE_MODAL, continueRouteModal)
             putBoolean(KEY_FIRST_ROUTE, firstRoute)
+            putInt(KEY_CURRENT_STEP_INDEX, currentStepIndex)
+            putString(KEY_PREVIOUS_DISTANCE_TO_END, previousDistanceToEnd.toString())
 
             val routeJson = Gson().toJson(route)
             putString(KEY_ROUTE, routeJson)
