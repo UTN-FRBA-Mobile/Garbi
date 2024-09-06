@@ -27,6 +27,8 @@ class MapsViewModel : ViewModel() {
         private set
     var previousDistanceToEnd = mutableStateOf(RouteManager.previousDistanceToEnd)
         private set
+    var routeId = mutableStateOf(RouteManager.routeId)
+        private set
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
@@ -40,6 +42,7 @@ class MapsViewModel : ViewModel() {
                 firstRoute.value = RouteManager.firstRoute
                 currentStepIndex.value = RouteManager.currentStepIndex
                 previousDistanceToEnd.value = RouteManager.previousDistanceToEnd
+                routeId.value = RouteManager.routeId
             }
         }
     }
@@ -52,9 +55,7 @@ class MapsViewModel : ViewModel() {
         RouteManager.updateRouteModal(context,value)
     }
     fun updateRoute(context: Context, value: Route?) {
-        if (value != null) {
             RouteManager.updateRoute(context,value)
-        }
     }
     fun updateRouteStart(context: Context,value: String) {
         RouteManager.updateRouteStart(context,value)
@@ -70,5 +71,8 @@ class MapsViewModel : ViewModel() {
     }
     fun updatePreviousDistanceToEnd(context: Context,value: Double) {
         RouteManager.updatePreviousDistanceToEnd(context,value)
+    }
+    fun updateRouteId(context: Context,value: String) {
+        RouteManager.updateRouteId(context,value)
     }
 }

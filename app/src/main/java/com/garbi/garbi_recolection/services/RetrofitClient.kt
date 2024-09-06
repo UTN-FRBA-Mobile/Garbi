@@ -54,6 +54,9 @@ object RetrofitClient {
     val reportService: ReportService by lazy {
         retrofit.create(ReportService::class.java)
     }
+    val routeService: RouteService by lazy {
+        retrofit.create(RouteService::class.java)
+    }
 
     fun setToken(context: Context, tokenSet: String){
         val expiryTime = System.currentTimeMillis() + (TOKEN_EXPIRY_TIME_HOURS * 3600000)
@@ -109,9 +112,9 @@ object RetrofitClient {
         Log.v("session","setSession")
         var session: UserDetails? = null
         val loginResponse = loginService.session(SessionRequest(token ?: ""))
-        Log.v("session","loginResponse ${loginResponse}")
+        Log.v("session","loginResponse ${loginResponse} session ${loginResponse.body()}")
         if (loginResponse.isSuccessful) {
-            session = loginResponse.body()?.user
+            session = loginResponse.body()
             if (session != null) {
                 storeSession(context, session, password)
             }

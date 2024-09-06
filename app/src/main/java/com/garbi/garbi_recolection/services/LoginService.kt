@@ -20,10 +20,6 @@ data class SessionRequest(
     val token: String
 )
 
-data class SessionResponse(
-    val user: UserDetails
-)
-
 data class UserDetails(
     val id: String,
     val companyId: String,
@@ -53,7 +49,7 @@ interface LoginService {
 
     @POST("/integration/user/session")
     @Headers("accept: application/json", "content-type: application/json")
-    suspend fun session(@Body sessionRequest: SessionRequest): Response<SessionResponse>
+    suspend fun session(@Body sessionRequest: SessionRequest): Response<UserDetails>
 
 
     @POST("/integration/user/change_password")

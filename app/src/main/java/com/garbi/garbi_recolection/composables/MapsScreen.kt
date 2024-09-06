@@ -110,10 +110,11 @@ fun MapsScreen(
 
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
-    val route by viewModel.route
+    var route by viewModel.route
     val routeStart by viewModel.routeStart
     val continueRouteModal by viewModel.continueRouteModal
     val firstRoute by viewModel.firstRoute
+    val routeId by viewModel.routeId
 
     var currentStepIndex by viewModel.currentStepIndex
     var previousDistanceToEnd by viewModel.previousDistanceToEnd
@@ -212,14 +213,53 @@ fun MapsScreen(
     var steps by remember { mutableStateOf(emptyList<Step>()) }
     var currentInstruction by remember { mutableStateOf("") }
 
-    LaunchedEffect(routeAvailable) {
+/*
+    LaunchedEffect(routeId) {
+
+        Log.v("ROUTE","LaunchedEffect routeId ${routeId} routeAvailable ${routeAvailable}")
         if (routeAvailable) {
-            Log.v("route","route available!! ${routeStart}")
+
+            try {
+                val service = RetrofitClient.routeService
+                val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
+                if (response.isSuccessful) {
+                    Log.v("ROUTE","Ruta cargada ${response.body()?.directions}")
+                    viewModel.updateRoute(context, response.body()?.directions)
+                } else {
+                    println("code: ${response.code()}")
+                    println("errorbody: ${response.errorBody()?.string()}")
+                    Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }*/
+    LaunchedEffect(routeAvailable,routeId) {
+        if (routeAvailable) {
+            Log.v("route","route available!! route ${routeId} ${route}")
             if(firstRoute){ //ruta común
                 try {
                     val latitude = userLat
                     val longitude = userLng
                     val userLocation = "${latitude}, ${longitude}"
+
+                    if(route == null){
+                        Log.v("ROUTE","Buscando rutaa")
+                        val service = RetrofitClient.routeService
+                        val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
+                        if (response.isSuccessful) {
+                            Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
+                            route = response.body()?.directions?.toRoute()
+                            viewModel.updateRoute(context, response.body()?.directions?.toRoute())
+                        } else {
+                            println("code: ${response.code()}")
+                            println("errorbody: ${response.errorBody()?.string()}")
+                            Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
+                        }
+
+                    }
 
                     viewModel.updateRouteStart(context,userLocation)
                     Log.v("ROUTE","route COMUN ${route}")
