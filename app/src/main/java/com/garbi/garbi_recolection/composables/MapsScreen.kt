@@ -213,29 +213,6 @@ fun MapsScreen(
     var steps by remember { mutableStateOf(emptyList<Step>()) }
     var currentInstruction by remember { mutableStateOf("") }
 
-/*
-    LaunchedEffect(routeId) {
-
-        Log.v("ROUTE","LaunchedEffect routeId ${routeId} routeAvailable ${routeAvailable}")
-        if (routeAvailable) {
-
-            try {
-                val service = RetrofitClient.routeService
-                val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
-                if (response.isSuccessful) {
-                    Log.v("ROUTE","Ruta cargada ${response.body()?.directions}")
-                    viewModel.updateRoute(context, response.body()?.directions)
-                } else {
-                    println("code: ${response.code()}")
-                    println("errorbody: ${response.errorBody()?.string()}")
-                    Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }*/
     LaunchedEffect(routeAvailable,routeId) {
         if (routeAvailable) {
             Log.v("route","route available!! route ${routeId} ${route}")
@@ -253,6 +230,10 @@ fun MapsScreen(
                             Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
                             route = response.body()?.directions?.toRoute()
                             viewModel.updateRoute(context, response.body()?.directions?.toRoute())
+
+
+                            val responseStart = withContext(Dispatchers.IO) { service.startRoute(routeId) }
+                            Log.v("ROUTE", "responseStart ${responseStart.code()} ${responseStart.body()}")
                         } else {
                             println("code: ${response.code()}")
                             println("errorbody: ${response.errorBody()?.string()}")
@@ -306,6 +287,18 @@ fun MapsScreen(
                     e.printStackTrace()
                 }
 
+            }
+        }else{
+            if ((routeId != "") and !routeModal){
+                Log.v("ROUTE", " finish routeAvailable ${routeAvailable} routeId ${routeId}")
+                //es porque pusimos route available en false pero routeId sigue teniendo contenido
+
+                val service = RetrofitClient.routeService
+
+                val responseFinish = withContext(Dispatchers.IO) { service.finishRoute(routeId) }
+                Log.v("ROUTE", "responseFinish ${responseFinish.code()} ${responseFinish.body()}")
+
+                viewModel.updateRouteId(context,"")
             }
         }
     }
@@ -402,6 +395,7 @@ fun MapsScreen(
             onConfirm = {
                 showConfirmEndRouteDialog.value = false
                 Log.v("route","route terminada route ${route} routeStart ${routeStart}")
+
                 if(firstRoute){ //si ocurre esto es porque es no el camino de regreso al deposito
 
                     viewModel.updateContinueRouteModal(context,true)
