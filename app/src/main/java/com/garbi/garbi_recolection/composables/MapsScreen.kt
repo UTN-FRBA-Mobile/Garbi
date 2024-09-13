@@ -111,9 +111,6 @@ fun MapsScreen(
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
     var route by viewModel.route
-    val routeStart by viewModel.routeStart
-    val continueRouteModal by viewModel.continueRouteModal
-    val firstRoute by viewModel.firstRoute
     val routeId by viewModel.routeId
 
     var currentStepIndex by viewModel.currentStepIndex
@@ -216,77 +213,37 @@ fun MapsScreen(
     LaunchedEffect(routeAvailable,routeId) {
         if (routeAvailable) {
             Log.v("route","route available!! route ${routeId} ${route}")
-            if(firstRoute){ //ruta común
-                try {
-                    val latitude = userLat
-                    val longitude = userLng
-                    val userLocation = "${latitude}, ${longitude}"
+            try {
 
-                    if(route == null){
-                        Log.v("ROUTE","Buscando rutaa")
-                        val service = RetrofitClient.routeService
-                        val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
-                        if (response.isSuccessful) {
-                            Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
-                            route = response.body()?.directions?.toRoute()
-                            viewModel.updateRoute(context, response.body()?.directions?.toRoute())
+                if(route == null){
+                    Log.v("ROUTE","Buscando rutaa")
+                    val service = RetrofitClient.routeService
+                    val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
+                    if (response.isSuccessful) {
+                        Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
+                        route = response.body()?.directions?.toRoute()
+                        viewModel.updateRoute(context, response.body()?.directions?.toRoute())
 
 
-                            val responseStart = withContext(Dispatchers.IO) { service.startRoute(routeId) }
-                            Log.v("ROUTE", "responseStart ${responseStart.code()} ${responseStart.body()}")
-                        } else {
-                            println("code: ${response.code()}")
-                            println("errorbody: ${response.errorBody()?.string()}")
-                            Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
-                        }
-
+                        val responseStart = withContext(Dispatchers.IO) { service.startRoute(routeId) }
+                        Log.v("ROUTE", "responseStart ${responseStart.code()} ${responseStart.body()}")
+                    } else {
+                        println("code: ${response.code()}")
+                        println("errorbody: ${response.errorBody()?.string()}")
+                        Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
                     }
-
-                    viewModel.updateRouteStart(context,userLocation)
-                    Log.v("ROUTE","route COMUN ${route}")
-                    steps = route?.legs?.flatMap { it.steps } ?: emptyList()
-                    currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
-                        ?: "Instrucción no disponible"
-                    val points = PolyUtil.decode(route!!.overview_polyline.points)
-                    polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
-
-                    centerNavigation.value = true
-
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
+                Log.v("ROUTE","route COMUN ${route}")
+                steps = route?.legs?.flatMap { it.steps } ?: emptyList()
+                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                    ?: "Instrucción no disponible"
+                val points = PolyUtil.decode(route!!.overview_polyline.points)
+                polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
 
-            }else{//ruta de regreso al depo
-                val directionsService = DirectionsClient.directionsService
-                try {
+                centerNavigation.value = true
 
-                    Log.v("ROUTE","RUTA REGRESO AL DEPO")
-                    val latitude = userLat
-                    val longitude = userLng
-                    val userLocation = "${latitude}, ${longitude}"
-
-                    val response = withContext(Dispatchers.IO) {
-                        directionsService.getDirections(userLocation, routeStart, "", apiKey!!)
-                    }
-                    viewModel.updateRouteStart(context,"")
-                    Log.v("ROUTE","response ${response}")
-                    steps = response.routes.firstOrNull()?.legs?.firstOrNull()?.steps!!
-                    currentInstruction = steps.getOrNull(0)?.html_instructions?.replace(Regex("<[/]?b>"), "")
-                        ?: "Instrucción no disponible"
-                    Log.v("ROUTE","0 currentInstruction ${currentInstruction}")
-                    if (response.routes.isNotEmpty()) {
-                        val points = PolyUtil.decode(response.routes[0].overview_polyline.points)
-                        polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
-
-                    }
-                    centerNavigation.value = true
-
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }else{
             if ((routeId != "") and !routeModal){
@@ -365,28 +322,7 @@ fun MapsScreen(
         }
     }
 
-    val showContinueDialog = remember { mutableStateOf(false) }
-    LaunchedEffect(continueRouteModal){
-        if (continueRouteModal){
-            showContinueDialog.value = true;
-        }
-    }
-
-    if (showContinueDialog.value){
-        ContinueRouteDialog(onAlertAccepted = {
-            //cuando elige continuar la ruta
-            viewModel.updateRouteAvailable(context,true)
-            showContinueDialog.value = false
-            viewModel.updateContinueRouteModal(context,false)
-        },
-            onAlertDismissed = {
-                showContinueDialog.value = false
-                viewModel.updateContinueRouteModal(context,false)
-                viewModel.updateRouteStart(context,"")
-
-            }
-        )
-    }
+    //val showContinueDialog = remember { mutableStateOf(false) }
 
     val showConfirmEndRouteDialog = remember { mutableStateOf(false) }
 
@@ -394,17 +330,11 @@ fun MapsScreen(
         ConfirmEndRouteDialog(
             onConfirm = {
                 showConfirmEndRouteDialog.value = false
-                Log.v("route","route terminada route ${route} routeStart ${routeStart}")
+                Log.v("route","route terminada route ${route} ")
 
-                if(firstRoute){ //si ocurre esto es porque es no el camino de regreso al deposito
+                viewModel.updateRouteAvailable(context,false)
 
-                    viewModel.updateContinueRouteModal(context,true)
-                    showContinueDialog.value = true
-                }
-                viewModel.updateRouteAvailable(context,false);
-                viewModel.updateFirstRoute(context,false);
-
-                viewModel.updateRoute(context,null);
+                viewModel.updateRoute(context,null)
                 polylinePoints.value = emptyList()
                 centerNavigation.value = false
                 viewModel.updateCurrentStepIndex(context,0);
@@ -647,34 +577,6 @@ fun AlertDialog(onAlertAccepted: () -> Unit) {
         containerColor = White
     )
 }
-
-
-@Composable
-fun ContinueRouteDialog(onAlertAccepted: () -> Unit, onAlertDismissed : () -> Unit) {
-
-    androidx.compose.material3.AlertDialog(
-        text = {
-            Text(text = stringResource(R.string.continue_route))
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            androidx.compose.material.TextButton(
-                onClick = {onAlertAccepted()}
-            ) {
-                Text(color = Green900, text = stringResource(R.string.dialog_confirm))
-            }
-        },
-        dismissButton ={
-            androidx.compose.material.TextButton(
-                onClick = { onAlertDismissed() }
-            ) {
-                Text(color = Green900, text = stringResource(R.string.dialog_dismiss))
-            }
-        } ,
-        containerColor = White
-    )
-}
-
 
 @Composable
 fun ConfirmEndRouteDialog(

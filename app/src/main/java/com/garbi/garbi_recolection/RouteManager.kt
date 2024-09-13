@@ -24,15 +24,8 @@ object RouteManager {
 
     var routeModal by mutableStateOf(false)
         private set
-    var routeStart by mutableStateOf("")
-        private set
-    var continueRouteModal by mutableStateOf(false)
-        private set
     var route by mutableStateOf<Route?>(null)
         private set
-    var firstRoute by mutableStateOf(false)
-        private set
-
     var currentStepIndex by mutableStateOf(0)
         private set
     var previousDistanceToEnd by mutableStateOf(Double.POSITIVE_INFINITY)
@@ -43,9 +36,6 @@ object RouteManager {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         routeAvailable = prefs.getBoolean(KEY_ROUTE_AVAILABLE, false)
         routeModal = prefs.getBoolean(KEY_ROUTE_MODAL, false)
-        routeStart = prefs.getString(KEY_ROUTE_START, "") ?: ""
-        continueRouteModal = prefs.getBoolean(KEY_CONTINUE_ROUTE_MODAL, false)
-        firstRoute = prefs.getBoolean(KEY_FIRST_ROUTE, false)
         currentStepIndex = prefs.getInt(KEY_CURRENT_STEP_INDEX, 0)
         previousDistanceToEnd = prefs.getString(KEY_PREVIOUS_DISTANCE_TO_END, Double.POSITIVE_INFINITY.toString())
             ?.toDouble()!!
@@ -73,23 +63,6 @@ object RouteManager {
         saveToPreferences(context)
     }
 
-    fun updateRouteStart(context: Context, start: String) {
-        routeStart = start
-        saveToPreferences(context)
-
-    }
-    fun updateContinueRouteModal(context: Context, value: Boolean) {
-        continueRouteModal = value
-        saveToPreferences(context)
-
-    }
-
-
-    fun updateFirstRoute(context: Context, value: Boolean) {
-        firstRoute = value
-        saveToPreferences(context)
-    }
-
     fun updateCurrentStepIndex(context: Context, value: Int) {
         currentStepIndex = value
         saveToPreferences(context)
@@ -111,9 +84,6 @@ object RouteManager {
         with(prefs.edit()) {
             putBoolean(KEY_ROUTE_AVAILABLE, routeAvailable)
             putBoolean(KEY_ROUTE_MODAL, routeModal)
-            putString(KEY_ROUTE_START, routeStart)
-            putBoolean(KEY_CONTINUE_ROUTE_MODAL, continueRouteModal)
-            putBoolean(KEY_FIRST_ROUTE, firstRoute)
             putInt(KEY_CURRENT_STEP_INDEX, currentStepIndex)
             putString(KEY_PREVIOUS_DISTANCE_TO_END, previousDistanceToEnd.toString())
             putString(KEY_ROUTE_ID, routeId)
