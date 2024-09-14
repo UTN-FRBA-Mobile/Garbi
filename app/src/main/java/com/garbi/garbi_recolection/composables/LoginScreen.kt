@@ -146,6 +146,8 @@ fun LoginScreen(navController: NavController? = null, loginViewModel: LoginViewM
                                             if(response.success){
                                                 setSession(context,credentials.pwd)
                                                 navController?.navigate("home")
+                                            }else{
+                                                isLoading = false
                                             }
                                         }
                                     }
@@ -268,16 +270,20 @@ suspend fun login(creds: Credentials, token: String?, context: Context): LoginFi
                 val response = loginService.login(LoginRequest(creds.login, creds.pwd, token))
                 withContext(Dispatchers.Main) {
                     Log.v("login", "response de la api ${response}")
-                    if (response.isSuccessful) {
-                        response.body()?.let { RetrofitClient.setToken(context, it.token) }
+                    if (response.isSuccessful && response.body() != null) {
+                        val body = response.body()!!
+                        Log.v("login", "response.isSuccessful ${response.isSuccessful} !body.termsAndConditions ${!body.termsAndConditions}")
+                        RetrofitClient.setToken(context, body.token)
+                        LoginFieldsResponse(success = true, !body.termsAndConditions)
                     } else {
+                        Log.v("login", "response not successful or body is null")
                         Toast.makeText(context, R.string.error_message_wrong_user_or_pw, Toast.LENGTH_LONG).show()
+                        LoginFieldsResponse(success = false,  false)
                     }
-                    Log.v("login", "response.isSuccessful ${response.isSuccessful} !response.body()!!.termsAndConditions ${!response.body()!!.termsAndConditions}")
-                    LoginFieldsResponse(response.isSuccessful, !response.body()!!.termsAndConditions)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    Log.v("login", "error ${e.toString()} otra ve< ${e.printStackTrace()}")
                     Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
                     null
                 }
