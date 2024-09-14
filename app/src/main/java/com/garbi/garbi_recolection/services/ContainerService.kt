@@ -6,7 +6,7 @@ import retrofit2.http.Headers
 import retrofit2.Response
 
 interface ContainerService {
-    @GET("/integration/container")
+    @GET("/integration/container/all")
     @Headers("accept: application/json")
     suspend fun getContainers(): Response<ContainerResponse>
 }

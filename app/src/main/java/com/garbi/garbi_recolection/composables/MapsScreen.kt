@@ -2,6 +2,7 @@ package com.garbi.garbi_recolection.composables
 
 import AppScaffold
 import Container
+import ContainerClusterItem
 import MapsViewModel
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -13,7 +14,6 @@ import androidx.compose.ui.Modifier
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
@@ -63,10 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.google.maps.android.compose.MarkerInfoWindowContent
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.geometry.Rect
 import com.garbi.garbi_recolection.services.RetrofitClient
@@ -74,10 +71,10 @@ import com.garbi.garbi_recolection.ui.theme.*
 import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
-import com.garbi.garbi_recolection.services.DirectionsClient
 import com.garbi.garbi_recolection.services.Step
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -86,7 +83,9 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
+import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.compose.CameraMoveStartedReason
+import com.google.maps.android.compose.clustering.Clustering
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -107,6 +106,7 @@ fun MapsScreen(
     }
 
     val containersState = remember { mutableStateOf<List<Container>>(emptyList()) }
+    val containersClusterState = remember { mutableStateOf<List<ContainerClusterItem>>(emptyList()) }
 
     val routeAvailable by viewModel.routeAvailable
     val routeModal by viewModel.routeModal
@@ -174,6 +174,11 @@ fun MapsScreen(
             Log.v("containers","response ${response} body ${response.body()}")
             if (response.isSuccessful) {
                 containersState.value = response.body()?.result ?: emptyList()
+                containersClusterState.value = containersState.value.map { container ->
+                    ContainerClusterItem(container)
+                }
+                Log.v("containers state", containersState.value.toString())
+                Log.v("containers cluster state", containersClusterState.value.toString())
             } else {
                 Toast.makeText(context, "Error cargando los contenedores", Toast.LENGTH_LONG).show()
             }
@@ -408,6 +413,16 @@ fun MapsScreen(
                 }
 
                 if(containersState.value.isNotEmpty()) {
+                    Clustering(
+                        items = containersClusterState.value,
+                        clusterItemContent = {
+                            IconMarker(it.getContainer(), context, navController)
+                        },
+                        onClusterItemInfoWindowClick = {
+                            Log.v("containers", "tocaste el ${it.getContainer()}")
+                        }
+                    )
+/*
                     containersState.value.forEach { container ->
                         val containerIconState = remember { mutableStateOf<BitmapDescriptor?>(null) }
 
@@ -429,10 +444,8 @@ fun MapsScreen(
                                 MarkerInfoContent(container, navController)
                             }
                         }
-                    }
+                    }*/
                 }
-
-
             }
 
             if (routeAvailable){
@@ -467,6 +480,26 @@ fun MapsScreen(
             }
         }}
     }
+}
+
+@Composable
+fun IconMarker(container: Container,context: Context, navController: NavController?) {
+
+    val resource = when {
+        container.capacity > 60 -> R.mipmap.red_circle
+        container.capacity in 40..60 -> R.mipmap.orange_circle
+        else -> R.mipmap.green_circle
+    }
+
+    // Cargar el recurso como un Painter
+    val painter: Painter = painterResource(id = resource)
+
+    // Usar el Painter en un Icon o Image
+    Icon(
+        painter = painter,
+        contentDescription = "Container Icon",
+        modifier = Modifier.size(24.dp) // Ajusta el tamaño según sea necesario
+    )
 }
 
 
