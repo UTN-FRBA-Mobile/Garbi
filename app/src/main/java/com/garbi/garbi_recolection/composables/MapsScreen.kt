@@ -36,6 +36,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +50,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ButtonDefaults
@@ -72,6 +75,7 @@ import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
@@ -83,7 +87,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
-import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.clustering.Clustering
 
@@ -351,6 +354,11 @@ fun MapsScreen(
             }
         )
     }
+
+
+    val showCreateReportButton = remember { mutableStateOf(false) }
+    val showCreateReportButtonContainer = remember { mutableStateOf<Container?>(null) }
+
     AppScaffold(navController = navController, topBarVisible = false) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -392,12 +400,17 @@ fun MapsScreen(
             }
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(),
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
-                cameraPositionState = cameraPositionState
+                cameraPositionState = cameraPositionState,
+                onMapClick = {
+                    Log.v("tocaste", "tocaste el mapa y se pondría el false")
+                    showCreateReportButton.value = false
+                }
 
             ) {
                 val zoom = cameraPositionState.position.zoom
@@ -418,36 +431,40 @@ fun MapsScreen(
                         clusterItemContent = {
                             IconMarker(it.getContainer(), context, navController)
                         },
-                        onClusterItemInfoWindowClick = {
+                        onClusterItemClick = {
+                            showCreateReportButton.value = true
+                            showCreateReportButtonContainer.value = it.getContainer()
                             Log.v("containers", "tocaste el ${it.getContainer()}")
+                            false
+                        },
+                        onClusterItemInfoWindowClick = {
+                            Log.v("containers", "tocaste el window de ${it.getContainer()}")
                         }
                     )
-/*
-                    containersState.value.forEach { container ->
-                        val containerIconState = remember { mutableStateOf<BitmapDescriptor?>(null) }
-
-                        LaunchedEffect(container, iconSize) {
-                            containerIconState.value = getContainerIcon(container, context, iconSize)
-                        }
-
-                        containerIconState.value?.let { containerIcon ->
-                            MarkerInfoWindowContent(
-                                state = MarkerState(position = LatLng(container.coordinates.lat, container.coordinates.lng)),
-                                icon = containerIcon,
-                                onInfoWindowClick = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        val addr = container.address
-                                        navController?.navigate("create_report/${container.id}/${addr.street}/${addr.number}/${addr.neighborhood}")
-                                    }
-                                }
-                            ) {
-                                MarkerInfoContent(container, navController)
-                            }
-                        }
-                    }*/
                 }
+
             }
 
+            if (showCreateReportButton.value) {
+                Log.v("containers", "showCreateReportButton")
+                val buttonPadding = when {
+                    !routeAvailable -> 10.dp
+                    routeAvailable && !centerNavigation.value -> 90.dp
+                    else -> 50.dp
+                }
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        navController?.navigate("create_report/${showCreateReportButtonContainer.value?.id}/${showCreateReportButtonContainer.value?.address?.street}/${showCreateReportButtonContainer.value?.address?.number}/${showCreateReportButtonContainer.value?.address?.neighborhood}")
+                    },
+                    icon = { Icon(Icons.Filled.AddCircle, "Hacer un reporte", tint = Green900) },
+                    text = { Text(text = "Hacer un reporte", color = Green900) },
+                    containerColor = White,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter) // Funciona porque está dentro de un Box
+                        .padding(buttonPadding)
+                        .height(30.dp)
+                )
+            }
             if (routeAvailable){
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -484,19 +501,26 @@ fun MapsScreen(
 
 @Composable
 fun IconMarker(container: Container,context: Context, navController: NavController?) {
-
+/*
     val resource = when {
         container.capacity > 60 -> R.mipmap.red_circle
         container.capacity in 40..60 -> R.mipmap.orange_circle
         else -> R.mipmap.green_circle
+    }*/
+
+    val color = when {
+        container.capacity > 60 -> RedRejected
+        container.capacity in 40..60 -> Orange600
+        else -> GreenResolved
     }
 
     // Cargar el recurso como un Painter
-    val painter: Painter = painterResource(id = resource)
+    val painter: Painter = painterResource(id = R.mipmap.circle)
 
     // Usar el Painter en un Icon o Image
     Icon(
         painter = painter,
+        tint = color,
         contentDescription = "Container Icon",
         modifier = Modifier.size(24.dp) // Ajusta el tamaño según sea necesario
     )
