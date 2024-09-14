@@ -36,8 +36,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -75,7 +73,6 @@ import com.google.maps.android.compose.Polyline
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
@@ -97,14 +94,9 @@ fun MapsScreen(
     viewModel: MapsViewModel,
     fusedLocationClient: FusedLocationProviderClient
 ) {
-    val context = LocalContext.current;
+    val context = LocalContext.current
 
-    val applicationInfo: ApplicationInfo = context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-    val apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY")
-
-
-    var cameraPositionState = rememberCameraPositionState {
+    val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5950995, -58.39988160000001), 15f)
     }
 
@@ -116,8 +108,8 @@ fun MapsScreen(
     var route by viewModel.route
     val routeId by viewModel.routeId
 
-    var currentStepIndex by viewModel.currentStepIndex
-    var previousDistanceToEnd by viewModel.previousDistanceToEnd
+    val currentStepIndex by viewModel.currentStepIndex
+    val previousDistanceToEnd by viewModel.previousDistanceToEnd
 
     val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -140,7 +132,7 @@ fun MapsScreen(
     var userLat by remember { mutableStateOf(0.0) }
     var userLng by remember { mutableStateOf(0.0) }
     var userBearing by remember { mutableStateOf(0f) }
-    var centerNavigation = remember { mutableStateOf(false) }
+    val centerNavigation = remember { mutableStateOf(false) }
 
     val locationRequest = LocationRequest.create().apply {
         interval = 2000 // Intervalo en milisegundos para las actualizaciones
@@ -257,27 +249,23 @@ fun MapsScreen(
             if ((routeId != "") and !routeModal){
                 Log.v("ROUTE", " finish routeAvailable ${routeAvailable} routeId ${routeId}")
                 //es porque pusimos route available en false pero routeId sigue teniendo contenido
-
                 val service = RetrofitClient.routeService
-
                 val responseFinish = withContext(Dispatchers.IO) { service.finishRoute(routeId) }
                 Log.v("ROUTE", "responseFinish ${responseFinish.code()} ${responseFinish.body()}")
-
                 viewModel.updateRouteId(context,"")
             }
         }
     }
 
     LaunchedEffect(userLat, userLng, userBearing, routeAvailable, centerNavigation.value) {
-        //centra la camara en modo navegación. ahora se hace con unos segundos de lag, funciona solo en celular. en el emulador no anda tan bien
         if (routeAvailable and centerNavigation.value) {
             cameraPositionState.animate(
                 CameraUpdateFactory.newCameraPosition(
                     CameraPosition.Builder()
-                        .target(LatLng(userLat, userLng)) // Ubicación actual del usuario
-                        .zoom(20f) // Nivel de zoom
-                        .bearing(userBearing) // Dirección actual del usuario
-                        .tilt(45f) // Vista en perspectiva
+                        .target(LatLng(userLat, userLng))
+                        .zoom(20f)
+                        .bearing(userBearing)
+                        .tilt(45f)
                         .build()
                 )
             )
@@ -287,9 +275,9 @@ fun MapsScreen(
                     CameraUpdateFactory.newCameraPosition(
                         CameraPosition.Builder()
                             .target(LatLng(userLat, userLng))
-                            .zoom(15f) // Zoom estándar
-                            .bearing(0f) // Sin rotación
-                            .tilt(0f) // Vista plana
+                            .zoom(15f)
+                            .bearing(0f)
+                            .tilt(0f)
                             .build()
                     )
                 )
@@ -305,18 +293,15 @@ fun MapsScreen(
     }
 
     LaunchedEffect(userLat, userLng, routeAvailable) {
-        Log.v("ROUTE","routeAvailable ${routeAvailable} steps ${steps}")
         if (routeAvailable && steps.isNotEmpty() && userLat != 0.0 && userLng != 0.0) {
             val currentStep = steps.getOrNull(currentStepIndex)
             currentStep?.let {
                 val endLocation = LatLng(it.end_location.lat, it.end_location.lng)
                 val userLocation = LatLng(userLat, userLng)
                 val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
-                Log.v("ROUTE"," userLocation ${userLocation} endLocation ${endLocation}")
-                //Avanza un step si la distancia al final es menor a 10 metros o si la distancia es mayor que la anterior con dif de mas de 3
                 Log.v("ROUTE", "distanceToEnd ${distanceToEnd} previousDistanceToEnd ${previousDistanceToEnd}")
                 if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
-                    Log.v("ROUTE", "avanzando un pasoo")
+                    Log.v("ROUTE", "avanzando un paso")
                     viewModel.updateCurrentStepIndex(context,(currentStepIndex+1).coerceAtMost(steps.size - 1))
                     viewModel.updatePreviousDistanceToEnd(context,Double.POSITIVE_INFINITY)
                 }else{
@@ -329,8 +314,6 @@ fun MapsScreen(
             }
         }
     }
-
-    //val showContinueDialog = remember { mutableStateOf(false) }
 
     val showConfirmEndRouteDialog = remember { mutableStateOf(false) }
 
@@ -408,7 +391,6 @@ fun MapsScreen(
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
                 cameraPositionState = cameraPositionState,
                 onMapClick = {
-                    Log.v("tocaste", "tocaste el mapa y se pondría el false")
                     showCreateReportButton.value = false
                 }
 
@@ -429,16 +411,12 @@ fun MapsScreen(
                     Clustering(
                         items = containersClusterState.value,
                         clusterItemContent = {
-                            IconMarker(it.getContainer(), context, navController)
+                            IconMarker(it.getContainer())
                         },
                         onClusterItemClick = {
                             showCreateReportButton.value = true
                             showCreateReportButtonContainer.value = it.getContainer()
-                            Log.v("containers", "tocaste el ${it.getContainer()}")
                             false
-                        },
-                        onClusterItemInfoWindowClick = {
-                            Log.v("containers", "tocaste el window de ${it.getContainer()}")
                         }
                     )
                 }
@@ -446,7 +424,6 @@ fun MapsScreen(
             }
 
             if (showCreateReportButton.value) {
-                Log.v("containers", "showCreateReportButton")
                 val buttonPadding = when {
                     !routeAvailable -> 10.dp
                     routeAvailable && !centerNavigation.value -> 90.dp
@@ -500,120 +477,19 @@ fun MapsScreen(
 }
 
 @Composable
-fun IconMarker(container: Container,context: Context, navController: NavController?) {
-/*
-    val resource = when {
-        container.capacity > 60 -> R.mipmap.red_circle
-        container.capacity in 40..60 -> R.mipmap.orange_circle
-        else -> R.mipmap.green_circle
-    }*/
-
+fun IconMarker(container: Container) {
     val color = when {
         container.capacity > 60 -> RedRejected
         container.capacity in 40..60 -> Orange600
         else -> GreenResolved
     }
-
-    // Cargar el recurso como un Painter
     val painter: Painter = painterResource(id = R.mipmap.circle)
-
-    // Usar el Painter en un Icon o Image
     Icon(
         painter = painter,
         tint = color,
         contentDescription = "Container Icon",
-        modifier = Modifier.size(24.dp) // Ajusta el tamaño según sea necesario
+        modifier = Modifier.size(24.dp)
     )
-}
-
-
-
-@Composable
-fun MarkerInfoContent(container: Container, navController: NavController?) {
-    val bubbleShape: Shape = GenericShape { size, _ ->
-        val path = Path().apply {
-            moveTo(size.width * 0.5f, size.height)
-            lineTo(size.width * 0.4f, size.height * 0.75f)
-            lineTo(size.width * 0.1f, size.height * 0.75f)
-            arcTo(
-                rect = Rect(size.width * 0.1f, size.height * 0.75f, size.width * 0.9f, size.height * 0.75f),
-                startAngleDegrees = 90f,
-                sweepAngleDegrees = 180f,
-                forceMoveTo = false
-            )
-            lineTo(size.width * 0.6f, size.height)
-            close()
-        }
-        addPath(path)
-    }
-
-
-    Box(
-        modifier = Modifier
-            //.width(200.dp)
-            //.height(100.dp)
-            .background(
-                color = White,
-                shape = bubbleShape
-            )
-            .padding(8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            //modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = stringResource(R.string.text_capacity) + " ${container.capacity}%",
-                fontWeight = FontWeight.Bold,
-                color = DarkGray
-            )
-            Text(
-                text = "${container.address.street} ${container.address.number} ",
-                color = Gray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            OutlinedButton(
-                modifier = Modifier.padding(0.dp,3.dp,0.dp,0.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Green900),
-                onClick = {
-                    navController?.navigate("reports")
-                }
-            ) {
-                Text(
-                    text = stringResource(R.string.create_report_button),
-                    fontWeight = FontWeight.Bold,
-                    color = Green900
-                )
-            }
-        }
-    }
-}
-suspend fun getContainerIcon(container: Container, context: Context, iconSize: Int): BitmapDescriptor {
-    return withContext(Dispatchers.IO) {
-        val resource = when {
-            container.capacity > 60 -> R.mipmap.red_circle
-            container.capacity in 40..60 -> R.mipmap.orange_circle
-            else -> R.mipmap.green_circle
-        }
-        val originalBitmap = BitmapFactory.decodeResource(context.resources, resource)
-        val resizedBitmap = resizeBitmap(originalBitmap, iconSize, iconSize)
-        BitmapDescriptorFactory.fromBitmap(resizedBitmap)
-    }
-}
-suspend fun resizeBitmap(originalBitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
-    return withContext(Dispatchers.IO) {
-        val width = originalBitmap.width
-        val height = originalBitmap.height
-        val scaleWidth = newWidth.toFloat() / width
-        val scaleHeight = newHeight.toFloat() / height
-        val matrix = Matrix().apply {
-            postScale(scaleWidth, scaleHeight)
-        }
-        Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true)
-    }
 }
 
 @Composable
