@@ -30,12 +30,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value=""/>
         <meta-data
-            android:name="AWS_ACCESS_KEY_ID"
-            android:value="" />
-        <meta-data
-            android:name="AWS_SECRET_ACCESS_KEY"
-            android:value="" />
-        <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/garbi" />
         <service

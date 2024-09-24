@@ -19,6 +19,7 @@ data class Report(
     val description: String?,
     val address: String?,
     var imagePath: String? = null,
+    var imageUrl: String? = null,
     val phone: String?,
     val email: String,
     val status: List<Status>?,
