@@ -32,6 +32,5 @@ data class Report(
 
 data class ReportResponse(
     val result: List<Report>,
-    val total: Int,
-    val limit: Int
+    val length: Int
 )

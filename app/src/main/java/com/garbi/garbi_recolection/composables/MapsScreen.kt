@@ -191,12 +191,14 @@ fun MapsScreen(
     val showDialog = remember { mutableStateOf(false) }
     val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
 
+    var loadingRoute by remember { mutableStateOf(false) }
     if (showDialog.value) {
         AlertDialog(
             onAlertAccepted = {
                 showDialog.value = false;
                 viewModel.updateRouteModal(context,false)
                 viewModel.updateRouteAvailable(context,true)
+                loadingRoute = true
             }
         )
     }
@@ -209,6 +211,10 @@ fun MapsScreen(
 
     var steps by remember { mutableStateOf(emptyList<Step>()) }
     var currentInstruction by remember { mutableStateOf("") }
+
+
+
+
 
     LaunchedEffect(routeAvailable,routeId) {
         if (routeAvailable) {
@@ -223,6 +229,7 @@ fun MapsScreen(
                         Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
                         route = response.body()?.directions?.toRoute()
                         viewModel.updateRoute(context, response.body()?.directions?.toRoute())
+                        loadingRoute = false
 
 
                         val responseStart = withContext(Dispatchers.IO) { service.startRoute(routeId) }
@@ -345,134 +352,163 @@ fun MapsScreen(
     AppScaffold(navController = navController, topBarVisible = false) {
         Column(
             modifier = Modifier.fillMaxSize()
-        ){
-            if (routeAvailable){
+        ) {
 
-                Box (
-                    modifier = Modifier
-                        .background(Green900)
-                        .height(100.dp)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ){
-                        val arrow = if (currentInstruction.contains(stringResource(id = R.string.left),ignoreCase = true)) painterResource(R.drawable.arrow_left) else (if(currentInstruction.contains(
-                                stringResource(id = R.string.right),ignoreCase = true)) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
-                        Box(modifier = Modifier
-                            .size(100.dp)){
-                            Icon(
-                                painter = arrow ,
-                                contentDescription = "Flecha de dirección",
-                                tint= Color.White,
+            if (loadingRoute) {
+                Log.v("route", "loading route")
+                LoaderScreen()
+
+            } else {
+                if (routeAvailable) {
+
+                    Box(
+                        modifier = Modifier
+                            .background(Green900)
+                            .height(100.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            val arrow = if (currentInstruction.contains(
+                                    stringResource(id = R.string.left),
+                                    ignoreCase = true
+                                )
+                            ) painterResource(R.drawable.arrow_left) else (if (currentInstruction.contains(
+                                    stringResource(id = R.string.right), ignoreCase = true
+                                )
+                            ) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
+                            Box(
                                 modifier = Modifier
-                                    .size(60.dp)
-                                    .align(Alignment.Center)
-                                    .aspectRatio(1f))
+                                    .size(100.dp)
+                            ) {
+                                Icon(
+                                    painter = arrow,
+                                    contentDescription = "Flecha de dirección",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .align(Alignment.Center)
+                                        .aspectRatio(1f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                color = Color.White,
+                                text = currentInstruction, fontSize = 20.sp,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            color= Color.White,
-                            text=currentInstruction, fontSize= 20.sp,
-                            modifier = Modifier.align(Alignment.CenterVertically)
+                    }
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxHeight(),
+                        properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
+                        cameraPositionState = cameraPositionState,
+                        onMapClick = {
+                            showCreateReportButton.value = false
+                        }
+
+                    ) {
+                        val zoom = cameraPositionState.position.zoom
+                        val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
+
+                        if (polylinePoints.value.isNotEmpty()) {
+                            Polyline(
+                                points = polylinePoints.value,
+                                color = Color.Blue,
+                                width = 25f
+
+                            )
+                        }
+
+                        if (containersState.value.isNotEmpty()) {
+                            Clustering(
+                                items = containersClusterState.value,
+                                clusterItemContent = {
+                                    IconMarker(it.getContainer())
+                                },
+                                onClusterItemClick = {
+                                    showCreateReportButton.value = true
+                                    showCreateReportButtonContainer.value = it.getContainer()
+                                    false
+                                }
+                            )
+                        }
+
+                    }
+
+                    if (showCreateReportButton.value) {
+                        val buttonPadding = when {
+                            !routeAvailable -> 10.dp
+                            routeAvailable && !centerNavigation.value -> 90.dp
+                            else -> 50.dp
+                        }
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                navController?.navigate("create_report/${showCreateReportButtonContainer.value?.id}/${showCreateReportButtonContainer.value?.address?.street}/${showCreateReportButtonContainer.value?.address?.number}/${showCreateReportButtonContainer.value?.address?.neighborhood}")
+                            },
+                            icon = {
+                                Icon(
+                                    Icons.Filled.AddCircle,
+                                    "Hacer un reporte",
+                                    tint = Green900
+                                )
+                            },
+                            text = { Text(text = "Hacer un reporte", color = Green900) },
+                            containerColor = White,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter) // Funciona porque está dentro de un Box
+                                .padding(buttonPadding)
+                                .height(30.dp)
                         )
+                    }
+                    if (routeAvailable) {
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                showConfirmEndRouteDialog.value = true
+                            },
+                            icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
+                            text = { Text(text = "Finalizar ruta", color = Green900) },
+                            containerColor = White,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(10.dp)
+                                .height(30.dp)
+                        )
+
+                        if (!centerNavigation.value) {
+                            ExtendedFloatingActionButton(
+                                onClick = {
+                                    centerNavigation.value = true
+                                },
+                                icon = {
+                                    Icon(
+                                        Icons.Filled.LocationOn,
+                                        "Centrar ruta",
+                                        tint = Green900
+                                    )
+                                },
+                                text = { Text(text = "Centrar ruta", color = Green900) },
+                                containerColor = White,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(50.dp)
+                                    .height(30.dp)
+                            )
+
+                        }
                     }
                 }
             }
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            GoogleMap(
-                modifier = Modifier.fillMaxHeight(),
-                properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
-                cameraPositionState = cameraPositionState,
-                onMapClick = {
-                    showCreateReportButton.value = false
-                }
-
-            ) {
-                val zoom = cameraPositionState.position.zoom
-                val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
-
-                if (polylinePoints.value.isNotEmpty()) {
-                    Polyline(
-                        points = polylinePoints.value,
-                        color = Color.Blue,
-                        width = 25f
-
-                    )
-                }
-
-                if(containersState.value.isNotEmpty()) {
-                    Clustering(
-                        items = containersClusterState.value,
-                        clusterItemContent = {
-                            IconMarker(it.getContainer())
-                        },
-                        onClusterItemClick = {
-                            showCreateReportButton.value = true
-                            showCreateReportButtonContainer.value = it.getContainer()
-                            false
-                        }
-                    )
-                }
-
-            }
-
-            if (showCreateReportButton.value) {
-                val buttonPadding = when {
-                    !routeAvailable -> 10.dp
-                    routeAvailable && !centerNavigation.value -> 90.dp
-                    else -> 50.dp
-                }
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        navController?.navigate("create_report/${showCreateReportButtonContainer.value?.id}/${showCreateReportButtonContainer.value?.address?.street}/${showCreateReportButtonContainer.value?.address?.number}/${showCreateReportButtonContainer.value?.address?.neighborhood}")
-                    },
-                    icon = { Icon(Icons.Filled.AddCircle, "Hacer un reporte", tint = Green900) },
-                    text = { Text(text = "Hacer un reporte", color = Green900) },
-                    containerColor = White,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter) // Funciona porque está dentro de un Box
-                        .padding(buttonPadding)
-                        .height(30.dp)
-                )
-            }
-            if (routeAvailable){
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        showConfirmEndRouteDialog.value = true
-                    },
-                    icon = { Icon(Icons.Filled.Clear, "Terminar ruta", tint = Green900) },
-                    text = { Text(text = "Finalizar ruta", color = Green900) },
-                    containerColor = White,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(10.dp)
-                        .height(30.dp)
-                )
-
-                if (!centerNavigation.value){
-                    ExtendedFloatingActionButton(
-                        onClick = {
-                            centerNavigation.value = true
-                        },
-                        icon = { Icon(Icons.Filled.LocationOn, "Centrar ruta", tint = Green900) },
-                        text = { Text(text = "Centrar ruta", color = Green900) },
-                        containerColor = White,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(50.dp)
-                            .height(30.dp)
-                    )
-
-                }
-            }
-        }}
+        }
     }
 }
 

@@ -90,7 +90,7 @@ import java.io.FileInputStream
 fun CreateReportScreen(navController: NavController? = null, containerId: String?, address: Address) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-/*
+    /*
     var reportData by remember { mutableStateOf(Report(
         id = null,
         userId = "",
@@ -106,17 +106,21 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
         status = null,
         type = ""
     )) }*/
-    var createReportRequest by remember { mutableStateOf(CreateReportRequest(
-        userId = "",
-        containerId = containerId.toString(),
-        title = "",
-        description = null, //TODO MAYBE SHOULD BE NULLABLE
-        address = address.convertToString(),
-        phone = null,
-        email = "",
-        type = "",
-        image = ""
-    )) }
+    var createReportRequest by remember {
+        mutableStateOf(
+            CreateReportRequest(
+                userId = "",
+                containerId = containerId.toString(),
+                title = "",
+                description = null, //TODO MAYBE SHOULD BE NULLABLE
+                address = address.convertToString(),
+                phone = null,
+                email = "",
+                type = "",
+                image = ""
+            )
+        )
+    }
 
     var imagePath by remember { mutableStateOf<String?>(null) }
 
@@ -143,7 +147,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
 
     ////// Type Dropdown
     var expanded by remember { mutableStateOf(false) }
-    val items =  stringArrayResource(R.array.report_types).toList()
+    val items = stringArrayResource(R.array.report_types).toList()
     val itemToEnumValue = mapOf(
         items[0] to stringResource(R.string.report_type_enum_contenedor_roto),
         items[1] to stringResource(R.string.report_type_enum_contenedor_sucio),
@@ -165,7 +169,8 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
 
     // File and Uri for the camera photo
     var tempFile by remember { mutableStateOf(createTempFile()) }
-    var tempFileUri: Uri = FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
+    var tempFileUri: Uri =
+        FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
     var isPhotoTaken by remember { mutableStateOf(false) }
 
     // Camera launcher
@@ -192,245 +197,295 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
     val openAlertDialog = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    var creating = remember { mutableStateOf(false) }
+    var created = remember { mutableStateOf("") }
+
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.create_report_screen)
     ) {
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp, 0.dp)
-                .verticalScroll(scrollState)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
+        if (creating.value) {
 
-            TextField(
-                value = createReportRequest.title,
-                onValueChange = { data -> createReportRequest = createReportRequest.copy(title = data) },
-                label = { Text( text = stringResource(R.string.title_field) + "*" ) },
-//                supportingText = { Text(text = stringResource(R.string.supporting_text_required) ) },
-                singleLine = true,
-                colors = fieldColors,
+            LoaderScreen()
+
+            if (created.value == "CREADO") {
+                Log.v("report", "creadoo")
+                creating.value = false
+                navController?.navigate("reports?refresh=true")
+                openAlertDialog.value = false
+                created.value = ""
+            }
+            if (created.value == "FALLO") {
+                Log.v("report", "fallo creacion")
+                creating.value = false
+                openAlertDialog.value = false
+                created.value = ""
+            }
+
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
-            )
-
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.padding(0.dp, 8.dp)
+                    .fillMaxSize()
+                    .padding(24.dp, 0.dp)
+                    .verticalScroll(scrollState)
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 TextField(
-                    value = selectedItem,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text( text = stringResource(R.string.type_dropdown) + "*" ) },
-//                    supportingText = { Text(text = stringResource(R.string.supporting_text_required)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    value = createReportRequest.title,
+                    onValueChange = { data ->
+                        createReportRequest = createReportRequest.copy(title = data)
+                    },
+                    label = { Text(text = stringResource(R.string.title_field) + "*") },
+                    singleLine = true,
                     colors = fieldColors,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(0.dp, 8.dp)
                 )
 
-                DropdownMenu(
+
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    properties = PopupProperties(
-                        focusable = true,
-                        dismissOnClickOutside = true,
-                        dismissOnBackPress = true
-                    ),
-                    modifier = Modifier.exposedDropdownSize()
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.padding(0.dp, 8.dp)
                 ) {
-                    items.forEach { item ->
-                        DropdownMenuItem(
-                            onClick = {
-                                selectedItem = item
-                                createReportRequest.type = itemToEnumValue[item] ?: item
-                                expanded = false
+                    TextField(
+                        value = selectedItem,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(text = stringResource(R.string.type_dropdown) + "*") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = fieldColors,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        properties = PopupProperties(
+                            focusable = true,
+                            dismissOnClickOutside = true,
+                            dismissOnBackPress = true
+                        ),
+                        modifier = Modifier.exposedDropdownSize()
+                    ) {
+                        items.forEach { item ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedItem = item
+                                    createReportRequest.type = itemToEnumValue[item] ?: item
+                                    expanded = false
+                                }
+                            ) {
+                                Text(item)
                             }
-                        ) {
-                            Text(item)
                         }
                     }
                 }
-            }
 
 
-            TextField(
-                value = createReportRequest.description ?: "",
-                onValueChange = { data -> createReportRequest = createReportRequest.copy(description = data) },
-                label = { Text(text = stringResource(R.string.description_field)) },
-                colors = fieldColors,
-                singleLine = false,
-                minLines = 2,
-                maxLines = 4,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
-            )
-
-            if (!isPhotoTaken) {
-                OutlinedButton(
-                    onClick = {
-                        when {
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                                    == PackageManager.PERMISSION_GRANTED -> {
-                                tempFile = createTempFile()
-                                tempFileUri = FileProvider.getUriForFile(context, "com.garbi.garbi_recolection.provider", tempFile)
-                                cameraLauncher.launch(tempFileUri)
-                            }
-                            else -> {
-                                permissionLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                        }
+                TextField(
+                    value = createReportRequest.description ?: "",
+                    onValueChange = { data ->
+                        createReportRequest = createReportRequest.copy(description = data)
                     },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Black),
+                    label = { Text(text = stringResource(R.string.description_field)) },
+                    colors = fieldColors,
+                    singleLine = false,
+                    minLines = 2,
+                    maxLines = 4,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(0.dp, 8.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.add_a_photo),
-                        contentDescription = "add photo button",
-                        tint = Black,
-                        modifier = Modifier.padding(8.dp, 8.dp, 4.dp, 8.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.take_photo_text),
-                        modifier = Modifier.padding(4.dp, 8.dp, 8.dp, 8.dp)
-                    )
-                }
-            }
+                )
 
-            selectedImageUri?.let { uri ->
-                Box(
-                    modifier = Modifier
-                        .size(200.dp, 280.dp)
-                        .padding(0.dp, 8.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = uri),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    if (isPhotoTaken) {
-                        OutlinedIconButton(
-                            onClick = {
-                                selectedImageUri = null
-                                isPhotoTaken = false
-                                imagePath = null
-                            },
-                            colors = IconButtonDefaults.outlinedIconButtonColors(
-                                containerColor = containerColor,
-                                contentColor = White
-                            ),
-                            border = BorderStroke(0.1.dp, White),
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete photo",
-                                tint = White,
-                            )
+                if (!isPhotoTaken) {
+                    OutlinedButton(
+                        onClick = {
+                            when {
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA
+                                )
+                                        == PackageManager.PERMISSION_GRANTED -> {
+                                    tempFile = createTempFile()
+                                    tempFileUri = FileProvider.getUriForFile(
+                                        context,
+                                        "com.garbi.garbi_recolection.provider",
+                                        tempFile
+                                    )
+                                    cameraLauncher.launch(tempFileUri)
+                                }
+
+                                else -> {
+                                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Black),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.add_a_photo),
+                            contentDescription = "add photo button",
+                            tint = Black,
+                            modifier = Modifier.padding(8.dp, 8.dp, 4.dp, 8.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.take_photo_text),
+                            modifier = Modifier.padding(4.dp, 8.dp, 8.dp, 8.dp)
+                        )
+                    }
+                }
+
+                selectedImageUri?.let { uri ->
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp, 280.dp)
+                            .padding(0.dp, 8.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = uri),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        if (isPhotoTaken) {
+                            OutlinedIconButton(
+                                onClick = {
+                                    selectedImageUri = null
+                                    isPhotoTaken = false
+                                    imagePath = null
+                                },
+                                colors = IconButtonDefaults.outlinedIconButtonColors(
+                                    containerColor = containerColor,
+                                    contentColor = White
+                                ),
+                                border = BorderStroke(0.1.dp, White),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete photo",
+                                    tint = White,
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            TextField(
-                value = containerId.toString(),
-                enabled = false,
-                onValueChange = {},
-                label = { Text(text = stringResource(R.string.container_id_field)) },
-                colors = fieldColors,
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
-            )
+                TextField(
+                    value = containerId.toString(),
+                    enabled = false,
+                    onValueChange = {},
+                    label = { Text(text = stringResource(R.string.container_id_field)) },
+                    colors = fieldColors,
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 8.dp)
+                )
 
-            TextField(
-                value = address.convertToString(),
-                enabled = false,
-                onValueChange = {},
-                label = { Text(text = stringResource(R.string.address_field)) },
-                colors = fieldColors,
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp)
-            )
+                TextField(
+                    value = address.convertToString(),
+                    enabled = false,
+                    onValueChange = {},
+                    label = { Text(text = stringResource(R.string.address_field)) },
+                    colors = fieldColors,
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 8.dp)
+                )
 
-            Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
-            Box(
-                modifier = Modifier
-                    .padding(16.dp, 16.dp, 16.dp, 4.dp)
-                    .fillMaxWidth()
-            ) {
-                Button(
-                    onClick = { openAlertDialog.value = true },
-                    enabled = createReportRequest.requiredFieldsCompleted(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Green900,
-                        contentColor = White,
-                        disabledContainerColor = DisabledButton,
-                        disabledContentColor = DisabledButtonText
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp, 16.dp, 16.dp, 4.dp)
+                        .fillMaxWidth()
                 ) {
-                    Text(text = stringResource(R.string.create_report_button))
+                    Button(
+                        onClick = { openAlertDialog.value = true },
+                        enabled = createReportRequest.requiredFieldsCompleted(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Green900,
+                            contentColor = White,
+                            disabledContainerColor = DisabledButton,
+                            disabledContentColor = DisabledButtonText
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.create_report_button))
+                    }
+
+                    if (!createReportRequest.requiredFieldsCompleted()) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Transparent)
+                                .clickable(
+                                    onClick = {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                R.string.complete_fields_toast,
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    },
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
+                                )
+                        )
+                    }
                 }
 
-                if (!createReportRequest.requiredFieldsCompleted()) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(Transparent)
-                            .clickable(
-                                onClick = {
-                                    Toast.makeText(
-                                        context, R.string.complete_fields_toast, Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() }
-                            )
+                if (openAlertDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { openAlertDialog.value = false },
+                        onConfirmation = {
+                            coroutineScope.launch {
+                                creating.value = true
+                                val success = createReport(createReportRequest, imagePath, context)
+                                if (success) {
+                                    created.value = "CREADO"
+                                    /*
+                                    navController?.navigate("reports?refresh=true")
+                                    openAlertDialog.value = false
+                                    creating.value = false*/
+                                } else {
+                                    created.value = "FALLO"
+                                    /*
+                                    navController?.navigate("reports?refresh=true")
+                                    openAlertDialog.value = false
+                                    creating.value = false*/
+                                }
+                            }
+                        },
+                        dialogText = stringResource(R.string.create_report_dialog_text),
+                        confirmText = stringResource(R.string.create_report_dialog_confirm)
                     )
                 }
-            }
 
-            if (openAlertDialog.value) {
-                AlertDialog(
-                    onDismissRequest = { openAlertDialog.value = false },
-                    onConfirmation = {
-                        coroutineScope.launch {
-                            val success = createReport(createReportRequest, imagePath, context)
-                            if (success) {
-                                navController?.navigate("reports?refresh=true")
-                                openAlertDialog.value = false
-                            }
-                        }
-                    },
-                    dialogText = stringResource(R.string.create_report_dialog_text),
-                    confirmText = stringResource(R.string.create_report_dialog_confirm)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
+
+
+
 
 suspend fun createReport(report: CreateReportRequest, imagePath: String?, context: Context): Boolean {
     val reportService = RetrofitClient.reportService

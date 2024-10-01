@@ -165,7 +165,10 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 
                     TextField(
                         title = stringResource(R.string.creation_date_field),
-                        content = timestamp
+                        content = reportDetails!!.status?.find { it.status == "NUEVO" }
+                            ?.let { nuevoStatus ->
+                                nuevoStatus.timestamp.substring(0, 10)
+                            }?: ""
                     )
 
                     TextField(
