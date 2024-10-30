@@ -1,5 +1,6 @@
 package com.garbi.garbi_recolection.services
 
+import Container
 import okhttp3.RequestBody
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -10,19 +11,21 @@ import retrofit2.http.Path
 
 
 data class RouteResponse(
-    val directions: Direction
-)
-data class Direction(
-    val overview_polyline: String,
-    val legs: List<Leg>
+    val directions: Direction,
+    val containers: List<Container>
 ){
     fun toRoute(): Route {
         return Route(
-            overview_polyline = OverviewPolyline(overview_polyline),
-            legs = legs
+            overview_polyline =  OverviewPolyline(directions.overview_polyline),
+            legs = directions.legs,
+            containers = containers
         )
     }
 }
+data class Direction(
+    val overview_polyline: String,
+    val legs: List<Leg>
+)
 
 
 data class RouteStatusResponse(

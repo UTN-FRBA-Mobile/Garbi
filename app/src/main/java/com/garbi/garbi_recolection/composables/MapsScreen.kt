@@ -162,11 +162,12 @@ fun MapsScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
+    suspend fun fetchContainers() {
         val service = RetrofitClient.containerService
         try {
             val response = withContext(Dispatchers.IO) { service.getContainers() }
-            Log.v("containers","response ${response} body ${response.body()}")
+            Log.v("containers", "response ${response} body ${response.body()}")
+
             if (response.isSuccessful) {
                 containersState.value = response.body()?.result ?: emptyList()
                 containersClusterState.value = containersState.value.map { container ->
@@ -182,6 +183,12 @@ fun MapsScreen(
             e.printStackTrace()
         }
     }
+    /*
+    LaunchedEffect(Unit) {
+        Log.v("CONTAINERS", "Containers all")
+        fetchContainers()
+    }*/
+
     LaunchedEffect(hasLocationPermission) {
         if (!hasLocationPermission) {
             locationPermissionLauncher.launch(locationPermissions)
@@ -213,7 +220,20 @@ fun MapsScreen(
     var currentInstruction by remember { mutableStateOf("Cargando instrucciones...") }
 
 
-
+    LaunchedEffect(route){
+        if (route != null){
+            Log.v("CONTAINERS", "Containers de la ruta route")
+            containersState.value = route!!.containers
+            containersClusterState.value = containersState.value.map { container ->
+                ContainerClusterItem(container)
+            }
+            Log.v("containers state", containersState.value.toString())
+            Log.v("containers cluster state", containersClusterState.value.toString())
+        }else{
+            Log.v("CONTAINERS", "Containers all")
+            fetchContainers()
+        }
+    }
 
 
     LaunchedEffect(routeAvailable,routeId) {
@@ -226,9 +246,10 @@ fun MapsScreen(
                     val service = RetrofitClient.routeService
                     val response = withContext(Dispatchers.IO) { service.getRoute(routeId) }
                     if (response.isSuccessful) {
-                        Log.v("ROUTE","Ruta cargada ${response.body()?.directions?.toRoute()}")
-                        route = response.body()?.directions?.toRoute()
-                        viewModel.updateRoute(context, response.body()?.directions?.toRoute())
+                        Log.v("ROUTE","Ruta cargada ${response.body()?.toRoute()}")
+                        route = response.body()?.toRoute()
+                        Log.v("ROUTE","Containers ${route?.containers}")
+                        viewModel.updateRoute(context, response.body()?.toRoute())
                         loadingRoute = false
 
 
@@ -245,7 +266,7 @@ fun MapsScreen(
                 }
                 Log.v("ROUTE","route COMUN ${route}")
                 steps = route?.legs?.flatMap { it.steps } ?: emptyList()
-                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+                currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
                     ?: "Instrucción no disponible"
                 val points = PolyUtil.decode(route!!.overview_polyline.points)
                 polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
@@ -319,7 +340,7 @@ fun MapsScreen(
                     viewModel.updatePreviousDistanceToEnd(context,distanceToEnd)
                 }
 
-                currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<div.*"), "")
+                currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<div.*"), "")
                     ?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
                 Log.v("ROUTE"," ${currentStepIndex} currentInstruction ${currentInstruction} distanceToEnd ${distanceToEnd} end ${endLocation} ")

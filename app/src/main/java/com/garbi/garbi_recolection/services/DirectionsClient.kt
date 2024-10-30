@@ -1,4 +1,5 @@
 package com.garbi.garbi_recolection.services
+import Container
 import android.location.Location
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -36,7 +37,8 @@ data class LocationStep(
 )
 data class Route(
     val overview_polyline: OverviewPolyline,
-    val legs: List<Leg>
+    val legs: List<Leg>,
+    val containers: List<Container>
 )
 
 data class OverviewPolyline(
