@@ -19,6 +19,7 @@ data class Report(
     val description: String?,
     val address: String?,
     var imagePath: String? = null,
+    var imageUrl: String? = null,
     val phone: String?,
     val email: String,
     val status: List<Status>?,
@@ -31,6 +32,5 @@ data class Report(
 
 data class ReportResponse(
     val result: List<Report>,
-    val total: Int,
-    val limit: Int
+    val length: Int
 )

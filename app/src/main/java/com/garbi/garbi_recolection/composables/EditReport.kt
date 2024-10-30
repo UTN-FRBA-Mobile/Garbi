@@ -51,6 +51,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -70,14 +71,6 @@ import java.io.File
 fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-
-
-
-    val appInfo: ApplicationInfo = context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-    val bundle = appInfo.metaData
-    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
-    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = focusedContainer,
@@ -294,39 +287,24 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         .padding(0.dp, 8.dp)
                 )
 
-                if (details.imagePath != null) {
+
+                if (details.imageUrl != null) {
+
                     androidx.compose.material.Text(
                         text = stringResource(R.string.photo_field),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
-                    if (accessKeyAws == "" || secretKeyAws == ""){
-                        AsyncImage(
-                            model = R.drawable.image_not_available,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop
-                        )
-                    }else{
-
-                        println("generando presignedurl")
-                        AsyncImage(
-                            model = generatePresignedUrl("garbi-integration-report-bucket", details.id!! + ".jpg",accessKeyAws!!,secretKeyAws!!),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop)
-                    }
-                } else {
-                    TextField(
-                        title = stringResource(R.string.photo_field),
-                        content = null
+                    AsyncImage(
+                        model = details.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(200.dp, 280.dp)
+                            .padding(0.dp, 8.dp)
+                            .align(Alignment.CenterHorizontally),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(R.drawable.image_not_available)
                     )
                 }
 

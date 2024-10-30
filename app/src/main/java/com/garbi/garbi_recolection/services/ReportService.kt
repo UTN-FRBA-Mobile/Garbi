@@ -39,7 +39,7 @@ data class CreateReportRequest(
 }
 
 interface ReportService {
-    @GET("/integration/report")
+    @GET("/integration/report/all")
     @Headers("accept: application/json")
     suspend fun getReports(@Query("userId") userId: String): Response<ReportResponse>
 
