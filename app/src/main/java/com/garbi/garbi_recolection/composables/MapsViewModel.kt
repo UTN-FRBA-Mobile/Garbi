@@ -6,21 +6,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.content.Context
+import com.garbi.garbi_recolection.services.Route
 
 class MapsViewModel : ViewModel() {
-    var routeWaypoints = mutableStateOf(RouteManager.routeWaypoints)
-        private set
 
     var routeAvailable = mutableStateOf(RouteManager.routeAvailable)
         private set
 
     var routeModal = mutableStateOf(RouteManager.routeModal)
         private set
-    var routeDestination = mutableStateOf(RouteManager.routeDestination)
+    var route = mutableStateOf(RouteManager.route)
         private set
-    var routeStart = mutableStateOf(RouteManager.routeStart)
+    var currentStepIndex = mutableStateOf(RouteManager.currentStepIndex)
         private set
-    var continueRouteModal = mutableStateOf(RouteManager.continueRouteModal)
+    var previousDistanceToEnd = mutableStateOf(RouteManager.previousDistanceToEnd)
+        private set
+    var routeId = mutableStateOf(RouteManager.routeId)
         private set
 
     init {
@@ -29,10 +30,10 @@ class MapsViewModel : ViewModel() {
                 delay(100)
                 routeAvailable.value = RouteManager.routeAvailable
                 routeModal.value = RouteManager.routeModal
-                routeWaypoints.value = RouteManager.routeWaypoints
-                routeDestination.value = RouteManager.routeDestination
-                routeStart.value = RouteManager.routeStart
-                continueRouteModal.value = RouteManager.continueRouteModal
+                route.value = RouteManager.route
+                currentStepIndex.value = RouteManager.currentStepIndex
+                previousDistanceToEnd.value = RouteManager.previousDistanceToEnd
+                routeId.value = RouteManager.routeId
             }
         }
     }
@@ -44,16 +45,16 @@ class MapsViewModel : ViewModel() {
     fun updateRouteModal(context: Context,value: Boolean) {
         RouteManager.updateRouteModal(context,value)
     }
-    fun updateRouteWaypoints(context: Context,value: String) {
-        RouteManager.updateRouteWaypoints(context,value)
+    fun updateRoute(context: Context, value: Route?) {
+            RouteManager.updateRoute(context,value)
     }
-    fun updateRouteDestination(context: Context,value: String) {
-        RouteManager.updateRouteDestination(context,value)
+    fun updateCurrentStepIndex(context: Context,value: Int) {
+        RouteManager.updateCurrentStepIndex(context,value)
     }
-    fun updateRouteStart(context: Context,value: String) {
-        RouteManager.updateRouteStart(context,value)
+    fun updatePreviousDistanceToEnd(context: Context,value: Double) {
+        RouteManager.updatePreviousDistanceToEnd(context,value)
     }
-    fun updateContinueRouteModal(context: Context,value: Boolean) {
-        RouteManager.updateContinueRouteModal(context,value)
+    fun updateRouteId(context: Context,value: String) {
+        RouteManager.updateRouteId(context,value)
     }
 }

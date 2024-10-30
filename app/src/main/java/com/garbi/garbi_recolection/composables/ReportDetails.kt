@@ -3,6 +3,7 @@ package com.garbi.garbi_recolection.composables
 import AppScaffold
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -36,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.amazonaws.HttpMethod
 import com.garbi.garbi_recolection.models.Report
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.common_components.ReportStatusChip
@@ -44,13 +45,6 @@ import com.garbi.garbi_recolection.services.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
-import java.net.URL
-import java.time.Instant
-import java.util.*
 
 @Composable
 fun ReportDetailsScreen (navController: NavController? = null, reportId: String) {
@@ -62,17 +56,25 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
 
     var reportDetails: Report? by remember { mutableStateOf(null) }
     val newStatus = stringResource(R.string.status_new)
+    var timestamp = ""
     LaunchedEffect(reportId) {
         val service = RetrofitClient.reportService
         try {
             val response = withContext(Dispatchers.IO) { service.getReport(reportId) }
-            reportDetails = response
+            Log.v("report", "response de details de un reporte: ${response}")
+            reportDetails = response.body()
             println("reportDetails: $reportDetails")
 
             val listOfStatus = reportDetails!!.status
             if (listOfStatus!![listOfStatus.size -1].status == newStatus) { //TODO dedidir q queremos. si hacemos esto, al supervisor habria q avisarle q el recolector hizo tal cosa.
                 isModifiable = true
             }
+            listOfStatus?.find { it.status == "NUEVO" }
+                ?.let { nuevoStatus ->
+                    timestamp = nuevoStatus.timestamp.substring(0, 10)
+                    Log.v("report", "timestamp de status NUEVO: ${timestamp}")
+                }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -90,13 +92,6 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
     // for Delete report functionality
     val openAlertDialog = remember { mutableStateOf(false) }
     var deleteConfirmed by remember { mutableStateOf(false) }
-
-
-    val appInfo: ApplicationInfo = context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-    val bundle = appInfo.metaData
-    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
-    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     if (deleteConfirmed) {
         LaunchedEffect(reportId) {
@@ -140,103 +135,89 @@ fun ReportDetailsScreen (navController: NavController? = null, reportId: String)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            reportDetails?.let { details ->
-                val lastStatus = details.status!![details.status.size -1]
+            if(reportDetails == null){
+                LoaderScreen() //creo que está quedando raro, como que lo alinea arriba wtf
+            } else{
+                reportDetails?.let { details ->
+                    val lastStatus = details.status!![details.status.size -1]
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp, 0.dp, 16.dp)
-                ) {
-                    Text(
-                        text = details.title,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(0.dp, 8.dp, 16.dp, 0.dp)
-                    )
-
-                    ReportStatusChip(
-                        lastStatus.status,
-                        modifier = Modifier
-                    )
-                }
-
-                TextField(
-                    title = stringResource(R.string.creation_date_field),
-                    content = details.createdAt!!.substring(0, 10)
-                )
-//                TextField( //TODO BE is returning incorrect date
-//                    title = stringResource(R.string.last_status_update_field),
-//                    content = lastStatus.updatedAt.substring(0, 10)
-//                )
-
-//                Spacer(modifier = Modifier.height(8.dp))
-
-                TextField(
-                    title = stringResource(R.string.type_dropdown),
-                    content = enumValueToItem[details.type] ?: details.type
-                )
-
-                val description = details.description?.ifEmpty { null }
-                TextField(
-                    title = stringResource(R.string.description_field),
-                    content = description,
-                )
-
-                if (details.imagePath != null) {
-                    Text(
-                        text = stringResource(R.string.photo_field),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                    if (accessKeyAws == "" || secretKeyAws == ""){
-                        AsyncImage(
-                            model = R.drawable.image_not_available,
-                            contentDescription = null,
+                            .fillMaxWidth()
+                            .padding(0.dp, 8.dp, 0.dp, 16.dp)
+                    ) {
+                        Text(
+                            text = details.title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop
+                                .weight(1f)
+                                .padding(0.dp, 8.dp, 16.dp, 0.dp)
                         )
-                    }else{
 
-                        println("generando presignedurl")
-                        AsyncImage(
-                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
-                            contentDescription = null,
+                        ReportStatusChip(
+                            lastStatus.status,
                             modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop)
+                        )
                     }
-                } else {
+
                     TextField(
-                        title = stringResource(R.string.photo_field),
-                        content = null
+                        title = stringResource(R.string.creation_date_field),
+                        content = reportDetails!!.status?.find { it.status == "NUEVO" }
+                            ?.let { nuevoStatus ->
+                                nuevoStatus.timestamp.substring(0, 10)
+                            }?: ""
+                    )
+
+                    TextField(
+                        title = stringResource(R.string.type_dropdown),
+                        content = enumValueToItem[details.type] ?: details.type
+                    )
+
+                    val description = details.description?.ifEmpty { null }
+                    TextField(
+                        title = stringResource(R.string.description_field),
+                        content = description,
+                    )
+
+                    if (details.imageUrl != null) {
+
+                        Text(
+                            text = stringResource(R.string.photo_field),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                            AsyncImage(
+                                model = details.imageUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(200.dp, 280.dp)
+                                    .padding(0.dp, 8.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                contentScale = ContentScale.Crop,
+                                error = painterResource(R.drawable.image_not_available)
+                            )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        title = stringResource(R.string.container_id_field),
+                        content = details.containerId
+                    )
+                    TextField(
+                        title = stringResource(R.string.address_field),
+                        content = details.address!!
                     )
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    title = stringResource(R.string.container_id_field),
-                    content = details.containerId
-                )
-                TextField(
-                    title = stringResource(R.string.address_field),
-                    content = details.address!!.convertToString()
-                )
             }
+
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //delete report dialog
             if (openAlertDialog.value) {
                 com.garbi.garbi_recolection.common_components.AlertDialog(
                     onDismissRequest = { openAlertDialog.value = false },
@@ -279,29 +260,3 @@ fun buildText(titleInBold: String, content: String): AnnotatedString {
     }
 }
 
-
-fun generatePresignedUrl(bucketName: String, objectKey: String, accessKeyAws:String,secretKeyAws:String ): String {
-    var preSignedUrl = ""
-    val s3Client: AmazonS3Client?
-
-    try {
-        val expiration = Date()
-        val credentials: BasicAWSCredentials?
-        credentials = BasicAWSCredentials(accessKeyAws,secretKeyAws )
-        s3Client = AmazonS3Client(credentials)
-        var expTimeMillis: Long = Instant.now().toEpochMilli()
-        expTimeMillis += (1000 * 60 * 60 * 24 * 7).toLong()
-        expiration.time = expTimeMillis
-
-        val generateSignedUrlRequest = GeneratePresignedUrlRequest(bucketName, objectKey)
-            .withMethod(HttpMethod.GET)
-            .withExpiration(expiration)
-        val url: URL = s3Client.generatePresignedUrl(generateSignedUrlRequest)
-        preSignedUrl = url.toString()
-        println("getImagePreSignedUrl $preSignedUrl")
-    }catch (illEx: IllegalArgumentException){
-        println("error getImagePreSignedUrl $illEx")
-    }
-
-    return preSignedUrl
-}

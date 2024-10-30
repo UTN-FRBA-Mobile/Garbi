@@ -1,5 +1,6 @@
 package com.garbi.garbi_recolection.composables
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,19 +20,22 @@ import com.garbi.garbi_recolection.ui.theme.*
 
 @Composable
 fun LoaderScreen(){
+    Log.v("loader","loaderscreen")
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Black.copy(alpha = 0.5f)),
+            .background(White),
+            //.background(Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(
                 modifier = Modifier.size(48.dp),
-                color = White
+                color = Green900
+                //color = White
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(stringResource(R.string.loading_screen), color = White)
+            Text(stringResource(R.string.loading_screen), color = Green900)//color = White)
         }
     }
 }

@@ -3,6 +3,7 @@ package com.garbi.garbi_recolection.composables
 import AppScaffold
 import ReportsViewModel
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,19 +58,28 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ReportsScreen(navController: NavController? = null, reportsViewModel: ReportsViewModel) {
+fun ReportsScreen(
+    navController: NavController? = null,
+    reportsViewModel: ReportsViewModel,
+    needRefresh: Boolean?
+) {
     val context = LocalContext.current
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        reportsViewModel.loadReports(context, navController!!)
-    }
+
 
     fun refresh() = refreshScope.launch {
         refreshing = true
         reportsViewModel.refreshReports(context, navController!!)
         refreshing = false
+    }
+
+    LaunchedEffect(Unit) {
+        if (needRefresh == true){
+            refresh()
+        }
+        reportsViewModel.loadReports(context, navController!!)
     }
 
     val state = rememberPullRefreshState(refreshing, ::refresh)
@@ -84,6 +94,7 @@ fun ReportsScreen(navController: NavController? = null, reportsViewModel: Report
             if (reportsViewModel.isLoading && reportsViewModel.reports.isEmpty()) {
                 LoaderScreen()
             } else {
+                Log.v("reportes", "ya tan ${reportsViewModel.reports}")
                 if (reportsViewModel.reports.isEmpty()) {
                     Column(
                         modifier = Modifier
@@ -104,17 +115,25 @@ fun ReportsScreen(navController: NavController? = null, reportsViewModel: Report
                 } else {
                     LazyColumn {
                         items(items = reportsViewModel.reports) { reportDataI ->
+                            Log.v("reportes","LazyColumn item ${reportDataI}")
                             Box(
                                 modifier = Modifier.background(White)
                             ) {
-                                ReportsRow(
-                                    reportDataI.title,
-                                    reportDataI.status!![reportDataI.status.size - 1].status,
-                                    reportDataI.createdAt!!.substring(0, 10),
-                                    reportDataI.address!!.convertToString(),
-                                    navController,
-                                    reportDataI._id!!
-                                )
+                                var createdAt = ""
+                                reportDataI.status?.find { it.status == "NUEVO" }
+                                    ?.let { nuevoStatus ->
+                                        createdAt = nuevoStatus.timestamp.substring(0, 10)
+                                        Log.v("report", "timestamp de status NUEVO: ${nuevoStatus.timestamp} ${createdAt}")
+                                    }
+
+                                    ReportsRow(
+                                        reportDataI.title,
+                                        reportDataI.status!![reportDataI.status.size - 1].status,
+                                        createdAt,
+                                        reportDataI.address!!,
+                                        navController,
+                                        reportDataI.id!!
+                                    )
                                 Divider(
                                     color = LightGray,
                                     thickness = 1.dp,

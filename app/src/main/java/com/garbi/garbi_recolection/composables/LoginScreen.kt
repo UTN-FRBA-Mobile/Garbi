@@ -1,6 +1,7 @@
 package com.garbi.garbi_recolection.composables
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,11 +31,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.garbi.garbi_recolection.R
@@ -52,9 +53,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.garbi.garbi_recolection.ui.theme.*
 
-@Preview
+
 @Composable
-fun LoginScreen(navController: NavController? = null) {
+fun LoginScreen(navController: NavController? = null, loginViewModel: LoginViewModel) {
+
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     var changePasswordScreen by remember { mutableStateOf(false) }
@@ -91,21 +93,7 @@ fun LoginScreen(navController: NavController? = null) {
         Surface {
             var credentials by remember { mutableStateOf(Credentials()) }
             if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = White
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(stringResource(R.string.loading_screen), color = White)
-                    }
-                }
+                LoaderScreen()
             } else{
                 Column {
                     Spacer(modifier = Modifier.height(40.dp))
@@ -147,16 +135,19 @@ fun LoginScreen(navController: NavController? = null) {
                                 onClick = {
                                     isLoading = true
                                     coroutineScope.launch {
-                                        val response = login(credentials, context)
-                                        isLoading = false
+                                        val response = login(credentials, loginViewModel.token,context)
+                                        Log.v("login","response del login ${response}")
                                         if (response!= null) {
                                             if(response.success && response.needChangePassword){
+                                                isLoading = false
                                                 changePasswordScreen = true
                                                 return@launch
                                             }
                                             if(response.success){
                                                 setSession(context,credentials.pwd)
                                                 navController?.navigate("home")
+                                            }else{
+                                                isLoading = false
                                             }
                                         }
                                     }
@@ -240,7 +231,7 @@ fun LoginScreen(navController: NavController? = null) {
                                     } else {
                                         isLoading = true
                                         coroutineScope.launch {
-                                            val credentials = ChangePasswordRequest(credentials.login ,credentials.pwd, changePasswordCredentials.password2)
+                                            val credentials = ChangePasswordRequest(credentials.pwd, changePasswordCredentials.password2)
                                             val response = changePassword(credentials, context)
                                             isLoading = false
                                             if (response) {
@@ -270,22 +261,29 @@ fun LoginScreen(navController: NavController? = null) {
         }
     }
 }
-suspend fun login(creds: Credentials, context: Context): LoginFieldsResponse? {
+suspend fun login(creds: Credentials, token: String?, context: Context): LoginFieldsResponse? {
     val loginService = RetrofitClient.loginService
     return if (creds.isNotEmpty()) {
         withContext(Dispatchers.IO) {
             try {
-                val response = loginService.login(LoginRequest(creds.login, creds.pwd))
+                Log.v("login", "LoginRequest ${LoginRequest(creds.login, creds.pwd, token)}")
+                val response = loginService.login(LoginRequest(creds.login, creds.pwd, token))
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        RetrofitClient.setToken(context, response.token)
+                    Log.v("login", "response de la api ${response}")
+                    if (response.isSuccessful && response.body() != null) {
+                        val body = response.body()!!
+                        Log.v("login", "response.isSuccessful ${response.isSuccessful} !body.termsAndConditions ${!body.termsAndConditions}")
+                        RetrofitClient.setToken(context, body.token)
+                        LoginFieldsResponse(success = true, !body.termsAndConditions)
                     } else {
+                        Log.v("login", "response not successful or body is null")
                         Toast.makeText(context, R.string.error_message_wrong_user_or_pw, Toast.LENGTH_LONG).show()
+                        LoginFieldsResponse(success = false,  false)
                     }
-                    LoginFieldsResponse(response.success, !response.termsAndConditions)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    Log.v("login", "error ${e.toString()} otra ve< ${e.printStackTrace()}")
                     Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()
                     null
                 }
@@ -302,7 +300,7 @@ suspend fun changePassword(changePasswordRequest: ChangePasswordRequest, context
     return withContext(Dispatchers.IO) {
         try {
             val response = loginService.changePassword(changePasswordRequest)
-            response.success
+            response.isSuccessful
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, R.string.network_error, Toast.LENGTH_SHORT).show()

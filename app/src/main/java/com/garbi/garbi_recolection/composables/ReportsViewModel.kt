@@ -43,13 +43,19 @@ class ReportsViewModel : ViewModel() {
         isLoading = true
         // Obtener el ID del usuario
         val userDetails = RetrofitClient.getSession(context, navController)
-        userId = userDetails?._id ?: ""
+        userId = userDetails?.id ?: ""
 
         // Obtener reportes
         val service = RetrofitClient.reportService
         try {
             val response = withContext(Dispatchers.IO) { service.getReports(userId) }
-            reports = response.documents.filter { it.deletedAt == null }
+            Log.v("reportes", "response ${response}")
+            if(response.body()?.result?.isNotEmpty() == true){
+                Log.v("reportes","hay reportes ${response.body()}")
+                reports = response.body()!!.result//.filter { it.deletedAt == null }
+            }else{
+                Log.v("reportes","no hay reportes")
+            }
         } catch (e: Exception) {
             Log.e("ReportsViewModel", "Error loading reports", e)
         } finally {

@@ -51,6 +51,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -70,14 +71,6 @@ import java.io.File
 fun EditReportScreen(navController: NavController? = null, reportId: String) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-
-
-
-    val appInfo: ApplicationInfo = context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-    val bundle = appInfo.metaData
-    val accessKeyAws = bundle.getString("AWS_ACCESS_KEY_ID")
-    val secretKeyAws = bundle.getString("AWS_SECRET_ACCESS_KEY")
 
     val fieldColors = TextFieldDefaults.colors(
         focusedContainerColor = focusedContainer,
@@ -115,7 +108,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     )
 
     var reportData by remember { mutableStateOf(Report(
-        _id = null,
+        id = null,
         userId = "",
         containerId = "",
         managerId = null,
@@ -123,12 +116,11 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         observation = null,
         description = null, //TODO MAYBE SHOULD BE NULLABLE
         address = null,
+        companyId = "",
         phone = null,
         email = "",
         status = null,
-        type = "",
-        createdAt = null,
-        deletedAt = null
+        type = ""
     )) }
 
     var initialReportData by remember { mutableStateOf(reportData) }
@@ -139,7 +131,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
         val service = RetrofitClient.reportService
         try {
             val response = withContext(Dispatchers.IO) { service.getReport(reportId) }
-            reportDetails = response
+            reportDetails = response.body()
 
             val listOfStatus = reportDetails!!.status
             if (listOfStatus!![listOfStatus.size -1].status == newStatus) {
@@ -158,8 +150,8 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
     //Get userId
     LaunchedEffect(context) {
         val userDetails = RetrofitClient.getSession(context, navController!!)
-        reportData = reportData.copy(userId = userDetails?._id ?: "")
-        reportData = reportData.copy(email = userDetails?.email ?: "")
+        reportData = reportData.copy(userId = userDetails?.id ?: "")
+        reportData = reportData.copy(email = userDetails?.companyEmail ?: "")
     }
 
     ////// Take picture button
@@ -295,39 +287,24 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         .padding(0.dp, 8.dp)
                 )
 
-                if (details.imagePath != null) {
+
+                if (details.imageUrl != null) {
+
                     androidx.compose.material.Text(
                         text = stringResource(R.string.photo_field),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 16.dp)
                     )
-                    if (accessKeyAws == "" || secretKeyAws == ""){
-                        AsyncImage(
-                            model = R.drawable.image_not_available,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop
-                        )
-                    }else{
-
-                        println("generando presignedurl")
-                        AsyncImage(
-                            model = generatePresignedUrl("garbi-app", details.imagePath!!,accessKeyAws!!,secretKeyAws!!),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(200.dp, 280.dp)
-                                .padding(0.dp, 8.dp)
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop)
-                    }
-                } else {
-                    TextField(
-                        title = stringResource(R.string.photo_field),
-                        content = null
+                    AsyncImage(
+                        model = details.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(200.dp, 280.dp)
+                            .padding(0.dp, 8.dp)
+                            .align(Alignment.CenterHorizontally),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(R.drawable.image_not_available)
                     )
                 }
 
@@ -344,7 +321,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                 )
 
                 TextField(
-                    value = reportData.address!!.convertToString(),
+                    value = reportData.address!!,
                     enabled = false,
                     onValueChange = {},
                     label = { Text(text = stringResource(R.string.address_field)) },
@@ -406,7 +383,7 @@ fun EditReportScreen(navController: NavController? = null, reportId: String) {
                         coroutineScope.launch {
                             val success = editReport(reportData, imagePath, context)
                             if (success) {
-                                navController?.navigate("reports")
+                                navController?.navigate("reports?refresh=true")
                                 openAlertDialog.value = false
                             }
                         }
@@ -438,7 +415,7 @@ suspend fun editReport(reportData: Report, imagePath: String?, context: Context)
     return withContext(Dispatchers.IO) {
         try {
             val reportPart  = createReportRequestBody(reportData)
-            val response = reportService.editReport(reportData._id!!, reportPart)
+            val response = reportService.editReport(reportData.id!!, reportPart)
             withContext(Dispatchers.Main) {  // todo main? no era IO?
                 if (response.isSuccessful) {
                     Toast.makeText(context, R.string.report_edited_toast, Toast.LENGTH_LONG).show()
