@@ -31,12 +31,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             val data = remoteMessage.data
             val routeId = data["routeId"]
-            Log.v("route","route ${routeId}")
-            Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
-            RouteManager.updateRouteModal(context = applicationContext,true)
-            RouteManager.updateRouteId(context = applicationContext, routeId!!)
+            if(routeId != null){
+                Log.v("route","route ${routeId}")
+                Log.v("ROUTE", "Se recibió notificación de comienzo de ruta con data ${data}")
+                RouteManager.updateRouteModal(context = applicationContext,true)
+                RouteManager.updateRouteId(context = applicationContext, routeId)
 
-            sendNotification(title, msg)
+                sendNotification(title, msg)
+
+            }
 
         }
 

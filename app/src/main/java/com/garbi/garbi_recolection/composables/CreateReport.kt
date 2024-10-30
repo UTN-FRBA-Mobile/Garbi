@@ -113,7 +113,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                 containerId = containerId.toString(),
                 title = "",
                 description = null, //TODO MAYBE SHOULD BE NULLABLE
-                address = address.convertToString(),
+                address = address.convertToStringReport(),
                 phone = null,
                 email = "",
                 type = "",
@@ -397,7 +397,7 @@ fun CreateReportScreen(navController: NavController? = null, containerId: String
                 )
 
                 TextField(
-                    value = address.convertToString(),
+                    value = address.convertToStringReport(),
                     enabled = false,
                     onValueChange = {},
                     label = { Text(text = stringResource(R.string.address_field)) },

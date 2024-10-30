@@ -6,7 +6,7 @@ data class ContainerClusterItem(
 ) : ClusterItem {
     override fun getPosition(): LatLng = LatLng(container.coordinates.lat, container.coordinates.lng)
     override fun getTitle(): String = container.address.convertToString() // Puedes personalizarlo según necesites
-    override fun getSnippet(): String = "Capacidad: ${container.capacity}" // Puedes personalizarlo según necesites
+    override fun getSnippet(): String = "Capacidad: ${container.capacity}%" // Puedes personalizarlo según necesites
     override fun getZIndex(): Float = 1f
 
     fun getContainer(): Container = container
@@ -19,6 +19,9 @@ data class Address(
 ) {
     fun convertToString(): String {
         return "$street $number - $neighborhood"
+    }
+    fun convertToStringReport(): String {
+        return "$street $number, $neighborhood"
     }
 }
 
