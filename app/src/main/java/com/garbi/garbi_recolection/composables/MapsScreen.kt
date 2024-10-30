@@ -210,7 +210,7 @@ fun MapsScreen(
     }
 
     var steps by remember { mutableStateOf(emptyList<Step>()) }
-    var currentInstruction by remember { mutableStateOf("") }
+    var currentInstruction by remember { mutableStateOf("Cargando instrucciones...") }
 
 
 
@@ -238,6 +238,9 @@ fun MapsScreen(
                         println("code: ${response.code()}")
                         println("errorbody: ${response.errorBody()?.string()}")
                         Toast.makeText(context, "No se pudo cargar la ruta", Toast.LENGTH_LONG).show()
+                        viewModel.updateRouteAvailable(context,false)
+                        viewModel.updateRouteId(context,"")
+                        loadingRoute = false
                     }
                 }
                 Log.v("ROUTE","route COMUN ${route}")
@@ -304,16 +307,18 @@ fun MapsScreen(
             val currentStep = steps.getOrNull(currentStepIndex)
             currentStep?.let {
                 val endLocation = LatLng(it.end_location.lat, it.end_location.lng)
+                Log.v("ROUTE", "step ${currentStepIndex} endLocation ${endLocation}")
                 val userLocation = LatLng(userLat, userLng)
                 val distanceToEnd = SphericalUtil.computeDistanceBetween(userLocation, endLocation)
                 Log.v("ROUTE", "distanceToEnd ${distanceToEnd} previousDistanceToEnd ${previousDistanceToEnd}")
-                if ((distanceToEnd < 10) or (distanceToEnd > (previousDistanceToEnd + 3))) {
+                if ((distanceToEnd < 15) or (distanceToEnd > (previousDistanceToEnd + 3))) {
                     Log.v("ROUTE", "avanzando un paso")
                     viewModel.updateCurrentStepIndex(context,(currentStepIndex+1).coerceAtMost(steps.size - 1))
                     viewModel.updatePreviousDistanceToEnd(context,Double.POSITIVE_INFINITY)
                 }else{
                     viewModel.updatePreviousDistanceToEnd(context,distanceToEnd)
                 }
+
                 currentInstruction = steps.getOrNull(currentStepIndex)?.html_instructions?.replace(Regex("<div.*"), "")
                     ?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
@@ -359,7 +364,7 @@ fun MapsScreen(
                 LoaderScreen()
 
             } else {
-                if (routeAvailable) {
+                if (routeAvailable && route != null) {
 
                     Box(
                         modifier = Modifier
@@ -470,7 +475,7 @@ fun MapsScreen(
                                 .height(30.dp)
                         )
                     }
-                    if (routeAvailable) {
+                    if (routeAvailable && route != null) {
                         ExtendedFloatingActionButton(
                             onClick = {
                                 showConfirmEndRouteDialog.value = true
