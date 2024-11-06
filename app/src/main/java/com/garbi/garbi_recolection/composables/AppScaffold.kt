@@ -113,8 +113,8 @@ fun AppScaffold(
                             val iconColor: Color
                             val icon: Int
                             if (
-                                currentDestination == "reports"
-                                || currentDestination!!.startsWith("create_report")
+                                currentDestination!!.startsWith("reports")
+                                || currentDestination.startsWith("create_report")
                                 || currentDestination.startsWith("report_details")
                                 || currentDestination.startsWith("edit_report")
                             ) {
