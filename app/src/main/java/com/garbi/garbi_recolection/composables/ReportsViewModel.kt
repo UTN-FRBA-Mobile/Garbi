@@ -52,7 +52,7 @@ class ReportsViewModel : ViewModel() {
             Log.v("reportes", "response ${response}")
             if(response.body()?.result?.isNotEmpty() == true){
                 Log.v("reportes","hay reportes ${response.body()}")
-                reports = response.body()!!.result//.filter { it.deletedAt == null }
+                reports = response.body()!!.result.filter { it.userId !== null }
             }else{
                 Log.v("reportes","no hay reportes")
             }
