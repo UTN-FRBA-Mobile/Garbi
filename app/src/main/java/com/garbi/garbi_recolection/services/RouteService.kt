@@ -16,14 +16,14 @@ data class RouteResponse(
 ){
     fun toRoute(): Route {
         return Route(
-            overview_polyline =  OverviewPolyline(directions.overview_polyline),
+            polylines =  directions.polylines.map { OverviewPolyline(it) },
             legs = directions.legs,
             containers = containers
         )
     }
 }
 data class Direction(
-    val overview_polyline: String,
+    val polylines: List<String>,
     val legs: List<Leg>
 )
 

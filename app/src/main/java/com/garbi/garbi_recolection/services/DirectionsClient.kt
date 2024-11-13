@@ -36,7 +36,7 @@ data class LocationStep(
     val lng: Double
 )
 data class Route(
-    val overview_polyline: OverviewPolyline,
+    val polylines: List<OverviewPolyline>,
     val legs: List<Leg>,
     val containers: List<Container>
 )

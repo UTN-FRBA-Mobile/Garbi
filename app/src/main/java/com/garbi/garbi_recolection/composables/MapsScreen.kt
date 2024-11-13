@@ -196,7 +196,9 @@ fun MapsScreen(
     }
 
     val showDialog = remember { mutableStateOf(false) }
-    val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    //val polylinePoints = remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val polylinePoints = remember { mutableStateOf<List<List<LatLng>>>(emptyList()) }
+
 
     var loadingRoute by remember { mutableStateOf(false) }
     if (showDialog.value) {
@@ -268,8 +270,13 @@ fun MapsScreen(
                 steps = route?.legs?.flatMap { it.steps } ?: emptyList()
                 currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
                     ?: "Instrucción no disponible"
+                /*
                 val points = PolyUtil.decode(route!!.overview_polyline.points)
-                polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }
+                polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }*/
+
+                polylinePoints.value = route!!.polylines.map { polyline ->
+                    PolyUtil.decode(polyline.points).map { LatLng(it.latitude, it.longitude) }
+                }
 
                 centerNavigation.value = true
 
@@ -447,12 +454,13 @@ fun MapsScreen(
                         val iconSize = (10 + ((zoom - 10) * 3)).coerceIn(10f, 40f).toInt()
 
                         if (polylinePoints.value.isNotEmpty()) {
-                            Polyline(
-                                points = polylinePoints.value,
-                                color = Color.Blue,
-                                width = 25f
-
-                            )
+                            polylinePoints.value.forEach { polyline ->
+                                Polyline(
+                                    points = polyline,
+                                    color = Color.Blue,
+                                    width = 25f
+                                )
+                            }
                         }
 
                         if (containersState.value.isNotEmpty()) {
