@@ -57,6 +57,9 @@ object RetrofitClient {
     val routeService: RouteService by lazy {
         retrofit.create(RouteService::class.java)
     }
+    val companyService: CompanyService by lazy {
+        retrofit.create(CompanyService::class.java)
+    }
 
     fun setToken(context: Context, tokenSet: String){
         val expiryTime = System.currentTimeMillis() + (TOKEN_EXPIRY_TIME_HOURS * 3600000)

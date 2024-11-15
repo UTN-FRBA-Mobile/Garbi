@@ -183,11 +183,29 @@ fun MapsScreen(
             e.printStackTrace()
         }
     }
-    /*
+
+    var warningThreshold by remember { mutableStateOf(0) }
+    var fullThreshold by remember { mutableStateOf(0) }
+
+    suspend fun fetchThreshold() {
+        val service = RetrofitClient.companyService
+        try {
+            val userDetails = RetrofitClient.getSession(context, navController!!)
+            val response = withContext(Dispatchers.IO) { service.getCompany(userDetails!!.companyId) }
+            if (response.isSuccessful) {
+                warningThreshold = response.body()!!.threshold.warning.toInt()
+                fullThreshold = response.body()!!.threshold.full.toInt()
+            } else {
+                Toast.makeText(context, "Error cargando los threshold", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     LaunchedEffect(Unit) {
-        Log.v("CONTAINERS", "Containers all")
-        fetchContainers()
-    }*/
+        fetchThreshold()
+    }
 
     LaunchedEffect(hasLocationPermission) {
         if (!hasLocationPermission) {
@@ -266,13 +284,12 @@ fun MapsScreen(
                         loadingRoute = false
                     }
                 }
-                Log.v("ROUTE","route COMUN ${route}")
+                Log.v("ROUTE","route COMUN currentStepIndex ${currentStepIndex} ${route} ")
+                Log.v("ROUTE","route COMUN currentInstruction ${currentInstruction}")
                 steps = route?.legs?.flatMap { it.steps } ?: emptyList()
                 currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
                     ?: "Instrucción no disponible"
-                /*
-                val points = PolyUtil.decode(route!!.overview_polyline.points)
-                polylinePoints.value = points.map { LatLng(it.latitude, it.longitude) }*/
+                Log.v("ROUTE","route COMUN currentInstruction ${currentInstruction}")
 
                 polylinePoints.value = route!!.polylines.map { polyline ->
                     PolyUtil.decode(polyline.points).map { LatLng(it.latitude, it.longitude) }
@@ -284,7 +301,7 @@ fun MapsScreen(
                 e.printStackTrace()
             }
         }else{
-            if ((routeId != "") and !routeModal){
+             if ((routeId != "") and !routeModal){
                 Log.v("ROUTE", " finish routeAvailable ${routeAvailable} routeId ${routeId}")
                 //es porque pusimos route available en false pero routeId sigue teniendo contenido
                 val service = RetrofitClient.routeService
@@ -350,6 +367,7 @@ fun MapsScreen(
                 currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<div.*"), "")
                     ?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
+
                 Log.v("ROUTE"," ${currentStepIndex} currentInstruction ${currentInstruction} distanceToEnd ${distanceToEnd} end ${endLocation} ")
             }
         }
@@ -387,12 +405,13 @@ fun MapsScreen(
             modifier = Modifier.fillMaxSize()
         ) {
 
-            if (loadingRoute) {
-                Log.v("route", "loading route")
+            if (loadingRoute && currentInstruction == "Cargando instrucciones...") {
+                Log.v("route", "loading route ${loadingRoute} ${currentInstruction}")
                 LoaderScreen()
 
             } else {
                 if (routeAvailable && route != null) {
+                    Log.v("route", "routeAvailable ${routeAvailable} ${currentInstruction}")
 
                     Box(
                         modifier = Modifier
@@ -405,14 +424,16 @@ fun MapsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            val arrow = if (currentInstruction.contains(
-                                    stringResource(id = R.string.left),
-                                    ignoreCase = true
-                                )
-                            ) painterResource(R.drawable.arrow_left) else (if (currentInstruction.contains(
-                                    stringResource(id = R.string.right), ignoreCase = true
-                                )
-                            ) painterResource(R.drawable.arrow_right) else painterResource(R.drawable.arrow_upward))
+                            val arrow = when {
+                                currentInstruction.contains(stringResource(id = R.string.left), ignoreCase = true) ->
+                                    painterResource(R.drawable.arrow_left)
+                                currentInstruction.contains(stringResource(id = R.string.right), ignoreCase = true) ->
+                                    painterResource(R.drawable.arrow_right)
+                                currentInstruction.contains("Cargando", ignoreCase = true) ->
+                                    painterResource(R.drawable.loading)
+                                else ->
+                                    painterResource(R.drawable.arrow_upward)
+                            }
                             Box(
                                 modifier = Modifier
                                     .size(100.dp)
@@ -467,7 +488,7 @@ fun MapsScreen(
                             Clustering(
                                 items = containersClusterState.value,
                                 clusterItemContent = {
-                                    IconMarker(it.getContainer())
+                                    IconMarker(it.getContainer(),warningThreshold,fullThreshold)
                                 },
                                 onClusterItemClick = {
                                     showCreateReportButton.value = true
@@ -547,10 +568,10 @@ fun MapsScreen(
 }
 
 @Composable
-fun IconMarker(container: Container) {
+fun IconMarker(container: Container,warningThreshold: Int, fullThreshold: Int) {
     val color = when {
-        container.capacity > 60 -> RedRejected
-        container.capacity in 40..60 -> Orange600
+        container.capacity > fullThreshold -> RedRejected
+        container.capacity in warningThreshold..fullThreshold -> Orange600
         else -> GreenResolved
     }
     val painter: Painter = painterResource(id = R.mipmap.circle)
