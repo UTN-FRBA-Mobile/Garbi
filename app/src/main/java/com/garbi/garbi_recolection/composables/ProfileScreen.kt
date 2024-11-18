@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.TextButton
@@ -22,8 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,11 +35,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.garbi.garbi_recolection.R
 import com.garbi.garbi_recolection.ui.theme.*
 import com.garbi.garbi_recolection.common_components.*
 import com.garbi.garbi_recolection.services.RetrofitClient
 import com.garbi.garbi_recolection.services.UserDetails
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,88 +61,113 @@ fun ProfileScreen(navController: NavController? = null) {
         Log.v("user", userDetails.toString())
     }
 
+    var profileImage by remember { mutableStateOf<String?>("") }
+    LaunchedEffect (Unit){
+
+        val service = RetrofitClient.loginService
+        try {
+            val response = withContext(Dispatchers.IO) { service.getUser(userDetails!!.id) }
+            Log.v("profile", "response de get user: ${response}")
+            profileImage = response.body()!!.imageUrl
+            Log.v("profile", "profileImage: ${profileImage}")
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     AppScaffold(
         navController = navController,
         topBarVisible = true,
         title = stringResource(R.string.profile_screen)
     ) {
-
-        userDetails?.let {
-
-        Column (modifier = Modifier.fillMaxHeight())
+        if(profileImage == "")
         {
-            Column (modifier = Modifier.weight(1f))
-            {
-                ProfileHeader(
-                    image = painterResource(R.drawable.betular),
-                    name = userDetails!!.name + " " + userDetails!!.surname
-                )
+            LoaderScreen()
+        }else{
+            userDetails?.let {
 
-                Text(
-                    text = userDetails!!.companyEmail,
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(16.dp, 0.dp)
-                )
+                Column (modifier = Modifier.fillMaxHeight())
+                {
+                    Column (modifier = Modifier.weight(1f))
+                    {
+                        ProfileHeader(
+                            image = profileImage!!,
+                            name = userDetails!!.name + " " + userDetails!!.surname
+                        )
 
-                TextButton(
-                    onClick = { navController?.navigate("change_password") },
-                    modifier = Modifier.padding(16.dp, 32.dp, 16.dp, 4.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.lock_reset),
-                        contentDescription = "change password button",
-                        tint = Black,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.change_password_button),
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
+                        Text(
+                            text = userDetails!!.companyEmail,
+                            fontSize = 20.sp,
+                            fontFamily = FontFamily.SansSerif,
+                            modifier = Modifier.padding(16.dp, 0.dp)
+                        )
+
+                        TextButton(
+                            onClick = { navController?.navigate("change_password") },
+                            modifier = Modifier.padding(16.dp, 32.dp, 16.dp, 4.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.lock_reset),
+                                contentDescription = "change password button",
+                                tint = Black,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.change_password_button),
+                                fontSize = 20.sp,
+                                fontFamily = FontFamily.SansSerif
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        onClick = { openAlertDialog.value = true },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.logout),
+                            contentDescription = "logout button",
+                            tint = Red,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.logout_button),
+                            fontSize = 24.sp,
+                            fontFamily = FontFamily.SansSerif
+                        )
+                    }
+
+                    if (openAlertDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = { openAlertDialog.value = false },
+                            onConfirmation = {
+                                navController?.navigate("logout")
+                                openAlertDialog.value = false
+                            },
+                            dialogText = stringResource(R.string.logout_dialog_text),
+                            confirmText = stringResource(R.string.dialog_confirm)
+                        )
+                    }
                 }
             }
-            
-            TextButton(
-                onClick = { openAlertDialog.value = true },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.logout),
-                    contentDescription = "logout button",
-                    tint = Red,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(
-                    text = stringResource(id = R.string.logout_button),
-                    fontSize = 24.sp,
-                    fontFamily = FontFamily.SansSerif
-                )
-            }
+        }
 
-            if (openAlertDialog.value) {
-                AlertDialog(
-                    onDismissRequest = { openAlertDialog.value = false },
-                    onConfirmation = {
-                        navController?.navigate("logout")
-                        openAlertDialog.value = false
-                    },
-                    dialogText = stringResource(R.string.logout_dialog_text),
-                    confirmText = stringResource(R.string.dialog_confirm)
-                )
-            }
-        }
-        }
+
     }
 
 }
 
 @Composable
-fun ProfileHeader(image: Painter, name: String) {
+fun ProfileHeader(image: String, name: String) {
     Row {
-        Image(painter = image, contentDescription = "",
-            modifier = Modifier.padding(16.dp))
+        AsyncImage(
+            model = image,
+            contentDescription = "",
+            modifier = Modifier
+                .size(120.dp)
+                .padding(16.dp)
+        )
         Column {
             Text(text = name,
                 modifier = Modifier.padding(0.dp, 32.dp, 0.dp, 4.dp),
