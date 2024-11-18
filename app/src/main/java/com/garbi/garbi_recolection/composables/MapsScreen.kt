@@ -287,8 +287,11 @@ fun MapsScreen(
                 Log.v("ROUTE","route COMUN currentStepIndex ${currentStepIndex} ${route} ")
                 Log.v("ROUTE","route COMUN currentInstruction ${currentInstruction}")
                 steps = route?.legs?.flatMap { it.steps } ?: emptyList()
-                currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<[/]?b>"), "")
+
+                currentInstruction = steps.getOrNull(currentStepIndex + 1)?.html_instructions?.replace(Regex("<div.*"), "")
+                    ?.replace(Regex("<[^>]*>"), "")
                     ?: "Instrucción no disponible"
+
                 Log.v("ROUTE","route COMUN currentInstruction ${currentInstruction}")
 
                 polylinePoints.value = route!!.polylines.map { polyline ->
